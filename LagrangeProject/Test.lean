@@ -11,10 +11,17 @@ namespace my_group
 
 variable {G : Type} [MyGroupMul G]
 
-lemma mul_left_cancel (a b c : G) (h : a * b = a * c) : b = c := by
+theorem mul_left_cancel (a b c : G) (h : a * b = a * c) : b = c := by
 sorry
 done
 
-lemma inv_eq_of_mul_eq_one {a b : G} (h : a * b = 1) : a⁻¹ = b := by
-rw [← left_inv_mul] at h
+theorem right_inv_mul (a b : G) : a * a⁻¹ = 1 := by
+sorry
 done
+
+theorem inv_eq_of_mul_eq_one {a b : G} (h : a * b = 1) : b = a⁻¹ := by
+rw [← right_inv_mul a] at h
+
+done
+
+end my_group
