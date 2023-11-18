@@ -20,8 +20,8 @@ sorry
 done
 
 theorem inv_eq_of_mul_eq_one {a b : G} (h : a * b = 1) : b = a⁻¹ := by
-rw [← right_inv_mul a] at h
-
+--rw [← right_inv_mul a] at h
+sorry
 done
 
 end my_group
