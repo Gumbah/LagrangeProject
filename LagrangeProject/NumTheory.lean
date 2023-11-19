@@ -15,31 +15,50 @@ def div_alg (x y : ℕ) : (ℕ × ℕ) :=
 --The way we will prove Bézout's lemma is by defining some
 --function that returns integers a,b such that ax+by=gcd(x,y)
 
+--The following function takes two natural numbers as input
+--and repeatedly applies the division algorithm to obtain
+--lists of dividends and remainders, we will use these
+--to extend the Euclidean algorithm to give us our coeffs
+--for Bézout's lemma
 
-@[simp] theorem mod_less_right : (x : ℕ) % (y : ℕ) < y ∨ y=0 := by
-  by_cases (y = 0)
-  · exact Or.inr h
-  refine (or_iff_left h).mpr ?_
-  refine Nat.mod_lt x ?_
-  exact Nat.pos_of_ne_zero h
-
-mutual
-
-  def bez_a (x y : ℕ) : ℤ :=
-    if y ≠ 0 then
-      bez_b y (x % y)
+def div_lists (x y : ℕ) : (List ℤ × List ℤ) := Id.run do
+  let mut (Q : List ℤ) := [1, 1]
+  let mut (R : List ℤ) := [(x : ℤ), (y : ℤ)]
+  let mut z := x
+  let mut w := y
+  let mut a := 0
+  for i in [0:x] do
+    if (div_alg z w).2 == 0 then
+      break
     else
-      1
+      Q := Q.concat ((div_alg z w).1)
+      R := R.concat ((div_alg z w).2)
+      a := w
+      w := (div_alg z w).2
+      z := a
+  return (Q, R)
 
-  def bez_b (x y : ℕ) : ℤ :=
-    if y ≠ 0 then
-      bez_a x (x % y) - (x/y) * bez_b x (x % y)
-    else
-      0
+#eval div_lists 2023 70
 
-end
-termination_by bez_a x y => y ; bez_b x y => y
-decreasing_by sorry
+--Now to reverse this process:
+--if r_n ∈ R is the final element of this list, it is the gcd
+--(to be proved later), we can write it as r_(n-2)-q_n*r_(n-1)
+--and r_(n-1) can be written as r_(n-3)-q_(n-1)*r_(n-2), so we
+--may substitute this into our inital equation recursively
+--until we reach r_0 and r_1 (which are x, y) giving us an
+--equation of the form r_n = ax+by for some a,b ∈ ℤ.
 
-theorem bezout (x y : ℕ) : (bez_a x y)*x + (bez_b x y)*y = (Nat.gcd x y) := by
-  sorry
+def bezout_coeffs (x y : ℕ) : (ℤ × ℤ) := Id.run do
+  let mut (A : List ℤ) := []
+  let mut (B : List ℤ) := []
+  let (D : List ℤ) := ((div_lists x y).1).reverse
+  if D.length > 1 then
+    let mut (a : ℤ) := (1 : ℤ)
+    let mut (b : ℤ) := -(D.get 0)
+    let mut (c : ℤ) := (0 : ℤ)
+    for i in [0:D.length-1] do
+      c := b
+      b := a-(b*(D.get i))
+      a := c
+    return (a, b)
+  else return (0, 0)
