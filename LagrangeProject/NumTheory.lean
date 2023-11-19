@@ -49,16 +49,20 @@ def div_lists (x y : ℕ) : (List ℤ × List ℤ) := Id.run do
 --equation of the form r_n = ax+by for some a,b ∈ ℤ.
 
 def bezout_coeffs (x y : ℕ) : (ℤ × ℤ) := Id.run do
-  let mut (A : List ℤ) := []
-  let mut (B : List ℤ) := []
   let (D : List ℤ) := ((div_lists x y).1).reverse
   if D.length > 1 then
     let mut (a : ℤ) := (1 : ℤ)
-    let mut (b : ℤ) := -(D.get 0)
+    let mut (b : ℤ) := -(D[0]!)
     let mut (c : ℤ) := (0 : ℤ)
-    for i in [0:D.length-1] do
+    for i in [1:D.length-2] do
       c := b
-      b := a-(b*(D.get i))
+      b := a-(b*(D[i]!))
       a := c
     return (a, b)
   else return (0, 0)
+
+#eval bezout_coeffs 2023 70
+
+--Now it remains to prove Bézout's lemma, given this explicit
+--construction for the coefficients. I aim to do this by
+--induction.
