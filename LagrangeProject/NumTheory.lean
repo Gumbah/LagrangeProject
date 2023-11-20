@@ -1,6 +1,8 @@
 import Mathlib.Data.Nat.GCD.Basic
 import Mathlib.Tactic
 
+--18/11/23
+
 --First we want to prove Bézout's lemma, first we will
 --need the (extended) Euclidean Algorithm.
 --We know x = qy + r for a unique q,r < y and so we
@@ -14,6 +16,8 @@ def div_alg (x y : ℕ) : (ℕ × ℕ) :=
 
 --The way we will prove Bézout's lemma is by defining some
 --function that returns integers a,b such that ax+by=gcd(x,y)
+
+--19/11/23
 
 --The following function takes two natural numbers as input
 --and repeatedly applies the division algorithm to obtain
@@ -66,3 +70,15 @@ def bezout_coeffs (x y : ℕ) : (ℤ × ℤ) := Id.run do
 --Now it remains to prove Bézout's lemma, given this explicit
 --construction for the coefficients. I aim to do this by
 --induction.
+
+--20/11/23
+
+--I now understand that this approach using for loops and
+--explicit construction to prove Bézout's lemma has made it
+--very difficult for myself to do so. I will think on this
+--and come back at a later time with a new approach to
+--proving this lemma. For now I will `sorry` it out and move
+--on.
+
+theorem bezout : ∀ (x y : ℕ), ∃ (a b : ℤ), a*x+b*y=gcd x y := by
+  sorry
