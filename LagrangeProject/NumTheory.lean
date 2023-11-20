@@ -54,16 +54,14 @@ def div_lists (x y : ℕ) : (List ℤ × List ℤ) := Id.run do
 
 def bezout_coeffs (x y : ℕ) : (ℤ × ℤ) := Id.run do
   let (D : List ℤ) := ((div_lists x y).1).reverse
-  if D.length > 1 then
-    let mut (a : ℤ) := (1 : ℤ)
-    let mut (b : ℤ) := -(D[0]!)
-    let mut (c : ℤ) := (0 : ℤ)
-    for i in [1:D.length-2] do
-      c := b
-      b := a-(b*(D[i]!))
-      a := c
-    return (a, b)
-  else return (0, 0)
+  let mut (a : ℤ) := (1 : ℤ)
+  let mut (b : ℤ) := -(D[0]!)
+  let mut (c : ℤ) := (0 : ℤ)
+  for i in [1:D.length-2] do
+    c := b
+    b := a-(b*(D[i]!))
+    a := c
+  return (a, b)
 
 #eval bezout_coeffs 2023 70
 
@@ -80,5 +78,5 @@ def bezout_coeffs (x y : ℕ) : (ℤ × ℤ) := Id.run do
 --proving this lemma. For now I will `sorry` it out and move
 --on.
 
-theorem bezout : ∀ (x y : ℕ), ∃ (a b : ℤ), a*x+b*y=gcd x y := by
+theorem bezout : ∀ {x y : ℕ}, ∃ (a b : ℤ), a*x+b*y=gcd x y := by
   sorry
