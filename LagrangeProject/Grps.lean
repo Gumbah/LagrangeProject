@@ -1,9 +1,12 @@
 import Mathlib.Algebra.Group.Defs
+import Mathlib.GroupTheory.Subgroup.Basic
 import Mathlib.Tactic
 
 --In this file we will use the basic definitions of Groups to
 --prove basic things about them only using the axioms of acossiativity,
 --inverses and the identity
+
+section group
 
 namespace groups
 
@@ -45,6 +48,44 @@ namespace groups
     sorry
     done
 
-
-
 end groups
+
+namespace addGroups
+
+  variable {G : Type} [AddGroup G]
+
+  @[simp]lemma left_cancel_add : ∀ (a b c : G), a + b = a + c → b = c := by
+    sorry
+    done
+
+
+end addGroups
+
+end group
+
+
+section subgroups
+
+namespace Subgroups
+
+variable {G : Type} [Group G] (H : Subgroup G)
+
+  noncomputable def index : ℕ :=
+    G.card
+
+end Subgroups
+
+end subgroups
+
+section cosets
+
+def LeftCoset [Group G] (g : G) (H : Subgroup G) : Set G :=
+  (fun h => g * h) '' H
+
+def RightCoset [Group G] (H : Subgroup G) (g : G) : Set G :=
+  (fun h => h * g) '' H
+
+def
+
+
+end cosets
