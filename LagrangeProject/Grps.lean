@@ -1,5 +1,7 @@
 import Mathlib.Algebra.Group.Defs
 import Mathlib.GroupTheory.Subgroup.Basic
+import Mathlib.Data.Finite.Card
+
 import Mathlib.Tactic
 
 --In this file we will use the basic definitions of Groups to
@@ -64,28 +66,31 @@ end addGroups
 end group
 
 
-section subgroups
-
-namespace Subgroups
-
-variable {G : Type} [Group G] (H : Subgroup G)
-
-  noncomputable def index : ℕ :=
-    G.card
-
-end Subgroups
-
-end subgroups
-
 section cosets
 
-def LeftCoset [Group G] (g : G) (H : Subgroup G) : Set G :=
-  (fun h => g * h) '' H
+--variable {G : Type} [Group G] (H : Subgroup G)
 
-def RightCoset [Group G] (H : Subgroup G) (g : G) : Set G :=
-  (fun h => h * g) '' H
+  def LeftCosetMul [Group G] (g : G) (H : Subgroup G) : Set G :=
+    (fun h => g * h) '' H
 
-def
+  def RightCosetMul [Group G] (H : Subgroup G) (g : G) : Set G :=
+    (fun h => h * g) '' H
 
+  def LeftCosetEqMul [Group G] (g : Subgroup G) (i j : G):=
+    LeftCosetMul i g = LeftCosetMul j g
+
+  def RightCosetEqMul [Group G] (i j : G) (g : Subgroup G) :=
+    RightCosetMul g i = RightCosetMul g j
+
+  -- lemma acossiativity
+  -- lemma if (i = j) then iH = jH
+  -- lemma if h ∈ iH and jH then iH = jH
+  -- ...
+
+  def indexMul : ℕ :=
+    sorry
+    -- number of cosets iH, jH ... that makes up G
+
+  --Langrange's Theorem
 
 end cosets
