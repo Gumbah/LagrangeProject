@@ -144,14 +144,14 @@ def my_gcd (x y : ℕ) : ℕ := (gcd_bezout x y).1
   unfold my_gcd
   simp? says simp only [Nat.zero_eq, gcd_bez_zero_left]
 
-@[simp] lemma bez_a_zero_right {x : ℕ} (h : x ≠ 0): bez_a x Nat.zero = 1 := by
+@[simp] lemma bez_a_zero_right {x : ℕ} (h : x ≠ 0) : bez_a x Nat.zero = 1 := by
   unfold bez_a gcd_bezout
   induction x with
   | zero => exact absurd rfl h
   | succ x => simp? says simp only [Nat.zero_eq, Nat.zero_mod, gcd_bez_zero_left, CharP.cast_eq_zero,
     EuclideanDomain.zero_div, mul_zero, sub_zero]
 
-@[simp] lemma bez_b_zero_right {x : ℕ} (h : x ≠ 0): bez_b x Nat.zero = 0 := by
+@[simp] lemma bez_b_zero_right {x : ℕ} (h : x ≠ 0) : bez_b x Nat.zero = 0 := by
   unfold bez_b gcd_bezout
   induction x with
   | zero => exact absurd rfl h
@@ -176,24 +176,24 @@ def my_gcd (x y : ℕ) : ℕ := (gcd_bezout x y).1
     unfold my_gcd gcd_bezout
     simp only [Nat.mod_self, gcd_bez_expand, my_gcd_zero_left, bez_a_zero_left, bez_b_zero_left]
 
-@[simp] lemma my_gcd_succ (x y : ℕ): my_gcd (Nat.succ x) y = my_gcd (y%(Nat.succ x)) (Nat.succ x) := by
+@[simp] lemma my_gcd_succ (x y : ℕ) : my_gcd (Nat.succ x) y = my_gcd (y%(Nat.succ x)) (Nat.succ x) := by
   unfold my_gcd
   rfl
 
-@[simp] lemma my_gcd_zero_right {x : ℕ}: my_gcd x Nat.zero = x := by
+@[simp] lemma my_gcd_zero_right {x : ℕ} : my_gcd x Nat.zero = x := by
   unfold my_gcd gcd_bezout
   induction x with
   | zero => rfl
   | succ x => simp? says simp only [Nat.zero_eq, Nat.zero_mod, gcd_bez_zero_left]
 
-@[simp] lemma gcd_bez_zero_right {x : ℕ} (h : x ≠ 0): gcd_bezout x Nat.zero = (x, 1, 0) := by
+@[simp] lemma gcd_bez_zero_right {x : ℕ} (h : x ≠ 0) : gcd_bezout x Nat.zero = (x, 1, 0) := by
   rw[gcd_bez_expand x Nat.zero]
   induction x with
   | zero => exact absurd rfl h
   | succ => simp? says simp only [Nat.zero_eq, ne_eq, Nat.succ_ne_zero, not_false_eq_true, my_gcd_zero_right,
     bez_a_zero_right, bez_b_zero_right]
 
---28/11/23
+--28/11/23 - Jakub
 
 --I have discovered the `Nat.gcd.induction` tactic and will apply it to prove that `my_gcd` is equivalent
 --to `Nat.gcd` in mathlib, which I will then use to help my proof of Bézout's lemma. I will try also
@@ -202,19 +202,19 @@ def my_gcd (x y : ℕ) : ℕ := (gcd_bezout x y).1
 --in this proof, so I hope that it will now be feasible for me. I think it will also be useful to prove
 --some smaller lemmas like `my_gcd_succ` and `my_gcd_rec` for the `bez_a` and `bez_b` functions.
 
-@[simp] theorem my_gcd_rec (m n : Nat) : my_gcd m n = my_gcd (n % m) m :=
-  match m with
+@[simp] theorem my_gcd_rec (x y : Nat) : my_gcd x y = my_gcd (y % x) x :=
+  match x with
   | 0 => by
-    have := (Nat.mod_zero n).symm
+    have := (Nat.mod_zero y).symm
     simp only [my_gcd_zero_left, Nat.mod_zero, my_gcd_zero_right]
-  | m + 1 => by exact (my_gcd_succ m n).symm
+  | x + 1 => by exact (my_gcd_succ x y).symm
 
 @[simp] theorem dvd_my_gcd : k ∣ x → k ∣ y → k ∣ my_gcd x y := by
   induction x, y using Nat.gcd.induction with intro kx ky
   | H0 y => rw [my_gcd_zero_left]; exact ky
   | H1 y x _ IH => rw [my_gcd_rec]; exact IH ((Nat.dvd_mod_iff kx).2 ky) kx
 
-theorem my_gcd_eq_gcd (x y : ℕ): Nat.gcd x y = my_gcd x y := by
+theorem my_gcd_eq_gcd (x y : ℕ) : Nat.gcd x y = my_gcd x y := by
   induction x, y using Nat.gcd.induction with
   | H0 y =>
     rw [my_gcd_zero_left, Nat.gcd_zero_left]
@@ -222,13 +222,32 @@ theorem my_gcd_eq_gcd (x y : ℕ): Nat.gcd x y = my_gcd x y := by
     rw [Nat.gcd_rec, my_gcd_rec]
     exact ih
 
-@[simp] lemma bez_rec (x y : ℕ) (h : 0 < x): bez_a (y%x) x * (y%x) + bez_b (y%x) x * x = bez_a x y * x + bez_b x y * y := by
-  induction x, y using Nat.gcd.induction with
-  | H0 y => contradiction
-  | H1 x y _ ih => sorry
+@[simp] lemma bez_a_succ (x y : ℕ) : bez_a (Nat.succ x) y = bez_b (y%(Nat.succ x)) (Nat.succ x) - y/(Nat.succ x) * bez_a (y%(Nat.succ x)) (Nat.succ x) := by
+  unfold bez_a bez_b
+  rfl
+
+@[simp] lemma bez_b_succ (x y : ℕ) : bez_b (Nat.succ x) y = bez_a (y%(Nat.succ x)) (Nat.succ x) := by
+  unfold bez_a bez_b
+  rfl
+
+@[simp] lemma bez_a_rec (x y : ℕ) (h : 0 < x) : bez_a x y = bez_b (y%x) x - y/x * bez_a (y%x) x := by
+  match x with
+  | 0 => contradiction
+  | x + 1 => exact bez_a_succ x y
+
+@[simp] lemma bez_b_rec (x y : ℕ) (h : 0 < x): bez_b x y = bez_a (y%x) x := by
+  match x with
+  | 0 => contradiction
+  | x + 1 => exact bez_b_succ x y
+
+--Remains to prove this !!! I will contrinue work on this part later.
+@[simp] lemma bez_rec (x y : ℕ) (h : 0 < x) : bez_a (y%x) x * (y%x) + bez_b (y%x) x * x = bez_a x y * x + bez_b x y * y := by
+  rw [bez_a_rec x y, bez_b_rec x y]
+  sorry
+
 
 --Statement of Bézout's lemma using `my_gcd`
-theorem bez_a_left_mul_bez_b_right_eq_my_gcd (x y : ℕ): (bez_a x y)*x+(bez_b x y)*y=(my_gcd x y) := by
+theorem bez_a_left_mul_bez_b_right_eq_my_gcd (x y : ℕ) : (bez_a x y)*x+(bez_b x y)*y=(my_gcd x y) := by
   induction x, y using Nat.gcd.induction with
   | H0 y =>
     simp only [bez_a_zero_left, bez_b_zero_left, my_gcd_zero_left,
