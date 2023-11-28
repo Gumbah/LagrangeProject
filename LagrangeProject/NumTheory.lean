@@ -1,7 +1,7 @@
 import Mathlib.Data.Nat.GCD.Basic
 import Mathlib.Tactic
 
---18/11/23
+--18/11/23 - Jakub
 
 --First we want to prove Bézout's lemma, first we will
 --need the (extended) Euclidean Algorithm.
@@ -17,7 +17,7 @@ def div_alg (x y : ℕ) : (ℕ × ℕ) :=
 --The way we will prove Bézout's lemma is by defining some
 --function that returns integers a,b such that ax+by=gcd(x,y)
 
---19/11/23
+--19/11/23 - Jakub
 
 --The following function takes two natural numbers as input
 --and repeatedly applies the division algorithm to obtain
@@ -69,7 +69,7 @@ def bezout_coeffs_old (x y : ℕ) : (ℤ × ℤ) := Id.run do
 --construction for the coefficients. I aim to do this by
 --induction.
 
---20/11/23
+--20/11/23 - Jakub
 
 --I now understand that this approach using for loops and
 --explicit construction to prove Bézout's lemma has made it
@@ -78,7 +78,7 @@ def bezout_coeffs_old (x y : ℕ) : (ℤ × ℤ) := Id.run do
 --proving this lemma. For now I will `sorry` it out and move
 --on.
 
---24/11/23
+--24/11/23 - Jakub
 
 --I have now learned how to define such an algorithm recursively.
 --with the help of fellow MA4N1 student Gareth Ma, I learned the syntax for
@@ -103,7 +103,7 @@ def gcd_bezout : ℕ → ℕ → (ℕ × ℤ × ℤ)
 #eval bezout_coeffs_old 20 9
 #eval (gcd_bezout 20 9).2.1
 
---25/11/23
+--25/11/23 - Jakub
 
 --I want to prove Bézout's lemma, but first we need some more definitions and lemmas. I am
 --proving many basic facts about my `gcd_bezout` function in order to make the final proof of
@@ -157,10 +157,33 @@ def my_gcd (x y : ℕ) : ℕ := (gcd_bezout x y).1
   | zero => exact absurd rfl h
   | succ x => simp? says simp only [Nat.zero_eq, Nat.zero_mod, gcd_bez_zero_left]
 
-@[simp] lemma my_gcd_zero_right {x : ℕ} (h : x ≠ 0): my_gcd x Nat.zero = x := by
+--27/11/23 - Jakub
+
+--The way `Nat.gcd` is defined in mathlib4 makes it very difficult to prove that my construction is equal.
+--I do not know how to work around the `WellFounded.fix` and `WellFounded.fixF` and `Acc.rec` that come
+--out when I try to unfold the definition of `Nat.gcd`, I have a different approach where I will prove by
+--induction that the two functions agree at every input value. I have successfully proved that for the zero
+--case and I have also managed to reduce in the `succ` case using `my_gcd_succ` and `Nat.gcd_succ` so all
+--that remains is to understand how to use strong induction in LEAN. The `induction` tactic appears to use
+--weak induction that does not help me in this case as I have only been able to reduce to
+--`(y&(Nat.succ x)), Nat.succ x` instead of `x, y`. I also see that I may have to show that `x < y` without
+--loss of generality using the symmetry of the `my_gcd` and `Nat.gcd` functions.
+
+@[simp] lemma my_gcd_self {x : ℕ} : my_gcd x x = x := by
+  induction x with
+  | zero => apply my_gcd_zero_left
+  | succ =>
+    unfold my_gcd gcd_bezout
+    simp only [Nat.mod_self, gcd_bez_expand, my_gcd_zero_left, bez_a_zero_left, bez_b_zero_left]
+
+@[simp] lemma my_gcd_succ (x y : ℕ): my_gcd (Nat.succ x) y = my_gcd (y%(Nat.succ x)) (Nat.succ x) := by
+  unfold my_gcd
+  rfl
+
+@[simp] lemma my_gcd_zero_right {x : ℕ}: my_gcd x Nat.zero = x := by
   unfold my_gcd gcd_bezout
   induction x with
-  | zero => exact absurd rfl h
+  | zero => rfl
   | succ x => simp? says simp only [Nat.zero_eq, Nat.zero_mod, gcd_bez_zero_left]
 
 @[simp] lemma gcd_bez_zero_right {x : ℕ} (h : x ≠ 0): gcd_bezout x Nat.zero = (x, 1, 0) := by
@@ -170,16 +193,52 @@ def my_gcd (x y : ℕ) : ℕ := (gcd_bezout x y).1
   | succ => simp? says simp only [Nat.zero_eq, ne_eq, Nat.succ_ne_zero, not_false_eq_true, my_gcd_zero_right,
     bez_a_zero_right, bez_b_zero_right]
 
-@[simp] lemma my_gcd_self {x : ℕ} : my_gcd x x = x := by
-  induction x with
-  | zero => apply my_gcd_zero_left
-  | succ =>
-    unfold my_gcd gcd_bezout
-    simp only [Nat.mod_self, gcd_bez_expand, my_gcd_zero_left, bez_a_zero_left, bez_b_zero_left]
+--28/11/23
 
-@[simp] theorem my_gcd_is_gcd {x y : ℕ} : my_gcd x y = Nat.gcd x y := by
-  unfold Nat.gcd x y
+--I have discovered the `Nat.gcd.induction` tactic and will apply it to prove that `my_gcd` is equivalent
+--to `Nat.gcd` in mathlib, which I will then use to help my proof of Bézout's lemma. I will try also
+--using `Nat.gcd.induction` in my proof of Bézout's lemma, since I think it will be helpful. The equality
+--of `my_gcd` and `Nat.gcd` gives us all the lemmas in `Mathlib,Data.Nat.GCD.Basic` for free now to apply
+--in this proof, so I hope that it will now be feasible for me. I think it will also be useful to prove
+--some smaller lemmas like `my_gcd_succ` and `my_gcd_rec` for the `bez_a` and `bez_b` functions.
 
+@[simp] theorem my_gcd_rec (m n : Nat) : my_gcd m n = my_gcd (n % m) m :=
+  match m with
+  | 0 => by
+    have := (Nat.mod_zero n).symm
+    simp only [my_gcd_zero_left, Nat.mod_zero, my_gcd_zero_right]
+  | m + 1 => by exact (my_gcd_succ m n).symm
 
-theorem bezout {x y : ℕ} : (bez_a x y)*x+(bez_b x y)*y=(gcd x y) := by
-  sorry
+@[simp] theorem dvd_my_gcd : k ∣ x → k ∣ y → k ∣ my_gcd x y := by
+  induction x, y using Nat.gcd.induction with intro kx ky
+  | H0 y => rw [my_gcd_zero_left]; exact ky
+  | H1 y x _ IH => rw [my_gcd_rec]; exact IH ((Nat.dvd_mod_iff kx).2 ky) kx
+
+theorem my_gcd_eq_gcd (x y : ℕ): Nat.gcd x y = my_gcd x y := by
+  induction x, y using Nat.gcd.induction with
+  | H0 y =>
+    rw [my_gcd_zero_left, Nat.gcd_zero_left]
+  | H1 x y _ ih =>
+    rw [Nat.gcd_rec, my_gcd_rec]
+    exact ih
+
+@[simp] lemma bez_rec (x y : ℕ) (h : 0 < x): bez_a (y%x) x * (y%x) + bez_b (y%x) x * x = bez_a x y * x + bez_b x y * y := by
+  induction x, y using Nat.gcd.induction with
+  | H0 y => contradiction
+  | H1 x y _ ih => sorry
+
+--Statement of Bézout's lemma using `my_gcd`
+theorem bez_a_left_mul_bez_b_right_eq_my_gcd (x y : ℕ): (bez_a x y)*x+(bez_b x y)*y=(my_gcd x y) := by
+  induction x, y using Nat.gcd.induction with
+  | H0 y =>
+    simp only [bez_a_zero_left, bez_b_zero_left, my_gcd_zero_left,
+      CharP.cast_eq_zero, mul_zero, one_mul, zero_add]
+  | H1 x y h ih =>
+    rw [← bez_rec, my_gcd_rec]
+    exact ih
+    exact h
+
+--Statement of Bézout's lemma using `Nat.gcd`
+theorem bezout (x y : ℕ) : (bez_a x y)*x+(bez_b x y)*y=(Nat.gcd x y) := by
+  rw [my_gcd_eq_gcd]
+  apply bez_a_left_mul_bez_b_right_eq_my_gcd
