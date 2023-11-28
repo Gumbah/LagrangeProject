@@ -1,6 +1,6 @@
 import Mathlib.Algebra.Group.Defs
 import Mathlib.GroupTheory.Subgroup.Basic
-import Mathlib.Data.Finite.Card
+--import Mathlib.Data.Finite.Card
 
 import Mathlib.Tactic
 
@@ -10,81 +10,147 @@ import Mathlib.Tactic
 
 section group
 
-namespace groups
+namespace groupsMul
 
   variable {G : Type} [Group G]
 
-  @[simp]lemma left_cancel_mul : ∀ (a b c : G), a * b = a * c → b = c := by
+  @[simp]lemma LeftCancelMul : ∀ (a b c : G), a * b = a * c → b = c := by
     sorry
     done
 
-  @[simp]lemma left_inv_eq_mul (a b c : G) : a = b⁻¹ * c ↔ b * a = c := by
+  @[simp]lemma LeftInvEqMul (a b c : G) : a = b⁻¹ * c ↔ b * a = c := by
     sorry
     done
 
-  @[simp]lemma mul_one (a : G) : a * 1 = a := by
+  @[simp]lemma MulOne (a : G) : a * 1 = a := by
     sorry
     done
 
-  @[simp]lemma mul_inv (a : G) : a * a⁻¹ = 1 := by
+  @[simp]lemma MulInv (a : G) : a * a⁻¹ = 1 := by
     sorry
     done
 
-  @[simp]lemma right_inv_eq_mul (a b c : G) : a = b * c⁻¹ ↔ a * c = b := by
+  @[simp]lemma RightInvEqMul (a b c : G) : a = b * c⁻¹ ↔ a * c = b := by
     sorry
     done
 
-  @[simp]lemma id_unique_mul (a b : G) : a * b = b ↔ a = 1 := by
+  @[simp]lemma IdUniqueMul (a b : G) : a * b = b ↔ a = 1 := by
     sorry
     done
 
-  @[simp]lemma inv_unique_right_mul (a b : G) (h : a * b = 1) : a = b⁻¹ := by
+  @[simp]lemma InvUniqueRightMul (a b : G) (h : a * b = 1) : a = b⁻¹ := by
     sorry
     done
 
-  @[simp]lemma inv_unique_left_mul (a b : G) (h : a * b = 1) : b = a⁻¹ := by
+  @[simp]lemma InvUniqueLeftMul (a b : G) (h : a * b = 1) : b = a⁻¹ := by
     sorry
     done
 
-  @[simp]lemma inv_inv_mul (a : G) : (a⁻¹)⁻¹ = a := by
+  @[simp]lemma InvInvMul (a : G) : (a⁻¹)⁻¹ = a := by
     sorry
     done
 
-end groups
+end groupsMul
 
 namespace addGroups
 
   variable {G : Type} [AddGroup G]
 
-  @[simp]lemma left_cancel_add : ∀ (a b c : G), a + b = a + c → b = c := by
+  @[simp]lemma LeftCancelAdd : ∀ (a b c : G), a + b = a + c → b = c := by
     sorry
     done
 
+  @[simp]lemma LeftInvEqAdd (a b c : G) : a = -b + c ↔ b + a = c := by
+    sorry
+    done
+
+  @[simp]lemma AddZero (a : G) : a + 0 = a := by
+    sorry
+    done
+
+  @[simp]lemma AddInv (a : G) : a - a = 0 := by
+    sorry
+    done
+
+  @[simp]lemma RightInvEqAdd (a b c : G) : a = b - c ↔ a + c = b := by
+    sorry
+    done
+
+  @[simp]lemma IdUniqueAdd (a b : G) : a + b = b ↔ a = 0 := by
+    sorry
+    done
+
+  @[simp]lemma InvUniqueRightAdd (a b : G) (h : a + b = 0) : a = -b := by
+    sorry
+    done
+
+  @[simp]lemma InvUniqueLeftAdd (a b : G) (h : a + b = 0) : b = -a := by
+    sorry
+    done
+
+  @[simp]lemma InvInvAdd (a : G) : -(-a) = a := by
+    sorry
+    done
 
 end addGroups
 
 end group
 
 
-section cosets
+section cosetsMul
 
 --variable {G : Type} [Group G] (H : Subgroup G)
 
-  def LeftCosetMul [Group G] (g : G) (H : Subgroup G) : Set G :=
+  def LeftCosetMul [Group G] (g : G) (H : Set G) : Set G :=
     (fun h => g * h) '' H
 
-  def RightCosetMul [Group G] (H : Subgroup G) (g : G) : Set G :=
+  def RightCosetMul [Group G] (H : Set G) (g : G) : Set G :=
     (fun h => h * g) '' H
 
-  def LeftCosetEqMul [Group G] (g : Subgroup G) (i j : G):=
-    LeftCosetMul i g = LeftCosetMul j g
+  def LeftCosetEqMul [Group G] (g h : Set G) (i j : G):=
+    LeftCosetMul i g = LeftCosetMul j h
 
-  def RightCosetEqMul [Group G] (i j : G) (g : Subgroup G) :=
-    RightCosetMul g i = RightCosetMul g j
+  def RightCosetEqMul [Group G] (i j : G) (g h : Set G) :=
+    RightCosetMul g i = RightCosetMul h j
 
-  -- lemma acossiativity
-  -- lemma if (i = j) then iH = jH
-  -- lemma if h ∈ iH and jH then iH = jH
+  variable (G : Type) [Group G] (H : Set G)
+
+  lemma AssocLeftCosetMul (a b : G) (H : Set G) :
+  LeftCosetEqMul H (LeftCosetMul b H) (a*b) a := by
+    sorry
+    done
+
+  lemma AssocRightCosetMul (a b : G) (H : Set G) :
+  RightCosetEqMul (a*b) a H (RightCosetMul H b) := by
+    sorry
+    done
+
+  lemma LeftCosetElemImpEqMul (a b : G) (H : Set G) :
+  a = b ↔ LeftCosetEqMul H H a b := by
+    sorry
+    done
+
+  lemma RightCosetElemImpEqMul (a b : G) (H : Set G) :
+  a = b ↔ RightCosetEqMul a b H H := by
+    sorry
+    done
+
+    --May be more lemmas needed
+
+  -- if h ∈ iH and jH then iH = jH
+  lemma LeftCosetEqOrDisjoint (g i j : G) (H : Set G)
+  (h : g ∈ (LeftCosetMul i H) ∧ g ∈ (LeftCosetMul j H)) :
+  LeftCosetEqMul H H i j := by
+    sorry
+    done
+
+  lemma RightCosetEqOrDisjoint (g i j : G) (H : Set G)
+  (h : g ∈ (RightCosetMul H i) ∧ g ∈ (RightCosetMul H j)) :
+  RightCosetEqMul i j H H := by
+    sorry
+    done
+
+
   -- ...
 
   def indexMul : ℕ :=
@@ -93,4 +159,4 @@ section cosets
 
   --Langrange's Theorem
 
-end cosets
+end cosetsMul
