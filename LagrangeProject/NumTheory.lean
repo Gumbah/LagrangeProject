@@ -240,11 +240,31 @@ theorem my_gcd_eq_gcd (x y : ℕ) : Nat.gcd x y = my_gcd x y := by
   | 0 => contradiction
   | x + 1 => exact bez_b_succ x y
 
---Remains to prove this !!! I will contrinue work on this part later.
+--29/11/23 - Jakub
+
+--I have managed to reduce the proof of Bézout's lemma to now simply rearranged the following theorem
+--from mathlib, I have proved the rest of `bez_rec` now excluding this, which was previously entirely
+--`sorry`-d out and is necessary for my proof of Bézout's lemma
+#check Int.ediv_add_emod
+@[simp] lemma my_ediv_add_emod (x y : ℤ) : y-x*(y/x) = (y%x) := by
+  nth_rewrite 1 [← Int.ediv_add_emod y x]
+  simp only [add_sub_cancel']
+
+--Remains to prove this !!! I will continue work on this part later.
 @[simp] lemma bez_rec (x y : ℕ) (h : 0 < x) : bez_a (y%x) x * (y%x) + bez_b (y%x) x * x = bez_a x y * x + bez_b x y * y := by
   rw [bez_a_rec x y, bez_b_rec x y]
-  sorry
-
+  rw [mul_sub_right_distrib]
+  rw [mul_comm (y/x * bez_a (y%x) x) x,← mul_assoc]
+  rw [mul_comm (bez_a (y%x) x) y]
+  rw [← add_sub_right_comm ((bez_b (y%x) x)*x) (y*(bez_a (y%x) x)) (x*(y/x)*(bez_a (y%x) x))]
+  rw [add_sub_assoc ((bez_b (y%x) x)*x) (y*(bez_a (y%x) x)) (x*(y/x)*(bez_a (y%x) x))]
+  rw [← mul_sub_right_distrib (y : ℤ) ((x*(y/x)) : ℤ) (bez_a (y%x) x)]
+  -- here I want to use a rearranged version of Int.ediv_add_emod to change
+  --`(y-x*(y/x))` into `(y%x)` (see above lemma for this)
+  simp only [my_ediv_add_emod]
+  linarith
+  exact h
+  exact h
 
 --Statement of Bézout's lemma using `my_gcd`
 theorem bez_a_left_mul_bez_b_right_eq_my_gcd (x y : ℕ) : (bez_a x y)*x+(bez_b x y)*y=(my_gcd x y) := by
@@ -261,3 +281,11 @@ theorem bez_a_left_mul_bez_b_right_eq_my_gcd (x y : ℕ) : (bez_a x y)*x+(bez_b 
 theorem bezout (x y : ℕ) : (bez_a x y)*x+(bez_b x y)*y=(Nat.gcd x y) := by
   rw [my_gcd_eq_gcd]
   apply bez_a_left_mul_bez_b_right_eq_my_gcd
+
+--30/11/23 - Jakub
+
+--I have now finally managed to fully prove Bézout's lemma without any remaining `sorry`s. Next I will
+--begin work on defining `ℤ/nℤ` as a ring and use this to prove the Chinese remainder theorem
+--(Sun Tzu's theorem). The proof of Bézout's lemma proved to be far more difficult than I had anticipated,
+--and I now see that I need to be very careful defining things in such a way to make the proofs as
+--simple as possible.
