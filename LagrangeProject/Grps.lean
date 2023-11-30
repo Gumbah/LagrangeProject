@@ -1,4 +1,4 @@
-import Mathlib.Algebra.Group.Defs
+import Mathlib.Algebra.Group.MinimalAxioms
 import Mathlib.GroupTheory.Subgroup.Basic
 --import Mathlib.Data.Finite.Card
 
@@ -14,40 +14,90 @@ namespace groupsMul
 
   variable {G : Type} [Group G]
 
-  @[simp]lemma LeftCancelMul : ∀ (a b c : G), a * b = a * c → b = c := by
-    sorry
+  @[simp]lemma InvInvMul (a : G) : (a⁻¹)⁻¹ = a := by
+    rw[← mul_one a⁻¹⁻¹]
+    rw[← mul_left_inv a]
+    rw[← mul_assoc a⁻¹⁻¹ a⁻¹ a]
+    rw[mul_left_inv a⁻¹]
+    rw[one_mul]
     done
 
-  @[simp]lemma LeftInvEqMul (a b c : G) : a = b⁻¹ * c ↔ b * a = c := by
-    sorry
-    done
-
-  @[simp]lemma MulOne (a : G) : a * 1 = a := by
-    sorry
+  @[simp]lemma LeftCancelMul (a b c : G) : a * b = a * c → b = c := by
+    intro h
+    rw[← one_mul b]
+    rw[← one_mul c]
+    rw[← mul_left_inv a]
+    rw[mul_assoc]
+    rw[h]
+    rw[← mul_assoc]
     done
 
   @[simp]lemma MulInv (a : G) : a * a⁻¹ = 1 := by
-    sorry
+    nth_rewrite 1 [← InvInvMul a]
+    rw[mul_left_inv a⁻¹]
+    done
+
+  @[simp]lemma LeftInvEqMul (a b c : G) : a = b⁻¹ * c ↔ b * a = c := by
+    constructor
+    intro h1
+    rw[h1]
+    rw[← mul_assoc]
+    rw[MulInv]
+    rw[one_mul]
+    intro h2
+    rw[← h2]
+    rw[← mul_assoc]
+    rw[mul_left_inv]
+    rw[one_mul]
+    done
+
+  @[simp]lemma MulOne (a : G) : a * 1 = a := by
+    rw[← mul_left_inv a]
+    rw[← mul_assoc]
+    rw[MulInv]
+    rw[one_mul]
     done
 
   @[simp]lemma RightInvEqMul (a b c : G) : a = b * c⁻¹ ↔ a * c = b := by
-    sorry
+    constructor
+    intro h1
+    rw[h1]
+    rw[mul_assoc]
+    rw[mul_left_inv]
+    rw[mul_one]
+    intro h2
+    rw[← h2]
+    rw[mul_assoc]
+    rw[MulInv]
+    rw[mul_one]
     done
 
   @[simp]lemma IdUniqueMul (a b : G) : a * b = b ↔ a = 1 := by
-    sorry
+    constructor
+    intro h1
+    rw[← mul_one a]
+    rw[← MulInv b]
+    rw[← mul_assoc]
+    rw[h1]
+    intro h2
+    rw[h2]
+    rw[one_mul]
     done
 
   @[simp]lemma InvUniqueRightMul (a b : G) (h : a * b = 1) : a = b⁻¹ := by
-    sorry
+    rw[← MulOne a]
+    rw[← MulInv b]
+    rw[← mul_assoc]
+    rw[h]
+    rw[one_mul]
     done
 
   @[simp]lemma InvUniqueLeftMul (a b : G) (h : a * b = 1) : b = a⁻¹ := by
-    sorry
-    done
-
-  @[simp]lemma InvInvMul (a : G) : (a⁻¹)⁻¹ = a := by
-    sorry
+    rw[← one_mul b]
+    rw[← mul_left_inv a]
+    rw[mul_assoc]
+    rw[h]
+    rw[mul_one]
     done
 
 end groupsMul
