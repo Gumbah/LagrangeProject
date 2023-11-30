@@ -289,3 +289,91 @@ theorem bezout (x y : ℕ) : (bez_a x y)*x+(bez_b x y)*y=(Nat.gcd x y) := by
 --(Sun Tzu's theorem). The proof of Bézout's lemma proved to be far more difficult than I had anticipated,
 --and I now see that I need to be very careful defining things in such a way to make the proofs as
 --simple as possible.
+
+-- Katie
+
+-- Now to utilise Bezout's lemma in some smaller lemmas building our number theory library. 
+-- After trying to rephrase Euclid's lemma many different ways, I came to the conclusion that 
+-- it would be easier to separate the cases of which variable was coprime to p into their own 
+-- respective theorems. Following this, I needed even more preceding results regarding prime divisors. 
+-- Structuring the proof of Euclid's lemma was fairly difficult; 
+
+theorem bezout_exists (x y : ℕ) : ∃ (a b : ℕ) , (Nat.gcd x y) = a*x + b*y := by
+  sorry
+
+@[simp] lemma gcd_eq_1 {x : ℕ}(y : Nat.Primes)(h: y < x) : (Nat.gcd x y = 1) ↔ ¬((y : ℕ) ∣ x) := by
+  constructor
+  · intro h1 
+    rw[← bezout] at h1 
+
+    
+
+
+@[simp] lemma gcd_eq_p {x : ℕ}(p : Nat.Primes)(h: p < x) : (Nat.gcd x p = 1) ↔ ((p : ℕ)∣ x) := by 
+  constructor
+  · intro h1
+    simp only at h1 
+
+theorem coprime_p {x : ℕ}(p : Nat.Primes)(h: p < x) : (Nat.gcd x p = 1) ∨ (Nat.gcd x p = p):= by
+ intros 
+
+ 
+ -- use nat.prime_def_lt'' after showing gcd x p divides p 
+ sorry
+
+theorem euclid_l1_coprime {m n : ℕ}(p : Nat.Primes)(h_n : p < n)(h_m : p < m): ((p : ℕ) ∣ m*n) ∧ ((Nat.gcd (p : ℕ) m)=1) → ((p : ℕ) ∣ n):= by
+  intros h1
+  rw[bezout] at h1
+  -- rewrite gcd p m as its bezout identity: ∃ x,y s.t. mx + py =1
+  -- n = n(1) = n(mx + py)
+  sorry
+
+theorem euclid_r1_coprime {m n : ℕ}(p : Nat.Primes)(h_n : p < n)(h_m : p < m): ((p : ℕ) ∣ m*n) ∧ ((Nat.gcd (p : ℕ) n)=1) → ((p : ℕ) ∣ m):= by
+  intros h2
+  rw[bezout] at h2 
+  -- rewrite gcd p n as its bezout identity 
+  -- m = m(1) = m(nx + py)
+  sorry
+
+theorem euclid_l2_coprime {m n : ℕ}(p : Nat.Primes ) : ((p : ℕ) ∣ m*n) ∧ ((Nat.gcd (p : ℕ) n) = 1) → ((Nat.gcd (p : ℕ) m) = p)  := by
+  intros h1
+  norm_cast
+  sorry
+  
+theorem euclid_r2_coprime {m n : ℕ}(p : Nat.Primes) : ((p : ℕ) ∣ m*n) ∧ ((Nat.gcd (p : ℕ) m) = 1) → ((Nat.gcd (p : ℕ) n) = p)  := by
+ sorry
+
+-- we have: 
+-- gcd p n = 1 or p
+-- gcd p m = 1 or p
+-- if p ∣ m*n and gcd(p,m)=1, then p ∣ n
+-- if p ∣ m*n and gcd(p,n)=1 then p ∣ m  
+-- wlts: p ∣ m*n → p ∣ n or p ∣ m
+theorem euclid {m n : ℕ}(p : Nat.Primes)(h_n : p < n)(h_m : p < m) : ((p : ℕ) ∣ m*n) → ((p : ℕ) ∣ n) ∨ ((p : ℕ) ∣ m) := by
+  intro h1
+  apply Or.inl
+  --either p ∣ m or p ∣ m 
+  apply coprime_p at m
+  
+
+-- Structuring the proof of Euclid's lemma was fairly difficult; I knew how to prove it easily 
+-- by hand with the theorems listed above in just a couple lines, but constructing a sort of contradiction
+-- (i.e. either gcd p n = 1 or gcd p m = 1, but can't have both occur simultaneously and wanting to structure 
+-- the proof like suppose p ∣ m, and then supose p ∣ n) was very new to me. 
+theorem gauss {d m n : ℕ} (h1 : d ∣ m * n) (h2 : Nat.gcd m d = 1) : d ∣ n := by
+ sorry
+
+
+def tot {0 m : ℕ}(x : List.Ico (0 m+1)) := {(Nat.gcd x m) = 1}.card
+
+
+theorem coprime_mult {a b : ℕ}((Nat.gcd a m)=1) : ((Nat.gcd b m)=1) → ((Nat.gcd a*b m)=1) := by
+  sorry
+
+open BigOperators
+def fun_sum_of_divisors_1 (n : ℕ) : ℕ := ∑ d in Nat.divisors n, d
+-- Defining the sum of divisors function took a lot of trial and erroe/tweaking in the syntax, but with the help of the
+-- module leader it became clear that, for the sum function to work, I needed to "open BigOperators" - it is a relief to 
+-- see that the finite sets are not an issue as of yet.
+
+#eval fun_sum_of_divisors_1 4
