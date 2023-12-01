@@ -1,5 +1,6 @@
 import Mathlib.Algebra.Group.MinimalAxioms
 import Mathlib.GroupTheory.Subgroup.Basic
+import Mathlib.Algebra.Ring.MinimalAxioms
 --import Mathlib.Data.Finite.Card
 
 import Mathlib.Tactic
@@ -12,6 +13,7 @@ import Mathlib.Tactic
 --one_mul
 --mul_left_inv
 --mul_assoc
+--which are used to define the Group.ofLeftAxioms in Mathlib
 
 section group
 
@@ -212,6 +214,118 @@ end addGroups
 
 end group
 
+--Now we will do what we did earlier with groups, but for rings
+--We will only make use of only:
+--add_comm
+--add_assoc
+--zero_add
+--add_left_neg
+--mul_assoc
+--one_mul
+--mul_one
+--left_distrib
+--right_distrib
+--which are what are used in Ring.ofMinimalAxioms
+
+section rings
+
+  variable {R : Type} [Ring R]
+
+  --we're first going to prove all the results from additive rings on groups
+
+  @[simp]lemma LeftCancelAdd (a b c : R) : a + b = a + c → b = c := by
+    intro h
+    rw[← zero_add b]
+    rw[← zero_add c]
+    rw[← add_left_neg a]
+    rw[add_assoc]
+    rw[h]
+    rw[← add_assoc]
+    done
+
+  @[simp]lemma AddZero (a : R) : a + 0 = a := by
+    nth_rewrite 2 [← zero_add a]
+    apply LeftCancelAdd (-a)
+    rw[← add_assoc]
+    rw[add_left_neg]
+    rw[zero_add]
+    rw[zero_add]
+    rw[add_left_neg]
+    done
+
+  @[simp]lemma NegNegAdd (a : R) : -(-a) = a := by
+    rw[← AddZero (-(-a))]
+    rw[← add_left_neg a]
+    rw[← add_assoc (-(-a)) (-a) a]
+    rw[add_left_neg (-a)]
+    rw[zero_add]
+    done
+
+  @[simp]lemma AddNeg (a : R) : a + -a = 0 := by
+    nth_rewrite 1 [← NegNegAdd a]
+    rw[add_left_neg (-a)]
+    done
+
+  @[simp]lemma LeftNegEqAdd (a b c : R) : a = -b + c ↔ b + a = c := by
+    constructor
+    intro h1
+    rw[h1]
+    rw[← add_assoc]
+    rw[AddNeg]
+    rw[zero_add]
+    intro h2
+    rw[← h2]
+    rw[← add_assoc]
+    rw[add_left_neg]
+    rw[zero_add]
+    done
+
+  @[simp]lemma RightNegEqAdd (a b c : R) : a = b + -c ↔ a + c = b := by
+    constructor
+    intro h1
+    rw[h1]
+    rw[add_assoc]
+    rw[add_left_neg]
+    rw[AddZero]
+    intro h2
+    rw[← h2]
+    rw[add_assoc]
+    rw[AddNeg]
+    rw[AddZero]
+    done
+
+  @[simp]lemma IdUniqueAdd (a b : R) : a + b = b ↔ a = 0 := by
+    constructor
+    intro h1
+    rw[← AddZero a]
+    rw[← AddNeg b]
+    rw[← add_assoc]
+    rw[h1]
+    intro h2
+    rw[h2]
+    rw[zero_add]
+    done
+
+  @[simp]lemma InvUniqueRightAdd (a b : R) (h : a + b = 0) : a = -b := by
+    rw[← AddZero a]
+    rw[← AddNeg b]
+    rw[← add_assoc]
+    rw[h]
+    rw[zero_add]
+    done
+
+  @[simp]lemma InvUniqueLeftAdd (a b : R) (h : a + b = 0) : b = -a := by
+    rw[← zero_add b]
+    rw[← add_left_neg a]
+    rw[add_assoc]
+    rw[h]
+    rw[AddZero]
+    done
+
+    --one would be tempted to try and do the same thing with multiplicative groups
+    --however this won't work as multiplicative inverses aren't a thing in rings
+
+end rings
 
 section cosetsMul
 
