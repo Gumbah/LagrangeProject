@@ -116,6 +116,7 @@ end groupsMul
 --zero_add
 --add_left_neg
 --add_assoc
+--these are the equivalent of the other 3, but for additive groups
 
 namespace addGroups
 
@@ -324,6 +325,30 @@ section rings
 
     --one would be tempted to try and do the same thing with multiplicative groups
     --however this won't work as multiplicative inverses aren't a thing in rings
+    --I'm going to start writing some new properties
+
+  @[simp]lemma ZeroMul (a : R) : 0 * a = 0 := by
+  nth_rewrite 1 [← zero_add 0]
+  rw[right_distrib]
+  apply?
+  sorry
+  done
+
+  @[simp]lemma MulZero (a : R) : 0 * a = 0 := by
+  sorry
+  done
+
+  @[simp]lemma NegOneMul (a : R) : -1 * a = -a := by
+  sorry
+  done
+
+  @[simp]lemma MulNegOne (a : R) : a * -1 = -a := by
+  sorry
+  done
+
+  @[simp]lemma UniqueIdentity (a : R) : 1 = 1orsomething := by
+  sorry
+  done
 
 end rings
 
