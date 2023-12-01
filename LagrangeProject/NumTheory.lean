@@ -1,5 +1,10 @@
 import Mathlib.Data.Nat.GCD.Basic
 import Mathlib.Tactic
+import Mathlib.Data.Nat.Prime
+import Mathlib.Data.List.Intervals
+import Mathlib.Algebra.BigOperators.Basic
+import Mathlib.Data.Finset.Basic
+import Mathlib.NumberTheory.Divisors
 
 --18/11/23 - Jakub
 
@@ -301,22 +306,34 @@ theorem bezout (x y : ℕ) : (bez_a x y)*x+(bez_b x y)*y=(Nat.gcd x y) := by
 theorem bezout_exists (x y : ℕ) : ∃ (a b : ℕ) , (Nat.gcd x y) = a*x + b*y := by
   sorry
 
-@[simp] lemma gcd_eq_1 {x : ℕ}(y : Nat.Primes)(h: y < x) : (Nat.gcd x y = 1) ↔ ¬((y : ℕ) ∣ x) := by
+@[simp] lemma gcd_eq_1 {x : ℕ}(p : Nat.Primes)(h: p < x) : (Nat.gcd x p = 1) ↔ ¬((p : ℕ) ∣ x) := by
   constructor
+ -- we have theorem dvd_my_gcd : k ∣ x → k ∣ y → k ∣ my_gcd x y
+  --Nat.gcd x p = 1 => any k that divides both x and p must be 1 => the only common divisor of x and p is 1 => ¬(p ∣ x)
+  --struggling to find a way to formalise this argument - if needs be it will be imported
+
+
+-- nat.gcd x p = 1 => exists a,b st ax + bp = 1 => x = (1 - bp)/a => ¬(p ∣ x)
+-- ¬(p ∣ x) =>
   · intro h1
     rw[← bezout] at h1
 
 
 @[simp] lemma gcd_eq_p {x : ℕ}(p : Nat.Primes)(h: p < x) : (Nat.gcd x p = 1) ↔ ((p : ℕ)∣ x) := by
   constructor
-  · intro h1
-    simp only at h1
+  intro h1
 
-theorem coprime_p {x : ℕ}(p : Nat.Primes)(h: p < x) : (Nat.gcd x p = 1) ∨ (Nat.gcd x p = p):= by
+  -- nat.gcd (x,p) = p => p ∣ x and p ∣ p
+  -- p ∣ x => ∃ α ∈ ℕ s.t. x = αp => Nat.gcd(x,p) = Nat.gcd(αp,p) = p
+  · --intro h1
+    --simp only at h1
+
+@[simp] lemma coprime_p {m : ℕ}(p : Nat.Primes)(h: p < m) : (Nat.gcd m p = 1) ∨ (Nat.gcd m p = p):= by
  intros
 
+
  -- use nat.prime_def_lt'' after showing gcd x p divides p
-  sorry
+ sorry
 
 theorem euclid_l1_coprime {m n : ℕ}(p : Nat.Primes)(h_n : p < n)(h_m : p < m): ((p : ℕ) ∣ m*n) ∧ ((Nat.gcd (p : ℕ) m)=1) → ((p : ℕ) ∣ n):= by
   intros h1
@@ -345,12 +362,18 @@ theorem euclid_r2_coprime {m n : ℕ}(p : Nat.Primes) : ((p : ℕ) ∣ m*n) ∧ 
 -- gcd p m = 1 or p
 -- if p ∣ m*n and gcd(p,m)=1, then p ∣ n
 -- if p ∣ m*n and gcd(p,n)=1 then p ∣ m
+-- if ¬(p ∣ n) then p ∣ m
+-- if ¬(p ∣ m) then p ∣ n
+-- so we cannot have a case where both ¬(p ∣ n) and ¬(p ∣ n)
+
 -- wlts: p ∣ m*n → p ∣ n or p ∣ m
 theorem euclid {m n : ℕ}(p : Nat.Primes)(h_n : p < n)(h_m : p < m) : ((p : ℕ) ∣ m*n) → ((p : ℕ) ∣ n) ∨ ((p : ℕ) ∣ m) := by
   intro h1
   apply Or.inl
-  --either p ∣ m or p ∣ m
-  apply coprime_p at m
+
+  --either gcd(p,m) = p or gcd(p,m)=1
+  --case 1: gcd(p,m)=p => p ∣ m
+  --case 2: gcd(p,m)=1 => gcd(p,n)=p => p ∣ n
 
 
 -- Structuring the proof of Euclid's lemma was fairly difficult; I knew how to prove it easily
@@ -365,7 +388,9 @@ def tot {0 m : ℕ}(x : List.Ico (0 m+1)) := {(Nat.gcd x m) = 1}.card
 
 
 theorem coprime_mult {a b : ℕ}((Nat.gcd a m)=1) : ((Nat.gcd b m)=1) → ((Nat.gcd a*b m)=1) := by
-  sorry
+
+sorry
+
 
 open BigOperators
 def fun_sum_of_divisors_1 (n : ℕ) : ℕ := ∑ d in Nat.divisors n, d
@@ -374,3 +399,23 @@ def fun_sum_of_divisors_1 (n : ℕ) : ℕ := ∑ d in Nat.divisors n, d
 -- see that the finite sets are not an issue as of yet.
 
 #eval fun_sum_of_divisors_1 4
+
+
+
+
+--Sun Tzu's Theorem
+theorem classical_crt_aux (h : a ≡ b [MOD gcd n m]) : { k // k ≡ a [MOD n] ∧ k ≡ b [MOD m] } := by
+  sorry
+
+theorem classical_crt (h : n.Coprime m) (a b : ℕ) : { k // k ≡ a [MOD n] ∧ k ≡ b [MOD m] } := by
+  sorry
+
+--With these we can prove the `Algebraic Chinese Remainder theorem` for coprime m,n, i.e. ℤ/mnℤ = ℤ/mℤ × ℤ/nℤ
+
+--With this statement we can prove the `multiplicity` of the Euler Totient function for coprime m n, i.e. phi(mn)=phi(m)*phi(n)
+
+--We will also prove that phi(p)=|(ℤ/pℤ)^×|=p-1 and phi(p^n)=p^n-p^(n-1) for p prime, which then will lead into proving that
+--∑_(a∣n) phi(a)=n for n ∈ ℕ
+
+--After we prove these we will have all the tools from number theory to collaborate with the group theory side to prove
+--Euler's theorem and Fermat's little theorem.
