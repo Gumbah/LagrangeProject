@@ -8,19 +8,16 @@ import Mathlib.Tactic
 --prove basic things about them only using the axioms of acossiativity,
 --inverses and the identity
 
+--Specifically we are using
+--one_mul
+--mul_left_inv
+--mul_assoc
+
 section group
 
 namespace groupsMul
 
   variable {G : Type} [Group G]
-
-  @[simp]lemma InvInvMul (a : G) : (a⁻¹)⁻¹ = a := by
-    rw[← mul_one a⁻¹⁻¹]
-    rw[← mul_left_inv a]
-    rw[← mul_assoc a⁻¹⁻¹ a⁻¹ a]
-    rw[mul_left_inv a⁻¹]
-    rw[one_mul]
-    done
 
   @[simp]lemma LeftCancelMul (a b c : G) : a * b = a * c → b = c := by
     intro h
@@ -30,6 +27,24 @@ namespace groupsMul
     rw[mul_assoc]
     rw[h]
     rw[← mul_assoc]
+    done
+
+  @[simp]lemma MulOne (a : G) : a * 1 = a := by
+    nth_rewrite 2 [← one_mul a]
+    apply LeftCancelMul a⁻¹
+    rw[← mul_assoc]
+    rw[mul_left_inv]
+    rw[one_mul]
+    rw[one_mul]
+    rw[mul_left_inv]
+    done
+
+  @[simp]lemma InvInvMul (a : G) : (a⁻¹)⁻¹ = a := by
+    rw[← MulOne a⁻¹⁻¹]
+    rw[← mul_left_inv a]
+    rw[← mul_assoc a⁻¹⁻¹ a⁻¹ a]
+    rw[mul_left_inv a⁻¹]
+    rw[one_mul]
     done
 
   @[simp]lemma MulInv (a : G) : a * a⁻¹ = 1 := by
@@ -51,31 +66,24 @@ namespace groupsMul
     rw[one_mul]
     done
 
-  @[simp]lemma MulOne (a : G) : a * 1 = a := by
-    rw[← mul_left_inv a]
-    rw[← mul_assoc]
-    rw[MulInv]
-    rw[one_mul]
-    done
-
   @[simp]lemma RightInvEqMul (a b c : G) : a = b * c⁻¹ ↔ a * c = b := by
     constructor
     intro h1
     rw[h1]
     rw[mul_assoc]
     rw[mul_left_inv]
-    rw[mul_one]
+    rw[MulOne]
     intro h2
     rw[← h2]
     rw[mul_assoc]
     rw[MulInv]
-    rw[mul_one]
+    rw[MulOne]
     done
 
   @[simp]lemma IdUniqueMul (a b : G) : a * b = b ↔ a = 1 := by
     constructor
     intro h1
-    rw[← mul_one a]
+    rw[← MulOne a]
     rw[← MulInv b]
     rw[← mul_assoc]
     rw[h1]
@@ -97,49 +105,107 @@ namespace groupsMul
     rw[← mul_left_inv a]
     rw[mul_assoc]
     rw[h]
-    rw[mul_one]
+    rw[MulOne]
     done
 
 end groupsMul
+
+--For this next bit we are using
+--zero_add
+--add_left_neg
+--add_assoc
 
 namespace addGroups
 
   variable {G : Type} [AddGroup G]
 
-  @[simp]lemma LeftCancelAdd : ∀ (a b c : G), a + b = a + c → b = c := by
-    sorry
-    done
-
-  @[simp]lemma LeftInvEqAdd (a b c : G) : a = -b + c ↔ b + a = c := by
-    sorry
+  @[simp]lemma LeftCancelAdd (a b c : G) : a + b = a + c → b = c := by
+    intro h
+    rw[← zero_add b]
+    rw[← zero_add c]
+    rw[← add_left_neg a]
+    rw[add_assoc]
+    rw[h]
+    rw[← add_assoc]
     done
 
   @[simp]lemma AddZero (a : G) : a + 0 = a := by
-    sorry
+    nth_rewrite 2 [← zero_add a]
+    apply LeftCancelAdd (-a)
+    rw[← add_assoc]
+    rw[add_left_neg]
+    rw[zero_add]
+    rw[zero_add]
+    rw[add_left_neg]
     done
 
-  @[simp]lemma AddInv (a : G) : a - a = 0 := by
-    sorry
+  @[simp]lemma NegNegAdd (a : G) : -(-a) = a := by
+    rw[← AddZero (-(-a))]
+    rw[← add_left_neg a]
+    rw[← add_assoc (-(-a)) (-a) a]
+    rw[add_left_neg (-a)]
+    rw[zero_add]
     done
 
-  @[simp]lemma RightInvEqAdd (a b c : G) : a = b - c ↔ a + c = b := by
-    sorry
+  @[simp]lemma AddNeg (a : G) : a + -a = 0 := by
+    nth_rewrite 1 [← NegNegAdd a]
+    rw[add_left_neg (-a)]
+    done
+
+  @[simp]lemma LeftNegEqAdd (a b c : G) : a = -b + c ↔ b + a = c := by
+    constructor
+    intro h1
+    rw[h1]
+    rw[← add_assoc]
+    rw[AddNeg]
+    rw[zero_add]
+    intro h2
+    rw[← h2]
+    rw[← add_assoc]
+    rw[add_left_neg]
+    rw[zero_add]
+    done
+
+  @[simp]lemma RightNegEqAdd (a b c : G) : a = b + -c ↔ a + c = b := by
+    constructor
+    intro h1
+    rw[h1]
+    rw[add_assoc]
+    rw[add_left_neg]
+    rw[AddZero]
+    intro h2
+    rw[← h2]
+    rw[add_assoc]
+    rw[AddNeg]
+    rw[AddZero]
     done
 
   @[simp]lemma IdUniqueAdd (a b : G) : a + b = b ↔ a = 0 := by
-    sorry
+    constructor
+    intro h1
+    rw[← AddZero a]
+    rw[← AddNeg b]
+    rw[← add_assoc]
+    rw[h1]
+    intro h2
+    rw[h2]
+    rw[zero_add]
     done
 
   @[simp]lemma InvUniqueRightAdd (a b : G) (h : a + b = 0) : a = -b := by
-    sorry
+    rw[← AddZero a]
+    rw[← AddNeg b]
+    rw[← add_assoc]
+    rw[h]
+    rw[zero_add]
     done
 
   @[simp]lemma InvUniqueLeftAdd (a b : G) (h : a + b = 0) : b = -a := by
-    sorry
-    done
-
-  @[simp]lemma InvInvAdd (a : G) : -(-a) = a := by
-    sorry
+    rw[← zero_add b]
+    rw[← add_left_neg a]
+    rw[add_assoc]
+    rw[h]
+    rw[AddZero]
     done
 
 end addGroups
