@@ -1,10 +1,13 @@
 import Mathlib.Data.Nat.GCD.Basic
 import Mathlib.Tactic
+
 import Mathlib.Data.Nat.Prime
 import Mathlib.Data.List.Intervals
 import Mathlib.Algebra.BigOperators.Basic
 import Mathlib.Data.Finset.Basic
 import Mathlib.NumberTheory.Divisors
+
+
 
 --18/11/23 - Jakub
 
@@ -316,12 +319,14 @@ theorem bezout_exists (x y : ℕ) : ∃ (a b : ℕ) , (Nat.gcd x y) = a*x + b*y 
 -- nat.gcd x p = 1 => exists a,b st ax + bp = 1 => x = (1 - bp)/a => ¬(p ∣ x)
 -- ¬(p ∣ x) =>
   · intro h1
-    rw[← bezout] at h1
+   -- rw[← bezout] at h1
+    sorry
 
 
 @[simp] lemma gcd_eq_p {x : ℕ}(p : Nat.Primes)(h: p < x) : (Nat.gcd x p = 1) ↔ ((p : ℕ)∣ x) := by
   constructor
   intro h1
+  sorry
 
   -- nat.gcd (x,p) = p => p ∣ x and p ∣ p
   -- p ∣ x => ∃ α ∈ ℕ s.t. x = αp => Nat.gcd(x,p) = Nat.gcd(αp,p) = p
@@ -370,7 +375,7 @@ theorem euclid_r2_coprime {m n : ℕ}(p : Nat.Primes) : ((p : ℕ) ∣ m*n) ∧ 
 theorem euclid {m n : ℕ}(p : Nat.Primes)(h_n : p < n)(h_m : p < m) : ((p : ℕ) ∣ m*n) → ((p : ℕ) ∣ n) ∨ ((p : ℕ) ∣ m) := by
   intro h1
   apply Or.inl
-
+  sorry
   --either gcd(p,m) = p or gcd(p,m)=1
   --case 1: gcd(p,m)=p => p ∣ m
   --case 2: gcd(p,m)=1 => gcd(p,n)=p => p ∣ n
@@ -404,11 +409,87 @@ def fun_sum_of_divisors_1 (n : ℕ) : ℕ := ∑ d in Nat.divisors n, d
 
 
 --Sun Tzu's Theorem
-theorem classical_crt_aux (h : a ≡ b [MOD gcd n m]) : { k // k ≡ a [MOD n] ∧ k ≡ b [MOD m] } := by
-  sorry
 
-theorem classical_crt (h : n.Coprime m) (a b : ℕ) : { k // k ≡ a [MOD n] ∧ k ≡ b [MOD m] } := by
-  sorry
+--11/12/23 - Jakub
+
+--Unfortunately, the modulo notation from mathlib comes from a file where the CRT is already proven, so I will define
+--it and prove basic features about it myself, as we had initially planned
+
+--The following two lines of LEAN code are almost identical to mathlib, but I will prove the basic lemmas myself.
+--Note the use of different syntax to mathlib to avoid accidentally using their proofs.
+def Mod_eq (n a b : ℕ) := a%n = b%n
+notation:50 a "≡" b " [mod " n "]" => Mod_eq n a b
+
+--It turned out that most of the lemmas follow trivially from the properties of `=`, though I had to do a fair
+--amount of adjusting the statements slightly to get them in the same form to simply exact these properties.
+
+@[simp] lemma Mod_eq_rfl {n a: ℕ} : a ≡ a [mod n] := by
+  rfl
+
+@[simp] lemma Mod_eq_symm {n a b: ℕ} : a ≡ b [mod n] → b ≡ a [mod n] := by
+  exact Eq.symm
+
+@[simp] lemma Mod_eq_trans {n a b c : ℕ} : a ≡ b [mod n] → b ≡ c [mod n] → a ≡ c [mod n] := by
+  exact Eq.trans
+
+@[simp] lemma Mod_eq_n_zero {n : ℕ} : n ≡ 0 [mod n] := by
+  rw [Mod_eq]
+  rw [Nat.zero_mod]
+  rw [Nat.mod_self]
+
+@[simp] lemma Mod_eq_zero_iff_dvd {n a : ℕ} : a ≡ 0 [mod n] ↔ n ∣ a := by
+  rw [Mod_eq]
+  rw [Nat.zero_mod]
+  rw [Nat.dvd_iff_mod_eq_zero]
+
+@[simp] lemma Mod_eq_add_mul (n a b: ℕ) : a + b*n ≡ a [mod n] := by
+  rw [Mod_eq]
+  rw [Nat.add_mod]
+  simp? says simp only [Nat.mul_mod_left, add_zero, Nat.mod_mod]
+
+--Here I have defined a function to give a `x` such that, given `m,n,a,b ∈ ℕ`, we have
+--`x ≡ a [mod m], x ≡ b [mod n]`, it  remains to prove this property of the construction.
+--I have used the syntax of a set with a condition like Mathlib uses for the chinese remainder theorem.
+--I initially experimented with defining `x` then separately proving that it satisfied the required condition
+--imposed here, but navigating the if statements proved cumbersome, so I opted to  arrange it like so.
+--I believe that understanding how to use this syntax will prove useful in the future, and the proof is my own.
+
+def classical_crt (m n a b : ℕ) (h: Nat.Coprime m n) : {x // x ≡ a [mod m] ∧ x ≡ b [mod n]} :=
+  if hm : m = 0 then ⟨a, by
+    constructor
+    · simp only [Mod_eq_rfl]
+    rw [Mod_eq]
+    have hhn : n = 1 := by
+      rw [hm] at h
+      rw [Nat.coprime_zero_left n] at h
+      exact h
+    rw [hhn]
+    rw [Nat.mod_one a, Nat.mod_one b]⟩
+  else
+    if hn : n = 0 then ⟨b, by
+      constructor
+      · have hhm : m = 1 := by
+          rw [hn] at h
+          rw [Nat.coprime_zero_right m] at h
+          exact h
+        rw [hhm]
+        rw [Mod_eq]
+        rw [Nat.mod_one a, Nat.mod_one b]
+      simp only [Mod_eq_rfl]⟩
+    else
+      let y := Int.toNat (bez_b m n % m)
+      let z := Int.toNat (bez_a m n % n)
+      ⟨Int.toNat (a*n*y+b*m*z) % (Nat.lcm m n), by
+        --Here I want to use Bézout's lemma to give me that `n*y ≡ 1 [mod m]` and `m*z ≡ 1 [mod n]`, with which
+        --I will then be able to show that `a*n*y ≡ a [mod m]` and similarly for `b`, which will complete the proof.
+        have hny : n*y ≡ 1 [mod m] := by
+          sorry
+        have hmz : m*z ≡ 1 [mod n] := by
+          sorry
+        sorry
+        ⟩
+
+
 
 --With these we can prove the `Algebraic Chinese Remainder theorem` for coprime m,n, i.e. ℤ/mnℤ = ℤ/mℤ × ℤ/nℤ
 
