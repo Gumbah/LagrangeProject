@@ -453,6 +453,28 @@ notation:50 a "≡" b " [mod " n "]" => Mod_eq n a b
 --I initially experimented with defining `x` then separately proving that it satisfied the required condition
 --imposed here, but navigating the if statements proved cumbersome, so I opted to  arrange it like so.
 --I believe that understanding how to use this syntax will prove useful in the future, and the proof is my own.
+--So far I have completed both the zero cases and am currently working on the non-trivial cases.
+
+--13/12/23 - Jakub
+
+--I have succesfully reduced the proof of the Classical Chinese Remainder Theorem to the lemmas `my_mod_mod_lcm`,
+--`bez_a_mod` and `bez_b_mod`, which I will now work on proving.
+
+--Will need these ones!!
+#check Nat.mul_mod
+#check Nat.add_mul_mod_self_right
+
+@[simp] lemma my_mod_mod_of_lcm (x m n : ℕ) : (x % (Nat.lcm m n)) % m = x % m := by
+  have h : m ∣ (Nat.lcm m n) := by
+    apply Nat.dvd_lcm_left
+  rw [Nat.mod_mod_of_dvd]
+  exact h
+
+@[simp] lemma bez_a_mod (m n : ℕ) : (Int.toNat (bez_a m n % n)) * m ≡ 1 [mod n] := by
+  sorry
+
+@[simp] lemma bez_b_mod (m n : ℕ) : (Int.toNat (bez_b m n % m)) * n ≡ 1 [mod m] := by
+  sorry
 
 def classical_crt (m n a b : ℕ) (h: Nat.Coprime m n) : {x // x ≡ a [mod m] ∧ x ≡ b [mod n]} :=
   if hm : m = 0 then ⟨a, by
@@ -477,19 +499,27 @@ def classical_crt (m n a b : ℕ) (h: Nat.Coprime m n) : {x // x ≡ a [mod m] �
         rw [Nat.mod_one a, Nat.mod_one b]
       simp only [Mod_eq_rfl]⟩
     else
-      let y := Int.toNat (bez_b m n % m)
-      let z := Int.toNat (bez_a m n % n)
-      ⟨Int.toNat (a*n*y+b*m*z) % (Nat.lcm m n), by
-        --Here I want to use Bézout's lemma to give me that `n*y ≡ 1 [mod m]` and `m*z ≡ 1 [mod n]`, with which
-        --I will then be able to show that `a*n*y ≡ a [mod m]` and similarly for `b`, which will complete the proof.
-        have hny : n*y ≡ 1 [mod m] := by
-          sorry
-        have hmz : m*z ≡ 1 [mod n] := by
-          sorry
-        sorry
+      ⟨(a*(Int.toNat (bez_b m n % m))*n+b*(Int.toNat (bez_a m n % n))*m) % (Nat.lcm m n), by
+        --At this point in the proof, there are just a few tricky aspects to prove. I have created individual
+        --lemmas for these steps above, and highlighted where they are used, evereach other step uses basic results.
+        constructor
+        · rw [Mod_eq]
+          rw [my_mod_mod_of_lcm] --Here my lemma is used
+          rw [Nat.add_mul_mod_self_right]
+          rw [mul_assoc, Nat.mul_mod]
+          rw [bez_b_mod] --Here my lemma is used
+          rw [← Nat.mul_mod]
+          rw [mul_one]
+        rw [Mod_eq]
+        rw [Nat.lcm_comm]
+        rw [my_mod_mod_of_lcm] --Here my lemma is used
+        rw [add_comm]
+        rw [Nat.add_mul_mod_self_right]
+        rw [mul_assoc, Nat.mul_mod]
+        rw [bez_a_mod] --Here my lemma is used
+        rw [← Nat.mul_mod]
+        rw [mul_one]
         ⟩
-
-
 
 --With these we can prove the `Algebraic Chinese Remainder theorem` for coprime m,n, i.e. ℤ/mnℤ = ℤ/mℤ × ℤ/nℤ
 
