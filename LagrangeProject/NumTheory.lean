@@ -250,7 +250,7 @@ theorem my_gcd_eq_gcd (x y : ℕ) : Nat.gcd x y = my_gcd x y := by
 
 --29/11/23 - Jakub
 
---I have managed to reduce the proof of Bézout's lemma to now simply rearranged the following theorem
+--I have managed to reduce the proof of Bézout's lemma to now simply rearranging the following theorem
 --from mathlib, I have proved the rest of `bez_rec` now excluding this, which was previously entirely
 --`sorry`-d out and is necessary for my proof of Bézout's lemma
 #check Int.ediv_add_emod
@@ -408,7 +408,7 @@ def fun_sum_of_divisors_1 (n : ℕ) : ℕ := ∑ d in Nat.divisors n, d
 
 
 
---Sun Tzu's Theorem
+--Sun Tzu's Theorem/Classical Chinese Remainder Theorem
 
 --11/12/23 - Jakub
 
@@ -417,6 +417,7 @@ def fun_sum_of_divisors_1 (n : ℕ) : ℕ := ∑ d in Nat.divisors n, d
 
 --The following two lines of LEAN code are almost identical to mathlib, but I will prove the basic lemmas myself.
 --Note the use of different syntax to mathlib to avoid accidentally using their proofs.
+
 def Mod_eq (n a b : ℕ) := a%n = b%n
 notation:50 a "≡" b " [mod " n "]" => Mod_eq n a b
 
@@ -432,7 +433,7 @@ notation:50 a "≡" b " [mod " n "]" => Mod_eq n a b
 @[simp] lemma Mod_eq_trans {n a b c : ℕ} : a ≡ b [mod n] → b ≡ c [mod n] → a ≡ c [mod n] := by
   exact Eq.trans
 
-@[simp] lemma Mod_eq_n_zero {n : ℕ} : n ≡ 0 [mod n] := by
+@[simp] lemma Mod_eq_self {n : ℕ} : n ≡ 0 [mod n] := by
   rw [Mod_eq]
   rw [Nat.zero_mod]
   rw [Nat.mod_self]
@@ -447,7 +448,10 @@ notation:50 a "≡" b " [mod " n "]" => Mod_eq n a b
   rw [Nat.add_mod]
   simp? says simp only [Nat.mul_mod_left, add_zero, Nat.mod_mod]
 
---Here I have defined a function to give a `x` such that, given `m,n,a,b ∈ ℕ`, we have
+--Unfortunately the above results proved less useful than I had foreseen, but I will keep them here in case they
+--are required further down the line.
+
+--Below I have defined a function `classical_crt` to give a `x` such that, given `m,n,a,b ∈ ℕ`, we have
 --`x ≡ a [mod m], x ≡ b [mod n]`, it  remains to prove this property of the construction.
 --I have used the syntax of a set with a condition like Mathlib uses for the chinese remainder theorem.
 --I initially experimented with defining `x` then separately proving that it satisfied the required condition
@@ -463,6 +467,32 @@ notation:50 a "≡" b " [mod " n "]" => Mod_eq n a b
 --Will need these ones!!
 #check Nat.mul_mod
 #check Nat.add_mul_mod_self_right
+#check Int.toNat
+#check Int.add_mul_emod_self
+
+--14/12/23 - Jakub
+
+--Today I have completed the proof of the Classical Chinese Remainder Theorem. It proved tricky to work around
+--the interactions between integers and natural numbers here; fortunately, most of the results I needed were small
+--and either contained in mathlib already or (as below) the proofs for similar lemmas in mathlib worked to help
+--in the cases I required. The proofs for `int_to_nat_mul_nat` and `int_to_nat_mod_nat` are not my own so when
+--marking please ignore those. I do not understand why these results are not already in mathlib, since there
+--is a corresponding lemma `Int.toNat_add_nat` for addition already in mathlib, from which I have taken the proof
+--almost verbatim and it works perfectly here. I have treated these results as though they were any other basic
+--result from mathlib I would use.
+
+lemma int_to_nat_mul_nat (x : ℤ) (y : ℕ) (h : 0 ≤ x): (Int.toNat x) * y = Int.toNat (x * y) := by
+  match x, Int.eq_ofNat_of_zero_le h with | _, ⟨_, rfl⟩ => rfl
+
+lemma int_to_nat_mod_nat (x : ℤ) (y : ℕ) (h : 0 ≤ x): (Int.toNat x) % y = Int.toNat (x % y) := by
+  match x, Int.eq_ofNat_of_zero_le h with | _, ⟨_, rfl⟩ => rfl
+
+--Below is again original work.
+--It proved necessary to prove these smaller auxiliary lemmas for the `bez_a_mod` and `bez_b_mod` theorems, since
+--I found it difficult working around the restrictions of naturals and integers in lean, as the differences
+--between the two are far clearer then they are on pen-and-paper proofs. Despite `bez_a m n % n` being a natural
+--number, I was required to use the `Int.toNat` function to cast them back into the naturals, which made what should
+--have been simple statements become more than trivial to prove, which is why I had to write the two lemmas above.
 
 @[simp] lemma my_mod_mod_of_lcm (x m n : ℕ) : (x % (Nat.lcm m n)) % m = x % m := by
   have h : m ∣ (Nat.lcm m n) := by
@@ -470,13 +500,78 @@ notation:50 a "≡" b " [mod " n "]" => Mod_eq n a b
   rw [Nat.mod_mod_of_dvd]
   exact h
 
-@[simp] lemma bez_a_mod (m n : ℕ) : (Int.toNat (bez_a m n % n)) * m ≡ 1 [mod n] := by
-  sorry
+--very useful simple statement.
+@[simp] theorem bez_of_coprime (m n : ℕ) (h : Nat.Coprime m n) : bez_a m n * m + bez_b m n * n = 1 := by
+  rw [bezout]
+  rw [Nat.coprime_iff_gcd_eq_one.1]
+  rfl
+  exact h
 
-@[simp] lemma bez_b_mod (m n : ℕ) : (Int.toNat (bez_b m n % m)) * n ≡ 1 [mod m] := by
-  sorry
+--slightly simpler statements of `bez_a_mod` and `bez_b_mod`, useful for the full proofs.
+lemma bez_a_mod_aux (m n : ℕ) (h : Nat.Coprime m n): ((bez_a m n % n) * m) % n = 1 % n := by
+  rw [← bez_of_coprime m n]
+  · rw [Int.mul_emod]
+    rw [Int.emod_emod]
+    rw [← Int.mul_emod]
+    rw [Int.add_mul_emod_self]
+  exact h
 
-def classical_crt (m n a b : ℕ) (h: Nat.Coprime m n) : {x // x ≡ a [mod m] ∧ x ≡ b [mod n]} :=
+lemma bez_b_mod_aux (m n : ℕ) (h : Nat.Coprime m n): ((bez_b m n % m) * n) % m = 1 % m := by
+  rw [← bez_of_coprime m n]
+  · rw [Int.mul_emod]
+    rw [Int.emod_emod]
+    rw [← Int.mul_emod]
+    rw [add_comm]
+    rw [Int.add_mul_emod_self]
+  exact h
+
+theorem bez_a_mod (m n : ℕ) (h : Nat.Coprime m n) (hn : ¬n=0) : (Int.toNat (bez_a m n % n)) * m ≡ 1 [mod n] := by
+  rw [Mod_eq]
+  have h1 : 0 ≤ bez_a m n % n := by
+    apply Int.emod_nonneg
+    rw [← ne_eq] at hn
+    rw [Nat.cast_ne_zero]
+    exact hn
+  rw [int_to_nat_mul_nat]
+  · rw [int_to_nat_mod_nat]
+    rw [bez_a_mod_aux]
+    · rw [← int_to_nat_mod_nat]
+      rw [Int.toNat_one]
+      norm_num
+    exact h
+    have h2 : 0 ≤ (m : ℤ) := by
+      apply Nat.cast_nonneg
+    have h3 : 0 ≤ bez_a m n % ↑n * ↑m := by
+      apply mul_nonneg
+      exact h1
+      exact h2
+    exact h3
+  exact h1
+
+theorem bez_b_mod (m n : ℕ) (h : Nat.Coprime m n) (hm : ¬m=0) : (Int.toNat (bez_b m n % m)) * n ≡ 1 [mod m] := by
+  rw [Mod_eq]
+  have h1 : 0 ≤ bez_b m n % m := by
+    apply Int.emod_nonneg
+    rw [← ne_eq] at hm
+    rw [Nat.cast_ne_zero]
+    exact hm
+  rw [int_to_nat_mul_nat]
+  · rw [int_to_nat_mod_nat]
+    rw [bez_b_mod_aux]
+    · rw [← int_to_nat_mod_nat]
+      rw [Int.toNat_one]
+      norm_num
+    exact h
+    have h2 : 0 ≤ (n : ℤ) := by
+      apply Nat.cast_nonneg
+    have h3 : 0 ≤ bez_b m n % ↑m * ↑n := by
+      apply mul_nonneg
+      exact h1
+      exact h2
+    exact h3
+  exact h1
+
+def classical_crt (m n a b : ℕ) (h : Nat.Coprime m n) : {x // x ≡ a [mod m] ∧ x ≡ b [mod n]} :=
   if hm : m = 0 then ⟨a, by
     constructor
     · simp only [Mod_eq_rfl]
@@ -501,7 +596,7 @@ def classical_crt (m n a b : ℕ) (h: Nat.Coprime m n) : {x // x ≡ a [mod m] �
     else
       ⟨(a*(Int.toNat (bez_b m n % m))*n+b*(Int.toNat (bez_a m n % n))*m) % (Nat.lcm m n), by
         --At this point in the proof, there are just a few tricky aspects to prove. I have created individual
-        --lemmas for these steps above, and highlighted where they are used, evereach other step uses basic results.
+        --lemmas for these steps above, and highlighted where they are used, each other step uses basic results.
         constructor
         · rw [Mod_eq]
           rw [my_mod_mod_of_lcm] --Here my lemma is used
@@ -510,6 +605,8 @@ def classical_crt (m n a b : ℕ) (h: Nat.Coprime m n) : {x // x ≡ a [mod m] �
           rw [bez_b_mod] --Here my lemma is used
           rw [← Nat.mul_mod]
           rw [mul_one]
+          exact h
+          exact hm
         rw [Mod_eq]
         rw [Nat.lcm_comm]
         rw [my_mod_mod_of_lcm] --Here my lemma is used
@@ -519,6 +616,8 @@ def classical_crt (m n a b : ℕ) (h: Nat.Coprime m n) : {x // x ≡ a [mod m] �
         rw [bez_a_mod] --Here my lemma is used
         rw [← Nat.mul_mod]
         rw [mul_one]
+        exact h
+        exact hn
         ⟩
 
 --With these we can prove the `Algebraic Chinese Remainder theorem` for coprime m,n, i.e. ℤ/mnℤ = ℤ/mℤ × ℤ/nℤ
