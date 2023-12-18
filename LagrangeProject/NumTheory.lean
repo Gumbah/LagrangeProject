@@ -13,7 +13,6 @@ import Mathlib.SetTheory.Cardinal.Finite
 import Mathlib.Data.Set.Image
 import Mathlib.Init.Data.List.Basic
 
-
 --18/11/23 - Jakub
 
 --First we want to prove Bézout's lemma, first we will
@@ -255,7 +254,7 @@ theorem my_gcd_eq_gcd (x y : ℕ) : Nat.gcd x y = my_gcd x y := by
 
 --29/11/23 - Jakub
 
---I have managed to reduce the proof of Bézout's lemma to now simply rearranged the following theorem
+--I have managed to reduce the proof of Bézout's lemma to now simply rearranging the following theorem
 --from mathlib, I have proved the rest of `bez_rec` now excluding this, which was previously entirely
 --`sorry`-d out and is necessary for my proof of Bézout's lemma
 #check Int.ediv_add_emod
@@ -291,7 +290,7 @@ theorem bez_a_left_mul_bez_b_right_eq_my_gcd (x y : ℕ) : (bez_a x y)*x+(bez_b 
     exact h
 
 --Statement of Bézout's lemma using `Nat.gcd`
-theorem bezout (x y : ℕ) : (bez_a x y)*x+(bez_b x y)*y= Nat.gcd x y := by
+theorem bezout (x y : ℕ) : (bez_a x y)*x+(bez_b x y)*y=(Nat.gcd x y) := by
   rw [my_gcd_eq_gcd]
   apply bez_a_left_mul_bez_b_right_eq_my_gcd
 
@@ -303,12 +302,14 @@ theorem bezout (x y : ℕ) : (bez_a x y)*x+(bez_b x y)*y= Nat.gcd x y := by
 --and I now see that I need to be very careful defining things in such a way to make the proofs as
 --simple as possible.
 
+
+-- Katie
+
 -- Now to utilise Bezout's lemma in some smaller lemmas building our number theory library.
 -- After trying to rephrase Euclid's lemma many different ways, I came to the conclusion that
 -- it would be easier to separate the cases of which variable was coprime to p into their own
 -- respective theorems. Following this, I needed even more preceding results regarding prime divisors.
 -- Structuring the proof of Euclid's lemma was fairly difficult;
-
 
 @[simp] lemma bezout_one {p n : ℕ}(h_1 : (Nat.gcd p n) = (1 : ℕ)) : (bez_a p n)*(p : ℕ)+(bez_b p n)*n= (1 : ℕ)  := by
   rw[bezout]
@@ -463,10 +464,6 @@ theorem euclid_l1_coprime {p m n : ℕ}(h: Nat.Prime p)(h_n : p < n)(h_m : p < m
     rw[mul_comm]
     rw[mul_assoc]
     rw[← int_to_nat_mul]
-
-
-
-
   -- rewrite gcd p m as its bezout identity: ∃ x,y s.t. mx + py =1
   -- n = n(1) = n(mx + py)
   sorry
@@ -485,11 +482,11 @@ theorem euclid {p m n : ℕ}(h: Nat.Prime p)(h_n : p < n)(h_m : p < m) : ((p : �
   . exact h_m
   · exact h1
 
-
 -- Structuring the proof of Euclid's lemma was fairly difficult; I knew how to prove it easily
 -- by hand with the theorems listed above in just a couple lines, but constructing a sort of contradiction
 -- (i.e. either gcd p n = 1 or gcd p m = 1, but can't have both occur simultaneously and wanting to structure
 -- the proof like suppose p ∣ m, and then supose p ∣ n) was very new to me.
+
 theorem gen_euclid {d m n : ℕ} (h1 : d ∣ m * n) (h2 : Nat.gcd m d = 1) : d ∣ n := by
   -- a*m + b*d = 1
   -- a*m*n + b*d*n = n
@@ -497,15 +494,8 @@ theorem gen_euclid {d m n : ℕ} (h1 : d ∣ m * n) (h2 : Nat.gcd m d = 1) : d �
   rw[← mul_one n]
   rw[← bezout_one_nat]
 
-
-
-
-
-
-
 theorem coprime_mult {a b : ℕ}((Nat.gcd a m)=1) : ((Nat.gcd b m)=1) → ((Nat.gcd a*b m)=1) := by
-
-sorry
+  sorry
 
 
 open BigOperators
@@ -516,7 +506,232 @@ def fun_sum_of_divisors_1 (n : ℕ) : ℕ := ∑ d in Nat.divisors n, d
 
 #eval fun_sum_of_divisors_1 4
 
+
 --We want to demonstrate the multiplicity of the totient function, in order to achieve results needed for Euler's thm.
 
 def totient (n : ℕ) : ℕ :=
   ((Finset.range n).filter n.Coprime).card
+  
+
+--Sun Tzu's Theorem/Classical Chinese Remainder Theorem
+
+--11/12/23 - Jakub
+
+--Unfortunately, the modulo notation from mathlib comes from a file where the CRT is already proven, so I will define
+--it and prove basic features about it myself, as we had initially planned
+
+--The following two lines of LEAN code are almost identical to mathlib, but I will prove the basic lemmas myself.
+--Note the use of different syntax to mathlib to avoid accidentally using their proofs.
+
+def Mod_eq (n a b : ℕ) := a%n = b%n
+notation:50 a "≡" b " [mod " n "]" => Mod_eq n a b
+
+--It turned out that most of the lemmas follow trivially from the properties of `=`, though I had to do a fair
+--amount of adjusting the statements slightly to get them in the same form to simply exact these properties.
+
+@[simp] lemma Mod_eq_rfl {n a: ℕ} : a ≡ a [mod n] := by
+  rfl
+
+@[simp] lemma Mod_eq_symm {n a b: ℕ} : a ≡ b [mod n] → b ≡ a [mod n] := by
+  exact Eq.symm
+
+@[simp] lemma Mod_eq_trans {n a b c : ℕ} : a ≡ b [mod n] → b ≡ c [mod n] → a ≡ c [mod n] := by
+  exact Eq.trans
+
+@[simp] lemma Mod_eq_self {n : ℕ} : n ≡ 0 [mod n] := by
+  rw [Mod_eq]
+  rw [Nat.zero_mod]
+  rw [Nat.mod_self]
+
+@[simp] lemma Mod_eq_zero_iff_dvd {n a : ℕ} : a ≡ 0 [mod n] ↔ n ∣ a := by
+  rw [Mod_eq]
+  rw [Nat.zero_mod]
+  rw [Nat.dvd_iff_mod_eq_zero]
+
+@[simp] lemma Mod_eq_add_mul (n a b: ℕ) : a + b*n ≡ a [mod n] := by
+  rw [Mod_eq]
+  rw [Nat.add_mod]
+  simp? says simp only [Nat.mul_mod_left, add_zero, Nat.mod_mod]
+
+--Unfortunately the above results proved less useful than I had foreseen, but I will keep them here in case they
+--are required further down the line.
+
+--Below I have defined a function `classical_crt` to give a `x` such that, given `m,n,a,b ∈ ℕ`, we have
+--`x ≡ a [mod m], x ≡ b [mod n]`, it  remains to prove this property of the construction.
+--I have used the syntax of a set with a condition like Mathlib uses for the chinese remainder theorem.
+--I initially experimented with defining `x` then separately proving that it satisfied the required condition
+--imposed here, but navigating the if statements proved cumbersome, so I opted to  arrange it like so.
+--I believe that understanding how to use this syntax will prove useful in the future, and the proof is my own.
+--So far I have completed both the zero cases and am currently working on the non-trivial cases.
+
+--13/12/23 - Jakub
+
+--I have succesfully reduced the proof of the Classical Chinese Remainder Theorem to the lemmas `my_mod_mod_lcm`,
+--`bez_a_mod` and `bez_b_mod`, which I will now work on proving.
+
+--Will need these ones!!
+#check Nat.mul_mod
+#check Nat.add_mul_mod_self_right
+#check Int.toNat
+#check Int.add_mul_emod_self
+
+--14/12/23 - Jakub
+
+--Today I have completed the proof of the Classical Chinese Remainder Theorem. It proved tricky to work around
+--the interactions between integers and natural numbers here; fortunately, most of the results I needed were small
+--and either contained in mathlib already or (as below) the proofs for similar lemmas in mathlib worked to help
+--in the cases I required. The proofs for `int_to_nat_mul_nat` and `int_to_nat_mod_nat` are not my own so when
+--marking please ignore those. I do not understand why these results are not already in mathlib, since there
+--is a corresponding lemma `Int.toNat_add_nat` for addition already in mathlib, from which I have taken the proof
+--almost verbatim and it works perfectly here. I have treated these results as though they were any other basic
+--result from mathlib I would use.
+
+lemma int_to_nat_mul_nat (x : ℤ) (y : ℕ) (h : 0 ≤ x): (Int.toNat x) * y = Int.toNat (x * y) := by
+  match x, Int.eq_ofNat_of_zero_le h with | _, ⟨_, rfl⟩ => rfl
+
+lemma int_to_nat_mod_nat (x : ℤ) (y : ℕ) (h : 0 ≤ x): (Int.toNat x) % y = Int.toNat (x % y) := by
+  match x, Int.eq_ofNat_of_zero_le h with | _, ⟨_, rfl⟩ => rfl
+
+--Below is again original work.
+--It proved necessary to prove these smaller auxiliary lemmas for the `bez_a_mod` and `bez_b_mod` theorems, since
+--I found it difficult working around the restrictions of naturals and integers in lean, as the differences
+--between the two are far clearer then they are on pen-and-paper proofs. Despite `bez_a m n % n` being a natural
+--number, I was required to use the `Int.toNat` function to cast them back into the naturals, which made what should
+--have been simple statements become more than trivial to prove, which is why I had to write the two lemmas above.
+
+@[simp] lemma my_mod_mod_of_lcm (x m n : ℕ) : (x % (Nat.lcm m n)) % m = x % m := by
+  have h : m ∣ (Nat.lcm m n) := by
+    apply Nat.dvd_lcm_left
+  rw [Nat.mod_mod_of_dvd]
+  exact h
+
+--very useful simple statement.
+@[simp] theorem bez_of_coprime (m n : ℕ) (h : Nat.Coprime m n) : bez_a m n * m + bez_b m n * n = 1 := by
+  rw [bezout]
+  rw [Nat.coprime_iff_gcd_eq_one.1]
+  rfl
+  exact h
+
+--slightly simpler statements of `bez_a_mod` and `bez_b_mod`, useful for the full proofs.
+lemma bez_a_mod_aux (m n : ℕ) (h : Nat.Coprime m n): ((bez_a m n % n) * m) % n = 1 % n := by
+  rw [← bez_of_coprime m n]
+  · rw [Int.mul_emod]
+    rw [Int.emod_emod]
+    rw [← Int.mul_emod]
+    rw [Int.add_mul_emod_self]
+  exact h
+
+lemma bez_b_mod_aux (m n : ℕ) (h : Nat.Coprime m n): ((bez_b m n % m) * n) % m = 1 % m := by
+  rw [← bez_of_coprime m n]
+  · rw [Int.mul_emod]
+    rw [Int.emod_emod]
+    rw [← Int.mul_emod]
+    rw [add_comm]
+    rw [Int.add_mul_emod_self]
+  exact h
+
+theorem bez_a_mod (m n : ℕ) (h : Nat.Coprime m n) (hn : ¬n=0) : (Int.toNat (bez_a m n % n)) * m ≡ 1 [mod n] := by
+  rw [Mod_eq]
+  have h1 : 0 ≤ bez_a m n % n := by
+    apply Int.emod_nonneg
+    rw [← ne_eq] at hn
+    rw [Nat.cast_ne_zero]
+    exact hn
+  rw [int_to_nat_mul_nat]
+  · rw [int_to_nat_mod_nat]
+    rw [bez_a_mod_aux]
+    · rw [← int_to_nat_mod_nat]
+      rw [Int.toNat_one]
+      norm_num
+    exact h
+    have h2 : 0 ≤ (m : ℤ) := by
+      apply Nat.cast_nonneg
+    have h3 : 0 ≤ bez_a m n % ↑n * ↑m := by
+      apply mul_nonneg
+      exact h1
+      exact h2
+    exact h3
+  exact h1
+
+theorem bez_b_mod (m n : ℕ) (h : Nat.Coprime m n) (hm : ¬m=0) : (Int.toNat (bez_b m n % m)) * n ≡ 1 [mod m] := by
+  rw [Mod_eq]
+  have h1 : 0 ≤ bez_b m n % m := by
+    apply Int.emod_nonneg
+    rw [← ne_eq] at hm
+    rw [Nat.cast_ne_zero]
+    exact hm
+  rw [int_to_nat_mul_nat]
+  · rw [int_to_nat_mod_nat]
+    rw [bez_b_mod_aux]
+    · rw [← int_to_nat_mod_nat]
+      rw [Int.toNat_one]
+      norm_num
+    exact h
+    have h2 : 0 ≤ (n : ℤ) := by
+      apply Nat.cast_nonneg
+    have h3 : 0 ≤ bez_b m n % ↑m * ↑n := by
+      apply mul_nonneg
+      exact h1
+      exact h2
+    exact h3
+  exact h1
+
+def classical_crt (m n a b : ℕ) (h : Nat.Coprime m n) : {x // x ≡ a [mod m] ∧ x ≡ b [mod n]} :=
+  if hm : m = 0 then ⟨a, by
+    constructor
+    · simp only [Mod_eq_rfl]
+    rw [Mod_eq]
+    have hhn : n = 1 := by
+      rw [hm] at h
+      rw [Nat.coprime_zero_left n] at h
+      exact h
+    rw [hhn]
+    rw [Nat.mod_one a, Nat.mod_one b]⟩
+  else
+    if hn : n = 0 then ⟨b, by
+      constructor
+      · have hhm : m = 1 := by
+          rw [hn] at h
+          rw [Nat.coprime_zero_right m] at h
+          exact h
+        rw [hhm]
+        rw [Mod_eq]
+        rw [Nat.mod_one a, Nat.mod_one b]
+      simp only [Mod_eq_rfl]⟩
+    else
+      ⟨(a*(Int.toNat (bez_b m n % m))*n+b*(Int.toNat (bez_a m n % n))*m) % (Nat.lcm m n), by
+        --At this point in the proof, there are just a few tricky aspects to prove. I have created individual
+        --lemmas for these steps above, and highlighted where they are used, each other step uses basic results.
+        constructor
+        · rw [Mod_eq]
+          rw [my_mod_mod_of_lcm] --Here my lemma is used
+          rw [Nat.add_mul_mod_self_right]
+          rw [mul_assoc, Nat.mul_mod]
+          rw [bez_b_mod] --Here my lemma is used
+          rw [← Nat.mul_mod]
+          rw [mul_one]
+          exact h
+          exact hm
+        rw [Mod_eq]
+        rw [Nat.lcm_comm]
+        rw [my_mod_mod_of_lcm] --Here my lemma is used
+        rw [add_comm]
+        rw [Nat.add_mul_mod_self_right]
+        rw [mul_assoc, Nat.mul_mod]
+        rw [bez_a_mod] --Here my lemma is used
+        rw [← Nat.mul_mod]
+        rw [mul_one]
+        exact h
+        exact hn
+        ⟩
+
+--With these we can prove the `Algebraic Chinese Remainder theorem` for coprime m,n, i.e. ℤ/mnℤ = ℤ/mℤ × ℤ/nℤ
+
+--With this statement we can prove the `multiplicity` of the Euler Totient function for coprime m n, i.e. phi(mn)=phi(m)*phi(n)
+
+--We will also prove that phi(p)=|(ℤ/pℤ)^×|=p-1 and phi(p^n)=p^n-p^(n-1) for p prime, which then will lead into proving that
+--∑_(a∣n) phi(a)=n for n ∈ ℕ
+
+--After we prove these we will have all the tools from number theory to collaborate with the group theory side to prove
+--Euler's theorem and Fermat's little theorem.
+
