@@ -12,6 +12,7 @@ import Mathlib.Logic.Basic
 import Mathlib.SetTheory.Cardinal.Finite
 import Mathlib.Data.Set.Image
 import Mathlib.Init.Data.List.Basic
+import Mathlib.Data.Nat.Factorial.Basic
 
 --18/11/23 - Jakub
 
@@ -494,24 +495,6 @@ theorem gen_euclid {d m n : ℕ} (h1 : d ∣ m * n) (h2 : Nat.gcd m d = 1) : d �
   rw[← mul_one n]
   rw[← bezout_one_nat]
 
-theorem coprime_mult {a b : ℕ}((Nat.gcd a m)=1) : ((Nat.gcd b m)=1) → ((Nat.gcd a*b m)=1) := by
-  sorry
-
-
-open BigOperators
-def fun_sum_of_divisors_1 (n : ℕ) : ℕ := ∑ d in Nat.divisors n, d
--- Defining the sum of divisors function took a lot of trial and erroe/tweaking in the syntax, but with the help of the
--- module leader it became clear that, for the sum function to work, I needed to "open BigOperators" - it is a relief to
--- see that the finite sets are not an issue as of yet.
-
-#eval fun_sum_of_divisors_1 4
-
-
---We want to demonstrate the multiplicity of the totient function, in order to achieve results needed for Euler's thm.
-
-def totient (n : ℕ) : ℕ :=
-  ((Finset.range n).filter n.Coprime).card
-  
 
 --Sun Tzu's Theorem/Classical Chinese Remainder Theorem
 
@@ -735,3 +718,71 @@ def classical_crt (m n a b : ℕ) (h : Nat.Coprime m n) : {x // x ≡ a [mod m] 
 --After we prove these we will have all the tools from number theory to collaborate with the group theory side to prove
 --Euler's theorem and Fermat's little theorem.
 
+-- Katie: laying out the land
+
+theorem coprime_mult {a b : ℕ}((Nat.gcd a m)=1) : ((Nat.gcd b m)=1) → ((Nat.gcd a*b m)=1) := by
+  sorry
+
+
+open BigOperators
+def fun_sum_of_divisors_1 (n : ℕ) : ℕ := ∑ d in Nat.divisors n, d
+-- Defining the sum of divisors function took a lot of trial and erroe/tweaking in the syntax, but with the help of the
+-- module leader it became clear that, for the sum function to work, I needed to "open BigOperators" - it is a relief to
+-- see that the finite sets are not an issue as of yet.
+
+#eval fun_sum_of_divisors_1 4
+
+
+-- We want to demonstrate the multiplicity of the totient function. I have essentially used the totient
+-- function definition from Mathlib, due to it being uncooperative when written in alternative forms
+-- which would coincide with our preexisting lemmas better.
+
+def my_totient (n : ℕ) : ℕ :=
+  ((Finset.range n).filter n.Coprime).card
+
+#eval my_totient (7)
+
+--notation:69 "φ(n")  => my_totient (n)
+
+--#eval φ (7)
+
+theorem my_tot_mul (m n : ℕ) : (my_totient (m))*(my_totient (n)) = (my_totient (m*n)) := by
+  -- what we will need : CRT algebraic for 2 variables
+  sorry
+
+
+
+theorem my_tot_prime (p : Nat.Primes) : (my_totient (p)) = (p-1) := by
+  --need : my totient = cardinality of Z mod nZ
+  sorry
+
+theorem my_tot_id (n : ℕ) : my_totient (n : ℕ) = ∏ (p in Nat.)
+
+
+@[simp] lemma := by
+sorry
+
+theorem euler (m : ℕ) (a : m.Coprime) : a^(my_totient (m)) ≡ 1 [mod m] := by
+sorry
+--need: function that reduces a into an element of ZmodmZ, lagrange for order
+
+theorem fermat_1 (p : Nat.Primes) (a : ℤ) : a^(p-1) ≡ 1 [mod p] := by
+sorry
+
+theorem fermat_2 (p : Nat.Primes) (a : ℤ) : a^p ≡ a [mod p] := by
+sorry
+
+def ZmodnZ (n : ℕ) : Type := List.range (n)
+
+def my_mod_order (m : ℕ) (a : m.Coprime) : --order of a in Z/mZ--
+sorry
+
+theorem my_mod_order_dvd (m k : ℕ) (a : m.Coprime) : (a)^(k) ≡ 1 [mod m] ↔ (my_mod_order (m) (a)) ∣ k := by
+sorry
+-- ord m (a) ∣φ(m)
+-- ord m (a^u)  = ord m (a) / gcd (u ord_m(a))
+
+--wilsons theorem
+
+theorem wilson (p : Nat.Primes) : (Nat.factorial p-1) ≡ -1 [mod p] := by
+-- need : FLT, order lemmas
