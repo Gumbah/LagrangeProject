@@ -114,7 +114,7 @@ def gcd_bezout : ℕ → ℕ → (ℕ × ℤ × ℤ)
 #eval gcd_bezout 2023 70
 #eval gcd_bezout (2023%70) 2023
 #eval bezout_coeffs_old 20 9
-#eval (gcd_bezout 20 9).2.1
+#eval (gcd_bezout 20 9).2
 
 --25/11/23 - Jakub
 
@@ -552,7 +552,7 @@ notation:50 a "≡" b " [mod " n "]" => Mod_eq n a b
 --I have succesfully reduced the proof of the Classical Chinese Remainder Theorem to the lemmas `my_mod_mod_lcm`,
 --`bez_a_mod` and `bez_b_mod`, which I will now work on proving.
 
---Will need these ones!!
+--We'll need these ones!!
 #check Nat.mul_mod
 #check Nat.add_mul_mod_self_right
 #check Int.toNat
@@ -720,9 +720,18 @@ def classical_crt (m n a b : ℕ) (h : Nat.Coprime m n) : {x // x ≡ a [mod m] 
 
 -- Katie: laying out the land
 
-theorem coprime_mult {a b : ℕ}((Nat.gcd a m)=1) : ((Nat.gcd b m)=1) → ((Nat.gcd a*b m)=1) := by
-  sorry
+-- 11/1/24 - Jakub filled out the sorry here
+theorem coprime_mult {a b : ℕ}(ha: (Nat.gcd a m)=1) : ((Nat.gcd b m)=1) → ((Nat.gcd (a*b) m)=1) := by
+  intro hb
+  have h : Nat.gcd (a*b) m ∣ Nat.gcd a m * Nat.gcd b m := by
+    rw [Nat.gcd_comm (a*b) m, Nat.gcd_comm a m, Nat.gcd_comm b m]
+    apply Nat.gcd_mul_dvd_mul_gcd
+  rw [ha, hb] at h
+  rw [mul_one] at h
+  rw [Nat.dvd_one] at h
+  exact h
 
+-- Katie
 
 open BigOperators
 def fun_sum_of_divisors_1 (n : ℕ) : ℕ := ∑ d in Nat.divisors n, d
@@ -762,15 +771,38 @@ theorem my_tot_id (n : ℕ) : my_totient (n : ℕ) = ∏ (p in Nat.)
 @[simp] lemma := by
 sorry
 
-theorem euler (m : ℕ) (a : m.Coprime) : a^(my_totient (m)) ≡ 1 [mod m] := by
+theorem euler (a m : ℕ) (ha : m.Coprime a) : a^(my_totient (m)) ≡ 1 [mod m] := by
 sorry
 --need: function that reduces a into an element of ZmodmZ, lagrange for order
 
-theorem fermat_1 (p : Nat.Primes) (a : ℤ) : a^(p-1) ≡ 1 [mod p] := by
-sorry
+lemma my_totient_prime (p : ℕ) (h : Nat.Prime p) : my_totient (p) = p-1 := by
+  sorry
 
-theorem fermat_2 (p : Nat.Primes) (a : ℤ) : a^p ≡ a [mod p] := by
-sorry
+theorem fermat_1 (a p : ℕ) (h : Nat.Prime p) (h1 : ¬ p ∣ a) : a ^ (p-1) ≡ 1 [mod p] := by
+  rw [← my_totient_prime]
+  have ha : p.Coprime a := by
+    rw [Nat.Prime.coprime_iff_not_dvd]
+    exact h1
+    exact h
+  apply euler
+  exact ha
+  exact h
+
+theorem fermat_2 (a p : ℕ) (h : Nat.Prime p) : a^p ≡ a [mod p] := by
+  have : p = 1 + (p-1) := by
+    rw [← Nat.add_sub_assoc]
+    rw [Nat.add_sub_cancel_left]
+    have : 1 < p := by
+      apply Nat.Prime.one_lt
+      exact h
+    apply Nat.le_of_lt this
+  rw [this]
+  nth_rewrite 1 [← this]
+  rw [Nat.pow_add]
+  rw [Nat.pow_one]
+  rw [Mod_eq]
+  --want to split cases with `p | a`, then rw in `fermat_1` to finish this proof
+  sorry
 
 def ZmodnZ (n : ℕ) : Type := List.range (n)
 
