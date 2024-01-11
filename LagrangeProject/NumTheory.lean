@@ -746,9 +746,10 @@ def my_totient (n : ℕ) : ℕ :=
 
 --#eval φ (7)
 
-theorem my_tot_mul (m n : ℕ) : (my_totient (m))*(my_totient (n)) = (my_totient (m*n)) := by
+theorem my_tot_mul (m n : ℕ)(h : n.Coprime m) : (my_totient (m))*(my_totient (n)) = (my_totient (m*n)) := by
   -- what we will need : CRT algebraic for 2 variables
   sorry
+
 
 
 
@@ -756,13 +757,13 @@ theorem my_tot_prime (p : Nat.Primes) : (my_totient (p)) = (p-1) := by
   --need : my totient = cardinality of Z mod nZ
   sorry
 
-theorem my_tot_id (n : ℕ) : my_totient (n : ℕ) = ∏ (p in Nat.)
+theorem my_tot_id (n : ℕ)(p : Nat.Primes) : my_totient (n : ℕ) = n* ∏ p in Nat.divisors n,
 
 
-@[simp] lemma := by
+@[simp] lemma reduce_mod (m : ℕ) (a : ℤ) :  := by
 sorry
 
-theorem euler (m : ℕ) (a : m.Coprime) : a^(my_totient (m)) ≡ 1 [mod m] := by
+theorem euler (m : ℕ) (a : ℤ)(h : Coprime m a) : a^(my_totient (m)) ≡ 1 [mod m] := by
 sorry
 --need: function that reduces a into an element of ZmodmZ, lagrange for order
 
@@ -772,7 +773,7 @@ sorry
 theorem fermat_2 (p : Nat.Primes) (a : ℤ) : a^p ≡ a [mod p] := by
 sorry
 
-def ZmodnZ (n : ℕ) : Type := List.range (n)
+def ZmodnZ (n : ℕ) : Type :=(List.range (n))
 
 def my_mod_order (m : ℕ) (a : m.Coprime) : --order of a in Z/mZ--
 sorry
