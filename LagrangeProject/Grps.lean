@@ -484,12 +484,15 @@ section cosetsMul
   sorry
   done
 
-  --theorem LagrangeLeftMul (g : G) : (g LCoset* H).card | G.card := by
-    --sorry
-    --done
-
-  def indexMul : ℕ :=
+  theorem LagrangeLeftMul [Fintype G] [Fintype H] :
+  Fintype.card H ∣ Fintype.card G := by
     sorry
+    done
+
+
+
+  def indexMul [Fintype G] [Fintype H] : ℕ :=
+    Fintype.card G / Fintype.card H
     -- number of cosets iH, jH ... that makes up G
 
   --Langrange's Theorem
