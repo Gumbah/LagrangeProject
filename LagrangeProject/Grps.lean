@@ -1,6 +1,8 @@
 import Mathlib.Algebra.Group.MinimalAxioms
 import Mathlib.GroupTheory.Subgroup.Basic
 import Mathlib.Algebra.Ring.MinimalAxioms
+import Mathlib.Algebra.Group.Defs
+import Mathlib.Algebra.Ring.Defs
 --import Mathlib.Data.Finite.Card
 
 import Mathlib.Tactic
@@ -52,6 +54,16 @@ namespace groupsMul
   @[simp]lemma MulInv (a : G) : a * a⁻¹ = 1 := by
     nth_rewrite 1 [← InvInvMul a]
     rw[mul_left_inv a⁻¹]
+    done
+
+    @[simp]lemma RightCancelMul (a b c : G) : b * a = c * a → b = c := by
+    intro h
+    rw[← MulOne b]
+    rw[← MulOne c]
+    rw[← MulInv a]
+    rw[← mul_assoc]
+    rw[h]
+    rw[← mul_assoc]
     done
 
   @[simp]lemma LeftInvEqMul (a b c : G) : a = b⁻¹ * c ↔ b * a = c := by
@@ -153,6 +165,16 @@ namespace addGroups
   @[simp]lemma AddNeg (a : G) : a + -a = 0 := by
     nth_rewrite 1 [← NegNegAdd a]
     rw[add_left_neg (-a)]
+    done
+
+  @[simp]lemma RightCancelAdd (a b c : G) : b + a = c + a → b = c := by
+    intro h
+    rw[← AddZero b]
+    rw[← AddZero c]
+    rw[← AddNeg a]
+    rw[← add_assoc]
+    rw[h]
+    rw[← add_assoc]
     done
 
   @[simp]lemma LeftNegEqAdd (a b c : G) : a = -b + c ↔ b + a = c := by
@@ -267,6 +289,16 @@ section rings
     rw[add_left_neg (-a)]
     done
 
+  @[simp]lemma RightCancelAdd (a b c : R) : b + a = c + a → b = c := by
+    intro h
+    rw[← AddZero b]
+    rw[← AddZero c]
+    rw[← AddNeg a]
+    rw[← add_assoc]
+    rw[h]
+    rw[← add_assoc]
+    done
+
   @[simp]lemma LeftNegEqAdd (a b c : R) : a = -b + c ↔ b + a = c := by
     constructor
     intro h1
@@ -328,27 +360,51 @@ section rings
     --I'm going to start writing some new properties
 
   @[simp]lemma ZeroMul (a : R) : 0 * a = 0 := by
-  --nth_rewrite 1 [← zero_add 0]
-  --rw[right_distrib]
-  --apply?
-  sorry
+  apply LeftCancelAdd (0 * a)
+  rw[← right_distrib]
+  rw[AddZero (0 * a)]
+  rw[AddZero]
   done
 
-  @[simp]lemma MulZero (a : R) : 0 * a = 0 := by
-  sorry
+  @[simp]lemma MulZero (a : R) : a * 0 = 0 := by
+  apply RightCancelAdd (a * 0)
+  rw[← left_distrib]
+  rw[zero_add (a * 0)]
+  rw[zero_add]
   done
 
   @[simp]lemma NegOneMul (a : R) : -1 * a = -a := by
-  sorry
+  apply InvUniqueRightAdd
+  nth_rewrite 2 [← one_mul a]
+  rw[← right_distrib]
+  rw[add_left_neg]
+  rw[ZeroMul]
   done
 
   @[simp]lemma MulNegOne (a : R) : a * -1 = -a := by
-  sorry
+  apply InvUniqueLeftAdd
+  nth_rewrite 1 [← mul_one a]
+  rw[← left_distrib]
+  rw[AddNeg]
+  rw[MulZero]
   done
 
-  --@[simp]lemma UniqueIdentity (a : R) : 1 = 1orsomething := by
-  --sorry
-  --done
+  def DirectRingProd [Ring R, S] (g : G) (H : Set G) : Set G :=
+    Set.image (fun h => g * h) H
+
+  @[simp]lemma IdUniqueMul (a b : R) : a * b = b ↔ a = 1 := by
+    constructor
+    intro h1
+    rw[← mul_one a]
+    rw[← MulInv b]
+    rw[← mul_assoc]
+    rw[h1]
+    intro h2
+    rw[h2]
+    rw[one_mul]
+    sorry
+    -- this one might not be super necessary
+    done
 
 end rings
 

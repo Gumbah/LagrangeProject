@@ -749,6 +749,12 @@ def fun_sum_of_divisors_1 (n : ℕ) : ℕ := ∑ d in Nat.divisors n, d
 def my_totient (n : ℕ) : ℕ :=
   ((Finset.range n).filter n.Coprime).card
 
+lemma akfjalf (p : ℕ) (h : Nat.Prime p) : ((Finset.range p).filter p.Coprime) = (Finset.range p) := by
+  sorry
+
+lemma akfjalf2 (p : ℕ) (h : Nat.Prime p) : (Finset.range p).card = p-1 := by
+  sorry
+
 #eval my_totient (7)
 
 --notation:69 "φ(n")  => my_totient (n)
@@ -788,7 +794,7 @@ theorem fermat_1 (a p : ℕ) (h : Nat.Prime p) (h1 : ¬ p ∣ a) : a ^ (p-1) ≡
   exact ha
   exact h
 
-theorem fermat_2 (a p : ℕ) (h : Nat.Prime p) : a^p ≡ a [mod p] := by
+theorem fermat_2 (a p : ℕ) (h : Nat.Prime p) (h1 : p ∣ a ∨ ¬(p ∣ a)): a^p ≡ a [mod p] := by
   have : p = 1 + (p-1) := by
     rw [← Nat.add_sub_assoc]
     rw [Nat.add_sub_cancel_left]
@@ -802,15 +808,30 @@ theorem fermat_2 (a p : ℕ) (h : Nat.Prime p) : a^p ≡ a [mod p] := by
   rw [Nat.pow_one]
   rw [Mod_eq]
   --want to split cases with `p | a`, then rw in `fermat_1` to finish this proof
-  sorry
+  cases h1 with
+  | inl hp =>
+    have hhp : p ∣ a * a ^ (p-1) := by
+      have : a ∣ a * a ^ (p-1) := by
+        simp only [dvd_mul_right]
+      apply Nat.dvd_trans hp this
+    rw [Nat.mod_eq_zero_of_dvd, Nat.mod_eq_zero_of_dvd]
+    exact hp
+    exact hhp
+  | inr hp =>
+    have hh : a ^ (p-1) % p = 1 % p := by
+      rw [← Mod_eq]
+      apply fermat_1
+      exact h
+      exact hp
+    rw [Nat.mul_mod, hh, ← Nat.mul_mod, mul_one]
 
 def ZmodnZ (n : ℕ) : Type := List.range (n)
 
 def my_mod_order (m : ℕ) (a : m.Coprime) : --order of a in Z/mZ--
-sorry
+  sorry
 
 theorem my_mod_order_dvd (m k : ℕ) (a : m.Coprime) : (a)^(k) ≡ 1 [mod m] ↔ (my_mod_order (m) (a)) ∣ k := by
-sorry
+  sorry
 -- ord m (a) ∣φ(m)
 -- ord m (a^u)  = ord m (a) / gcd (u ord_m(a))
 
