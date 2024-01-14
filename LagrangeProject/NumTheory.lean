@@ -805,7 +805,9 @@ theorem fermat_2 (a p : ℕ) (h : Nat.Prime p) (h1 : p ∣ a ∨ ¬(p ∣ a)): a
   cases h1 with
   | inl hp =>
     have hhp : p ∣ a * a ^ (p-1) := by
-      sorry
+      have : a ∣ a * a ^ (p-1) := by
+        simp only [dvd_mul_right]
+      apply Nat.dvd_trans hp this
     rw [Nat.mod_eq_zero_of_dvd, Nat.mod_eq_zero_of_dvd]
     exact hp
     exact hhp
