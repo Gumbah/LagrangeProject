@@ -788,7 +788,7 @@ theorem fermat_1 (a p : ℕ) (h : Nat.Prime p) (h1 : ¬ p ∣ a) : a ^ (p-1) ≡
   exact ha
   exact h
 
-theorem fermat_2 (a p : ℕ) (h : Nat.Prime p) : a^p ≡ a [mod p] := by
+theorem fermat_2 (a p : ℕ) (h : Nat.Prime p) (h1 : p ∣ a ∨ ¬(p ∣ a)): a^p ≡ a [mod p] := by
   have : p = 1 + (p-1) := by
     rw [← Nat.add_sub_assoc]
     rw [Nat.add_sub_cancel_left]
@@ -802,7 +802,20 @@ theorem fermat_2 (a p : ℕ) (h : Nat.Prime p) : a^p ≡ a [mod p] := by
   rw [Nat.pow_one]
   rw [Mod_eq]
   --want to split cases with `p | a`, then rw in `fermat_1` to finish this proof
-  sorry
+  cases h1 with
+  | inl hp =>
+    have hhp : p ∣ a * a ^ (p-1) := by
+      sorry
+    rw [Nat.mod_eq_zero_of_dvd, Nat.mod_eq_zero_of_dvd]
+    exact hp
+    exact hhp
+  | inr hp =>
+    have hh : a ^ (p-1) % p = 1 % p := by
+      rw [← Mod_eq]
+      apply fermat_1
+      exact h
+      exact hp
+    rw [Nat.mul_mod, hh, ← Nat.mul_mod, mul_one]
 
 def ZmodnZ (n : ℕ) : Type := List.range (n)
 
