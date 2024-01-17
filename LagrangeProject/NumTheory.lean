@@ -749,12 +749,6 @@ def fun_sum_of_divisors_1 (n : ℕ) : ℕ := ∑ d in Nat.divisors n, d
 def my_totient (n : ℕ) : ℕ :=
   ((Finset.range n).filter n.Coprime).card
 
-lemma akfjalf (p : ℕ) (h : Nat.Prime p) : ((Finset.range p).filter p.Coprime) = (Finset.range p) := by
-  sorry
-
-lemma akfjalf2 (p : ℕ) (h : Nat.Prime p) : (Finset.range p).card = p-1 := by
-  sorry
-
 #eval my_totient (7)
 
 --notation:69 "φ(n")  => my_totient (n)
@@ -765,27 +759,47 @@ theorem my_tot_mul (m n : ℕ) : (my_totient (m))*(my_totient (n)) = (my_totient
   -- what we will need : CRT algebraic for 2 variables
   sorry
 
+-- To prove my_totient(p)=p-1, we will need specfific results about the Finset.range intersected with coprimes of p;
+-- specifically that 0 is the only element to be removed from the filter when p is prime.
 
-
-theorem my_tot_prime (p : Nat.Primes) : (my_totient (p)) = (p-1) := by
-  --need : my totient = cardinality of Z mod nZ
+theorem prime_coprime (p : ℕ) (h_p : Nat.Prime p) : ((Finset.range p).filter p.Coprime) = (Finset.range p) \ {0} := by
+  refine Finset.ext ?_
+  intro a
+  constructor
+  · intro h
+    simp only [Finset.mem_range, not_lt, nonpos_iff_eq_zero, Finset.mem_sdiff, Finset.mem_singleton]
+    constructor
+    · rw [←Finset.mem_range]
+      exact Finset.mem_of_mem_filter a h
+    · rw[Finset.mem_filter] at h
+      intro h_1
+      conv at h => unfold Nat.Coprime; rw[h_1]; rw[Nat.gcd_zero_right]
+      let ⟨a,b⟩ := h
+      apply Nat.Prime.ne_one at b
+      apply b
+      exact h_p
   sorry
 
-theorem my_tot_id (n : ℕ) : my_totient (n : ℕ) = ∏ (p in Nat.)
+@[simp] lemma finset_one : Finset.range 1 = {0} := by
+  rfl
 
-
-@[simp] lemma := by
-sorry
+theorem my_tot_prime (p : ℕ) (h : Nat.Prime p): (my_totient (p)) = (p-1) := by
+  unfold my_totient
+  rw[prime_coprime]
+  rw[← finset_one]
+  rw[Finset.card_sdiff]
+  rw[Finset.card_range]
+  rw[Finset.card_range]
+  simp only [Finset.range_one, Finset.singleton_subset_iff, Finset.mem_range]
+  exact Nat.Prime.pos h
+  exact h
 
 theorem euler (a m : ℕ) (ha : m.Coprime a) : a^(my_totient (m)) ≡ 1 [mod m] := by
 sorry
 --need: function that reduces a into an element of ZmodmZ, lagrange for order
 
-lemma my_totient_prime (p : ℕ) (h : Nat.Prime p) : my_totient (p) = p-1 := by
-  sorry
-
 theorem fermat_1 (a p : ℕ) (h : Nat.Prime p) (h1 : ¬ p ∣ a) : a ^ (p-1) ≡ 1 [mod p] := by
-  rw [← my_totient_prime]
+  rw [← my_tot_prime]
   have ha : p.Coprime a := by
     rw [Nat.Prime.coprime_iff_not_dvd]
     exact h1
@@ -828,10 +842,10 @@ theorem fermat_2 (a p : ℕ) (h : Nat.Prime p) (h1 : p ∣ a ∨ ¬(p ∣ a)): a
 def ZmodnZ (n : ℕ) : Type := List.range (n)
 
 def my_mod_order (m : ℕ) (a : m.Coprime) : --order of a in Z/mZ--
-  sorry
+    sorry
 
 theorem my_mod_order_dvd (m k : ℕ) (a : m.Coprime) : (a)^(k) ≡ 1 [mod m] ↔ (my_mod_order (m) (a)) ∣ k := by
-  sorry
+sorry
 -- ord m (a) ∣φ(m)
 -- ord m (a^u)  = ord m (a) / gcd (u ord_m(a))
 
