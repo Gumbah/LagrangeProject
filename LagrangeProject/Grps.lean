@@ -439,8 +439,12 @@ section cosetsMul
 
 
   lemma AssocLeftCosetMul (a b : G) :
-  a LCoset* b LCoset* H = (a*b) LCoset* H := by
-    sorry
+  a LCoset* (b LCoset* H) = (a*b) LCoset* H := by
+  refine ((fun {α} {s t} ↦ Set.ext_iff.mpr) ?_).symm
+    intro x
+    constructor
+    ·
+
     done
 
   lemma AssocRightCosetMul (a b : G) :
@@ -496,9 +500,14 @@ section cosetsMul
     Fintype.card G / Fintype.card H
     -- number of cosets iH, jH ... that makes up G
 
+  theorem PowOfCardEqOne [Fintype G] (g : G) :
+  g ^ (Fintype.card G) = 1 := by
+    sorry
+    done
 
 
-  --Langrange's Theorem
+
+  --Langrange's Theorem corollorys
 
 end CosetsMul
 
