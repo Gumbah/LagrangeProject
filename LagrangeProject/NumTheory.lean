@@ -708,12 +708,10 @@ def classical_crt (m n a b : ℕ) (h : Nat.Coprime m n) : {x // x ≡ a [mod m] 
         exact hn
         ⟩
 
---With these we can prove the `Algebraic Chinese Remainder theorem` for coprime m,n, i.e. ℤ/mnℤ = ℤ/mℤ × ℤ/nℤ
+--With these we can prove the `Algebraic Chinese Remainder theorem` for coprime m,n, i.e. `ℤ/mnℤ = ℤ/mℤ × ℤ/nℤ`
+--But for this we will first need the group theory side of the project to define such an object as `ZMod n`
 
 --With this statement we can prove the `multiplicity` of the Euler Totient function for coprime m n, i.e. phi(mn)=phi(m)*phi(n)
-
---We will also prove that phi(p)=|(ℤ/pℤ)^×|=p-1 and phi(p^n)=p^n-p^(n-1) for p prime, which then will lead into proving that
---∑_(a∣n) phi(a)=n for n ∈ ℕ
 
 --After we prove these we will have all the tools from number theory to collaborate with the group theory side to prove
 --Euler's theorem and Fermat's little theorem.
@@ -756,7 +754,7 @@ def my_totient (n : ℕ) : ℕ :=
 --#eval φ (7)
 
 theorem my_tot_mul (m n : ℕ) : (my_totient (m))*(my_totient (n)) = (my_totient (m*n)) := by
-  -- what we will need : CRT algebraic for 2 variables
+  --need : algebraic CRT for 2 variables
   sorry
 
 -- To prove my_totient(p)=p-1, we will need specfific results about the Finset.range intersected with coprimes of p;
@@ -794,21 +792,39 @@ theorem my_tot_prime (p : ℕ) (h : Nat.Prime p): (my_totient (p)) = (p-1) := by
   exact Nat.Prime.pos h
   exact h
 
-theorem euler (a m : ℕ) (ha : m.Coprime a) : a^(my_totient (m)) ≡ 1 [mod m] := by
-sorry
---need: function that reduces a into an element of ZmodmZ, lagrange for order
+--16/01/24 - Jakub
 
-theorem fermat_1 (a p : ℕ) (h : Nat.Prime p) (h1 : ¬ p ∣ a) : a ^ (p-1) ≡ 1 [mod p] := by
+--While waiting on the completion of the required definitions and properties of `ZMod`, and
+--the statement and proof of `Lagrange's theorem` from the group theory side of the project, Katie stated and sorry'd
+--Euler's totient theorem in order for me to be able to complete Fermat's Little Theorem as a corollary.
+
+--18/01/24
+
+--The required parts of `ZMod` are proving very difficult for the group theory side of the project, so we will be
+--helping as best we can with our limited experience working with groups in LEAN. If we have not got close enough
+--to what we need as we approach the final project deadline, we will be forced to use the `ZMod` that is already
+--contained withing mathlib, which we originally tried to avoid since it contained a proof of the algebraic CRT early
+--on, which we wanted to prove ourselves, and was a significant motivation for many theorems earlier in this file.
+
+
+theorem euler_totient (a m : ℕ) (ha : m.Coprime a) : a^(my_totient (m)) ≡ 1 [mod m] := by
+  rw [Mod_eq]
+  rw [Nat.pow_mod]
+  sorry
+--need: notion of `(ZMod m)^X`, having `a % m` being an element (a coprime), having `1` being the identity,
+--        having `my_totient m` being the order, then Lagrange's theorem completes the proof.
+
+theorem little_fermat_1 (a p : ℕ) (h : Nat.Prime p) (h1 : ¬ p ∣ a) : a ^ (p-1) ≡ 1 [mod p] := by
   rw [← my_tot_prime]
   have ha : p.Coprime a := by
     rw [Nat.Prime.coprime_iff_not_dvd]
     exact h1
     exact h
-  apply euler
+  apply euler_totient
   exact ha
   exact h
 
-theorem fermat_2 (a p : ℕ) (h : Nat.Prime p) (h1 : p ∣ a ∨ ¬(p ∣ a)): a^p ≡ a [mod p] := by
+theorem little_fermat_2 (a p : ℕ) (h : Nat.Prime p) (h1 : p ∣ a ∨ ¬(p ∣ a)): a^p ≡ a [mod p] := by
   have : p = 1 + (p-1) := by
     rw [← Nat.add_sub_assoc]
     rw [Nat.add_sub_cancel_left]
@@ -821,7 +837,7 @@ theorem fermat_2 (a p : ℕ) (h : Nat.Prime p) (h1 : p ∣ a ∨ ¬(p ∣ a)): a
   rw [Nat.pow_add]
   rw [Nat.pow_one]
   rw [Mod_eq]
-  --want to split cases with `p | a`, then rw in `fermat_1` to finish this proof
+  --want to split cases with `p | a`, then rw in `little_fermat_1` to finish this proof
   cases h1 with
   | inl hp =>
     have hhp : p ∣ a * a ^ (p-1) := by
@@ -834,18 +850,14 @@ theorem fermat_2 (a p : ℕ) (h : Nat.Prime p) (h1 : p ∣ a ∨ ¬(p ∣ a)): a
   | inr hp =>
     have hh : a ^ (p-1) % p = 1 % p := by
       rw [← Mod_eq]
-      apply fermat_1
+      apply little_fermat_1
       exact h
       exact hp
     rw [Nat.mul_mod, hh, ← Nat.mul_mod, mul_one]
 
-def ZmodnZ (n : ℕ) : Type := List.range (n)
+--def my_mod_order (a m : ℕ) (h : Nat.Coprime a m) :
 
-def my_mod_order (m : ℕ) (a : m.Coprime) : --order of a in Z/mZ--
-    sorry
-
-theorem my_mod_order_dvd (m k : ℕ) (a : m.Coprime) : (a)^(k) ≡ 1 [mod m] ↔ (my_mod_order (m) (a)) ∣ k := by
-sorry
+--theorem my_mod_order_dvd (m k : ℕ) (a : m.Coprime) : (a)^(k) ≡ 1 [mod m] ↔ (my_mod_order (m) (a)) ∣ k := by
 -- ord m (a) ∣φ(m)
 -- ord m (a^u)  = ord m (a) / gcd (u ord_m(a))
 
@@ -853,3 +865,4 @@ sorry
 
 theorem wilson (p : Nat.Primes) : (Nat.factorial p-1) ≡ -1 [mod p] := by
 -- need : FLT, order lemmas
+  sorry
