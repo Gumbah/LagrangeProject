@@ -410,7 +410,6 @@ end rings
 
 section cosetsMul
 
---variable {G : Type} [Group G] (H : Subgroup G)
 
   def LeftCosetMul [Group G] (g : G) (H : Set G) : Set G :=
     Set.image (fun h => g * h) H
@@ -421,38 +420,40 @@ section cosetsMul
   notation:70 i:70 "LCoset*" H:70 => LeftCosetMul i H
   notation:70 H:70 "RCoset*" i:70 => RightCosetMul H i
 
-  /-
-  def LeftCosetEqMul [Group G] (g h : Set G) (i j : G):=
-    i LCoset* g = j LCoset* h
+  variable (G : Type) [Group G] (H : Subgroup G)
 
-  def RightCosetEqMul [Group G] (i j : G) (g h : Set G) :=
-    g RCoset* i = h RCoset* j
+  def LeftCosetEqMul (g h : G):=
+    g LCoset* H = h LCoset* H
 
+  def RightCosetEqMul (g h : G):=
+    H RCoset* g = H RCoset* h
+
+  /-!
+  set_option quotPrecheck false
+  notation:50 i:50 "LC=" j:50 => LeftCosetEqMul (i LCoset* H) (j LCoset* H)
+  notation:50 i:50 "RC=" j:50 => RightCosetEqMul (H RCoset* i) (H LCoset* j)
+  set_option quotPrecheck true
   -/
-
-  --notation:50 i:50 "LCoset*" H:50 "LCoset=" j:50 "LCoset*" K:50 => LeftCosetEqMul H K i j
-  --notation:50 H:50 "RCoset*" i:50 "RCoset=" K:50 "RCoset*" j:50 => RightCosetEqMul i j H K
 
   namespace CosetsMul
 
-  variable (G : Type) [Group G] (H : Subgroup G)
 
-  lemma AssocLeftCosetMul (a b : G) (H : Subgroup G) :
+  lemma AssocLeftCosetMul (a b : G) :
   a LCoset* b LCoset* H = (a*b) LCoset* H := by
     sorry
     done
 
-  lemma AssocRightCosetMul (a b : G) (H : Subgroup G) :
+  lemma AssocRightCosetMul (a b : G) :
   (H RCoset* a) RCoset* b = H RCoset* (a*b) := by
     sorry
     done
 
-  lemma LeftCosetElemImpEqMul (a b : G) (H : Subgroup G) :
+  lemma LeftCosetElemImpEqMul (a b : G) :
   a = b ↔ a LCoset* H = b LCoset* H := by
     sorry
     done
 
-  lemma RightCosetElemImpEqMul (a b : G) (H : Subgroup G) :
+  lemma RightCosetElemImpEqMul (a b : G) :
   a = b ↔ H RCoset* a = H RCoset* b := by
     sorry
     done
@@ -460,24 +461,32 @@ section cosetsMul
     --May be more lemmas needed
 
   -- if h ∈ iH and jH then iH = jH
-  lemma LeftCosetEqOrDisjointMul (g i j : G) (H : Subgroup G)
+  lemma LeftCosetEqNotDisjoinMul (g i j : G)
   (h : g ∈ (i LCoset* H) ∧ g ∈ (j LCoset* H)) :
   i LCoset* H = j LCoset* H := by
     sorry
     done
 
-  lemma RightCosetEqOrDisjointMul (g i j : G) (H : Subgroup G)
+  lemma RightCosetEqNotDisjointMul (g i j : G)
   (h : g ∈ (H RCoset* i) ∧ g ∈ (H RCoset* j)) :
   H RCoset* i = H RCoset* j := by
     sorry
     done
 
-  /-!
-  lemma UnionOfLeftCosetsIsGroup (H : Subgroup G) : ∀ (g : G),
+  lemma LeftCosetDisjointMul (g i j : G)
+  (h : g ∈ (i LCoset* H) ∧ ¬(g ∈ (j LCoset* H))) :
+  i LCoset* H ∪ j LCoset* H = {} := by
+    sorry
+    done
+
+  lemma UnionOfLeftCosetsIsGroup : ∀ (g : G),
   G = LeftCosetMul g H := by
   sorry
   done
-  -/
+
+  --theorem LagrangeLeftMul (g : G) : (g LCoset* H).card | G.card := by
+    --sorry
+    --done
 
   def indexMul : ℕ :=
     sorry
@@ -488,6 +497,8 @@ section cosetsMul
 end CosetsMul
 
 end cosetsMul
+
+section cosetsAdd
 
   def LeftCosetAdd [AddGroup G] (g : G) (H : Set G) : Set G :=
     Set.image (fun h => g + h) H
@@ -506,7 +517,7 @@ end cosetsMul
     g RCoset+ i = h RCoset+ j
 
   -/
-  namespace CosetsMul
+  namespace CosetsAdd
 
   variable (G : Type) [AddGroup G] (H : AddSubgroup G)
 
@@ -551,7 +562,6 @@ end cosetsMul
 
   --Langrange's Theorem
 
-
-section cosetsAdd
+end CosetsAdd
 
 end cosetsAdd
