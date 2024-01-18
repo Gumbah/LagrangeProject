@@ -439,8 +439,12 @@ section cosetsMul
 
 
   lemma AssocLeftCosetMul (a b : G) :
-  a LCoset* b LCoset* H = (a*b) LCoset* H := by
-    sorry
+  a LCoset* (b LCoset* H) = (a*b) LCoset* H := by
+  refine ((fun {α} {s t} ↦ Set.ext_iff.mpr) ?_).symm
+    intro x
+    constructor
+    ·
+
     done
 
   lemma AssocRightCosetMul (a b : G) :
@@ -479,8 +483,11 @@ section cosetsMul
     sorry
     done
 
-  lemma UnionOfLeftCosetsIsGroup : ∀ (g : G),
-  G = LeftCosetMul g H := by
+
+  variable {I : Type*}
+  variable {A : I → Set G}
+
+  lemma UnionOfLeftCosetsIsGroup : G = (⋃ i, A i)  := by
   sorry
   done
 
@@ -489,13 +496,18 @@ section cosetsMul
     sorry
     done
 
-
-
   def indexMul [Fintype G] [Fintype H] : ℕ :=
     Fintype.card G / Fintype.card H
     -- number of cosets iH, jH ... that makes up G
 
-  --Langrange's Theorem
+  theorem PowOfCardEqOne [Fintype G] (g : G) :
+  g ^ (Fintype.card G) = 1 := by
+    sorry
+    done
+
+
+
+  --Langrange's Theorem corollorys
 
 end CosetsMul
 
