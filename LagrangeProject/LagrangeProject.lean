@@ -22,6 +22,7 @@ import Mathlib.Algebra.Ring.Defs
 --import Mathlib.Data.Finite.Card
 --Universal imports
 import Mathlib.Tactic
+import Mathlib.Data.ZMod.Basic
 
 
 
@@ -1404,10 +1405,24 @@ theorem my_tot_prime (p : ℕ) (h : Nat.Prime p): (my_totient (p)) = (p-1) := by
 #check CosetsMul.PowOfCardEqOne
 --which is vital to the completion of Euler's Totient Theorem.
 
+--This lemma is a modified version of one from ZMod.Basic to work with our definition of `mod`
+lemma zmod_eq_iff_Mod_eq_nat (n : ℕ) {a b : ℕ} : (a : ZMod n) = b ↔ a ≡ b [mod n] := by
+  cases n
+  · rw [Mod_eq]
+    rw [Int.coe_nat_inj']
+    simp only [Nat.zero_eq, Nat.mod_zero]
+  · rw [Fin.ext_iff, Mod_eq, ← ZMod.val_nat_cast, ← ZMod.val_nat_cast]
+    exact Iff.rfl
+
 theorem euler_totient (a m : ℕ) (ha : m.Coprime a) : a^(my_totient (m)) ≡ 1 [mod m] := by
-  rw [Mod_eq]
-  rw [Nat.pow_mod]
+  rw [← zmod_eq_iff_Mod_eq_nat]
+  rw [Nat.coprime_comm] at ha
+  let a' : Units (ZMod m) := ZMod.unitOfCoprime a ha
   sorry
+  --cases m
+  --· --want some lemma here that says my_totient of zero is zero, then `rw [ZMod.pow_zero]`
+  --· --need our own version of `← ZMod.card_units_eq_totient` here, then we use `CosetsMul.PowOfCardEqOne`
+
 --need: notion of `(ZMod m)^X`, having `a % m` being an element (a coprime), having `1` being the identity,
 --        having `my_totient m` being the order, then Lagrange's theorem completes the proof.
 
