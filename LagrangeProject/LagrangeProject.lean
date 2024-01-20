@@ -430,6 +430,9 @@ end rings
 section cosetsMul
 
 
+  variable {G : Type*} [Group G] (H : Subgroup G)
+
+
   def LeftCosetMul [Group G] (g : G) (H : Set G) : Set G :=
     Set.image (fun h => g * h) H
 
@@ -439,7 +442,6 @@ section cosetsMul
   notation:70 i:70 "LCoset*" H:70 => LeftCosetMul i H
   notation:70 H:70 "RCoset*" i:70 => RightCosetMul H i
 
-  variable (G : Type) [Group G] (H : Subgroup G)
 
   def LeftCosetEqMul (g h : G):=
     g LCoset* H = h LCoset* H
@@ -456,13 +458,16 @@ section cosetsMul
 
   namespace CosetsMul
 
+  open Set Function
 
   lemma AssocLeftCosetMul (a b : G) :
   a LCoset* (b LCoset* H) = (a*b) LCoset* H := by
-  refine ((fun {α} {s t} ↦ Set.ext_iff.mpr) ?_).symm
-    intro x
-    constructor
-    ·
+    --refine ((fun {α} {s t} ↦ Set.ext_iff.mpr) ?_).symm
+    --intro x
+    --constructor
+    repeat rw[LeftCosetMul]
+    rw [(image_comp _ _ _).symm, Function.comp]
+
 
     done
 
@@ -532,6 +537,7 @@ end CosetsMul
 
 end cosetsMul
 
+/-
 section cosetsAdd
 
   def LeftCosetAdd [AddGroup G] (g : G) (H : Set G) : Set G :=
@@ -599,8 +605,7 @@ section cosetsAdd
 end CosetsAdd
 
 end cosetsAdd
-
-
+-/
 --Beginning of Number Theory Side
 
 --18/11/23 - Jakub
