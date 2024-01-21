@@ -1452,10 +1452,16 @@ theorem totient_eq_zmod_units_card (n : ℕ) [inst : Fintype (Units (ZMod n))]: 
 
 
 
+lemma my_tot_zero : my_totient (0) = 0 := by
+  rfl
+
 theorem euler_totient (a m : ℕ) (ha : m.Coprime a) : a^(my_totient (m)) ≡ 1 [mod m] := by
   rw [← zmod_eq_iff_Mod_eq_nat]
   rw [Nat.coprime_comm] at ha
   let a' : Units (ZMod m) := ZMod.unitOfCoprime a ha
+  cases m
+  · rw [my_tot_zero]
+    rw [pow_zero]
   have h_1 :
 
   sorry
