@@ -1349,6 +1349,24 @@ theorem my_tot_mul (m n : ℕ) : (my_totient (m))*(my_totient (n)) = (my_totient
 -- To prove my_totient(p)=p-1, we will need specfific results about the Finset.range intersected with coprimes of p;
 -- specifically that 0 is the only element to be removed from the filter when p is prime.
 
+lemma dvd_less_than_nat (m n : ℕ) (h : m ∣ n) (h_n : n < m) : n = 0 := by
+  rw[dvd_def] at h
+  let ⟨a,b⟩ := h
+  have : ¬(a=0) → m ≤ m*a  := by
+    intro h_1
+    conv at h_1 => rw[← ne_eq] ; rw[Nat.ne_zero_iff_zero_lt]
+    apply Nat.le_mul_of_pos_right
+    exact h_1
+
+
+
+
+theorem nat_gcd_prime_prime (p a : ℕ) (h_p : Nat.Prime p) (h_a : a < p) (h : Nat.gcd p a = p) : a = 0 := by
+  rw[gcd_eq_p] at h
+  apply dvd_less_than_nat at h
+  rw[h]
+  exact h_a
+
 theorem prime_coprime (p : ℕ) (h_p : Nat.Prime p) : ((Finset.range p).filter p.Coprime) = (Finset.range p) \ {0} := by
   refine Finset.ext ?_
   intro a
@@ -1365,7 +1383,21 @@ theorem prime_coprime (p : ℕ) (h_p : Nat.Prime p) : ((Finset.range p).filter p
       apply Nat.Prime.ne_one at b
       apply b
       exact h_p
-  sorry
+  · intro h
+    simp only [Finset.mem_range, not_lt, nonpos_iff_eq_zero, Finset.mem_sdiff, Finset.mem_singleton] at h
+    simp only [Finset.mem_range, ne_eq, Finset.mem_filter]
+    unfold Nat.Coprime
+    let ⟨c,d⟩:=h
+    constructor
+    · exact c
+    · apply gcd_prime_false
+      · exact h_p
+      · intro h_1
+        apply nat_gcd_prime_prime at h_1
+        conv at d => rw[←h_1]; simp
+        apply d
+        exact h_p
+        exact c
 
 @[simp] lemma finset_one : Finset.range 1 = {0} := by
   rfl
