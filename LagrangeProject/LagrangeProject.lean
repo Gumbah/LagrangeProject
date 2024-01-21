@@ -892,199 +892,6 @@ theorem bezout (x y : ℕ) : (bez_a x y)*x+(bez_b x y)*y=(Nat.gcd x y) := by
 --and I now see that I need to be very careful defining things in such a way to make the proofs as
 --simple as possible.
 
-
--- Katie
-
--- Now to utilise Bezout's lemma in some smaller lemmas building our number theory library.
--- After trying to rephrase Euclid's lemma many different ways, I came to the conclusion that
--- it would be easier to separate the cases of which variable was coprime to p into their own
--- respective theorems. Following this, I needed even more preceding results regarding prime divisors.
--- Structuring the proof of Euclid's lemma was fairly difficult;
-
-@[simp] lemma bezout_one {p n : ℕ}(h_1 : (Nat.gcd p n) = (1 : ℕ)) : (bez_a p n)*(p : ℕ)+(bez_b p n)*n= (1 : ℕ)  := by
-  rw[bezout]
-  rw[h_1]
-
-@[simp] lemma bezout_one_nat {p n : ℕ}(h_1 : (Nat.gcd p n) = (1 : ℕ)) : Int.toNat ((bez_a p n)*p+(bez_b p n)*n)= (1 : ℕ) := by
-  rw[bezout_one]
-  rw[Nat.cast_one]
-  rw[Int.toNat_one]
-  · exact h_1
-
-@[simp] lemma one_bezout {p n : ℕ}(h_1 : (Nat.gcd p n) = 1) : (1 : ℕ) = (bez_a (p : ℕ) n)*(p : ℕ)+(bez_b (p : ℕ) n)*n  := by
-  rw[bezout]
-  rw[← h_1]
-
-@[simp] lemma bezout_prime {p n : ℕ}(h_1 : (Nat.gcd (p : ℕ) n) = p) : (bez_a (p : ℕ) n)*(p : ℕ)+(bez_b (p : ℕ) n)*n= p  := by
-  rw[bezout]
-  rw[h_1]
-
-@[simp] lemma prime_bezout {p n : ℕ}(h_1 : (Nat.gcd (p : ℕ) n) = p) : (p : ℕ) = (bez_a (p : ℕ) n)*(p : ℕ)+(bez_b (p : ℕ) n)*n  := by
-  rw[bezout]
-  norm_cast
-  rw[h_1]
-
-
-@[simp] lemma gen_bezout {p n : ℕ} : (Nat.gcd  (n : ℕ) (p : ℕ)) = (bez_a (n : ℕ) (p : ℕ))*(n : ℕ)+(bez_b (n : ℕ) (p : ℕ)) *(p : ℕ) := by
-  rw[bezout]
-
-@[simp] lemma gcd_nat_prime {p m : ℕ}(h: Nat.Prime p) : (Nat.gcd p m = 1) ∨ (Nat.gcd p m  = p):= by
- intros
- refine (Nat.dvd_prime ?pp).mp ?_
- exact h
- exact Nat.gcd_dvd_left p m
-
-@[simp] lemma gcd_nat_prime_comm {p m : ℕ}(h: Nat.Prime p): (Nat.gcd p m = p) ∨ (Nat.gcd p m  = 1):= by
- rw[← or_comm]
- apply gcd_nat_prime
- exact h
-
-
-@[simp] lemma gcd_nat_prime_elt {p m : ℕ}(h: Nat.Prime p) : (Nat.gcd p m ∈ [1,p]) := by
- refine List.mem_pair.mpr ?_
- apply gcd_nat_prime
- exact h
-
-
-
--- I struggled a great deal with many of these lemmas due to Lean "nat-casting" my prime variable so that, instead
--- of working with a Nat.Prime, I had to show that the prime casted to the naturals was a nat.prime itself, which
--- had no clear work-around. Someone advised me to phrase my theorems such that p was a variable in the naturals,
--- but, by hypothesis it was a Nat.Prime. This simple solution hadn't occured to me, despite having attempted many
--- different ways to phrase that {p : Nat.Primes}{p : Nat}.
-
-@[simp] lemma gcd_one_true {p m : ℕ}(h: Nat.Prime p) : (Nat.gcd p m = 1) → ¬(Nat.gcd p m = p):= by
-  intro h1
-  rw[h1]
-  rw[← ne_eq]
-  apply Ne.symm
-  apply Nat.Prime.ne_one
-  exact h
-
-@[simp] lemma gcd_one_false {p m : ℕ}(h: Nat.Prime p) : ¬(Nat.gcd p m = 1) → (Nat.gcd p m = p):= by
- rw[← or_iff_not_imp_left]
- apply gcd_nat_prime
- · exact h
-
-
-@[simp] lemma gcd_prime_true {p m : ℕ}(h: Nat.Prime p) : (Nat.gcd p m = p) → ¬(Nat.gcd p m = 1):= by
-  intro h1
-  rw[h1]
-  rw[← ne_eq]
-  apply Nat.Prime.ne_one
-  exact h
-
-@[simp] lemma gcd_prime_false {p m : ℕ}(h: Nat.Prime p): ¬(Nat.gcd p m = p) → (Nat.gcd p m = 1):= by
- rw[← or_iff_not_imp_left]
- apply gcd_nat_prime_comm
- exact h
-
-
-@[simp] lemma gcd_eq_p {p x : ℕ} : (Nat.gcd p x = p) ↔ ((p : ℕ)∣ x) := by
-  constructor
-  · intro h1
-    rw[← h1]
-    exact Nat.gcd_dvd_right (↑p) x
-  · intro h2
-    exact Nat.gcd_eq_left h2
-
-@[simp] lemma gcd_eq_1 {p x : ℕ}(h: Nat.Prime p): (Nat.gcd p x = 1) ↔ ¬((p : ℕ) ∣ x) := by
-  constructor
-  · intro h1
-    refine imp_false.mp ?mp.a
-    apply gcd_one_true at h1
-    intro h2
-    apply gcd_prime_false at h1
-    rw[← gcd_eq_p] at h2
-    apply gcd_prime_true at h2
-    rw[h1] at h2
-    rw[← ne_eq] at h2
-    exact h2 rfl
-    exact h
-    exact h
-    exact h
-
-  · intro h3
-    contrapose h3
-    simp
-    apply gcd_one_false at h3
-    rw[gcd_eq_p] at h3
-    · exact h3
-    · exact h
-
-@[simp] lemma int_to_nat_mul {a b : ℤ}{n : ℤ} : n*Int.toNat (a) = Int.toNat (n*a) := by
-  sorry
-
-@[simp] lemma int_to_nat_mul_add {a b : ℤ}{n : ℕ} : n*Int.toNat (a + b) = Int.toNat (n*(a+b)) := by
-  induction n
-  · rw[Nat.zero_mul]
-    rw[Nat.cast_zero]
-    rw[zero_mul]
-    norm_cast
-  · rw[Nat.succ_mul]
-    rw[Nat.succ_eq_add_one]
-    rw[Nat.cast_add_one_pos]
-
-@[simp] lemma dvd_int_to_nat_add {a b : ℤ}(h : Nat.Prime p)(h1 : p ∣ (Int.toNat (a) + Int.toNat (b))) : p ∣ Int.toNat (a + b) := by
-  sorry
-
-@[simp] lemma dvd_add_1 {a b : ℕ}(h : Nat.Prime p)(h1 : (p ∣ a) ∧ (p ∣ b)) : (p ∣ (a + b)) := by
-  sorry
-
-theorem euclid_l1_coprime {p m n : ℕ}(h: Nat.Prime p)(h_n : p < n)(h_m : p < m)(h_1 : p ∣ m*n)(h_2 : ¬(p ∣ m)) : (p ∣ n):= by
- -- a*p + b*m = 1
- -- a*p*n + b*m*n = n
- -- p ∣ a*p*n, p ∣ b*m*n => p ∣ n
-
-  intros
-  rw[← gcd_eq_1] at h_2
-  rw[← mul_one n]
-  apply bezout_one_nat at h_2
-  rw[← h_2]
-  --rw[dvd_def]
-  rw[int_to_nat_mul_add]
-  rw[mul_add]
-  apply dvd_int_to_nat_add
-  exact h
-  apply dvd_add_1
-  exact h
-  apply And.intro
-  · rw[mul_comm]
-    rw[mul_assoc]
-    rw[mul_comm]
-    rw[mul_assoc]
-    rw[← int_to_nat_mul]
-  -- rewrite gcd p m as its bezout identity: ∃ x,y s.t. mx + py =1
-  -- n = n(1) = n(mx + py)
-  sorry
-
---Now we have everything to prove Euclid's lemma: if p divides a composite number m*n, then it must divide one of m or n.
---After exploring different ways to phrase this, coming across the "or_iff_not_imp_right" lemma saved the day, and - after
---learning how to apply it, which was a task in of itself - simplified the theorem so that I could simply apply the above lemma
---for the result.
-
-theorem euclid {p m n : ℕ}(h: Nat.Prime p)(h_n : p < n)(h_m : p < m) : ((p : ℕ) ∣ m*n) → ((p : ℕ) ∣ n) ∨ ((p : ℕ) ∣ m) := by
-  intro h1
-  refine or_iff_not_imp_right.mpr ?_
-  apply euclid_l1_coprime
-  · exact h
-  · exact h_n
-  . exact h_m
-  · exact h1
-
--- Structuring the proof of Euclid's lemma was fairly difficult; I knew how to prove it easily
--- by hand with the theorems listed above in just a couple lines, but constructing a sort of contradiction
--- (i.e. either gcd p n = 1 or gcd p m = 1, but can't have both occur simultaneously and wanting to structure
--- the proof like suppose p ∣ m, and then supose p ∣ n) was very new to me.
-
-theorem gen_euclid {d m n : ℕ} (h1 : d ∣ m * n) (h2 : Nat.gcd m d = 1) : d ∣ n := by
-  -- a*m + b*d = 1
-  -- a*m*n + b*d*n = n
-  -- d∣ m*n, d ∣ d => d ∣ n
-  rw[← mul_one n]
-  rw[← bezout_one_nat]
-
-
 --Sun Tzu's Theorem/Classical Chinese Remainder Theorem
 
 --11/12/23 - Jakub
@@ -1304,6 +1111,211 @@ def classical_crt (m n a b : ℕ) (h : Nat.Coprime m n) : {x // x ≡ a [mod m] 
 
 --After we prove these we will have all the tools from number theory to collaborate with the group theory side to prove
 --Euler's theorem and Fermat's little theorem.
+
+-- Katie
+
+-- Now to utilise Bezout's lemma in some smaller lemmas building our number theory library.
+-- After trying to rephrase Euclid's lemma many different ways, I came to the conclusion that
+-- it would be easier to separate the cases of which variable was coprime to p into their own
+-- respective theorems. Following this, I needed even more preceding results regarding prime divisors.
+-- Structuring the proof of Euclid's lemma was fairly difficult;
+
+@[simp] lemma bezout_one {p n : ℕ}(h_1 : (Nat.gcd p n) = (1 : ℕ)) : (bez_a p n)*(p : ℕ)+(bez_b p n)*n= (1 : ℕ)  := by
+  rw[bezout]
+  rw[h_1]
+
+@[simp] lemma bezout_one_nat {p n : ℕ}(h_1 : (Nat.gcd p n) = (1 : ℕ)) : Int.toNat ((bez_a p n)*p+(bez_b p n)*n)= (1 : ℕ) := by
+  rw[bezout_one]
+  rw[Nat.cast_one]
+  rw[Int.toNat_one]
+  · exact h_1
+
+@[simp] lemma one_bezout {p n : ℕ}(h_1 : (Nat.gcd p n) = 1) : (1 : ℕ) = (bez_a (p : ℕ) n)*(p : ℕ)+(bez_b (p : ℕ) n)*n  := by
+  rw[bezout]
+  rw[← h_1]
+
+@[simp] lemma bezout_prime {p n : ℕ}(h_1 : (Nat.gcd (p : ℕ) n) = p) : (bez_a (p : ℕ) n)*(p : ℕ)+(bez_b (p : ℕ) n)*n= p  := by
+  rw[bezout]
+  rw[h_1]
+
+@[simp] lemma prime_bezout {p n : ℕ}(h_1 : (Nat.gcd (p : ℕ) n) = p) : (p : ℕ) = (bez_a (p : ℕ) n)*(p : ℕ)+(bez_b (p : ℕ) n)*n  := by
+  rw[bezout]
+  norm_cast
+  rw[h_1]
+
+
+@[simp] lemma gen_bezout {p n : ℕ} : (Nat.gcd  (n : ℕ) (p : ℕ)) = (bez_a (n : ℕ) (p : ℕ))*(n : ℕ)+(bez_b (n : ℕ) (p : ℕ)) *(p : ℕ) := by
+  rw[bezout]
+
+@[simp] lemma gcd_nat_prime {p m : ℕ}(h: Nat.Prime p) : (Nat.gcd p m = 1) ∨ (Nat.gcd p m  = p):= by
+ intros
+ refine (Nat.dvd_prime ?pp).mp ?_
+ exact h
+ exact Nat.gcd_dvd_left p m
+
+@[simp] lemma gcd_nat_prime_comm {p m : ℕ}(h: Nat.Prime p): (Nat.gcd p m = p) ∨ (Nat.gcd p m  = 1):= by
+ rw[← or_comm]
+ apply gcd_nat_prime
+ exact h
+
+
+@[simp] lemma gcd_nat_prime_elt {p m : ℕ}(h: Nat.Prime p) : (Nat.gcd p m ∈ [1,p]) := by
+ refine List.mem_pair.mpr ?_
+ apply gcd_nat_prime
+ exact h
+
+
+
+-- I struggled a great deal with many of these lemmas due to Lean "nat-casting" my prime variable so that, instead
+-- of working with a Nat.Prime, I had to show that the prime casted to the naturals was a nat.prime itself, which
+-- had no clear work-around. Someone advised me to phrase my theorems such that p was a variable in the naturals,
+-- but, by hypothesis it was a Nat.Prime. This simple solution hadn't occured to me, despite having attempted many
+-- different ways to phrase that {p : Nat.Primes}{p : Nat}.
+
+@[simp] lemma gcd_one_true {p m : ℕ}(h: Nat.Prime p) : (Nat.gcd p m = 1) → ¬(Nat.gcd p m = p):= by
+  intro h1
+  rw[h1]
+  rw[← ne_eq]
+  apply Ne.symm
+  apply Nat.Prime.ne_one
+  exact h
+
+@[simp] lemma gcd_one_false {p m : ℕ}(h: Nat.Prime p) : ¬(Nat.gcd p m = 1) → (Nat.gcd p m = p):= by
+ rw[← or_iff_not_imp_left]
+ apply gcd_nat_prime
+ · exact h
+
+
+@[simp] lemma gcd_prime_true {p m : ℕ}(h: Nat.Prime p) : (Nat.gcd p m = p) → ¬(Nat.gcd p m = 1):= by
+  intro h1
+  rw[h1]
+  rw[← ne_eq]
+  apply Nat.Prime.ne_one
+  exact h
+
+@[simp] lemma gcd_prime_false {p m : ℕ}(h: Nat.Prime p): ¬(Nat.gcd p m = p) → (Nat.gcd p m = 1):= by
+ rw[← or_iff_not_imp_left]
+ apply gcd_nat_prime_comm
+ exact h
+
+
+@[simp] lemma gcd_eq_p {p x : ℕ} : (Nat.gcd p x = p) ↔ ((p : ℕ)∣ x) := by
+  constructor
+  · intro h1
+    rw[← h1]
+    exact Nat.gcd_dvd_right (↑p) x
+  · intro h2
+    exact Nat.gcd_eq_left h2
+
+@[simp] lemma gcd_eq_1 {p x : ℕ}(h: Nat.Prime p): (Nat.gcd p x = 1) ↔ ¬((p : ℕ) ∣ x) := by
+  constructor
+  · intro h1
+    refine imp_false.mp ?mp.a
+    apply gcd_one_true at h1
+    intro h2
+    apply gcd_prime_false at h1
+    rw[← gcd_eq_p] at h2
+    apply gcd_prime_true at h2
+    rw[h1] at h2
+    rw[← ne_eq] at h2
+    exact h2 rfl
+    exact h
+    exact h
+    exact h
+  · intro h3
+    contrapose h3
+    simp
+    apply gcd_one_false at h3
+    rw[gcd_eq_p] at h3
+    · exact h3
+    · exact h
+
+#check int_to_nat_mul_nat
+#check Int.toNat_add_nat
+#check Nat.dvd_add
+
+theorem euclid_l1_coprime {p m n : ℕ}(h: Nat.Prime p)(h_n : p < n)(h_m : p < m)(h_1 : p ∣ m*n)(h_2 : ¬(p ∣ m)) : (p ∣ n):= by
+ -- a*p + b*m = 1
+ -- a*p*n + b*m*n = n
+ -- p ∣ a*p*n, p ∣ b*m*n => p ∣ n
+  intros
+  rw[← gcd_eq_1] at h_2
+  rw[← mul_one n]
+  apply bezout_one_nat at h_2
+  rw[← h_2]
+  rw [mul_comm, int_to_nat_mul_nat, mul_comm]
+  rw [mul_add]
+  apply dvd_int_to_nat_add
+  exact h
+  apply dvd_add_1
+  exact h
+  apply And.intro
+  · rw[mul_comm]
+    rw[mul_assoc]
+    rw[mul_comm]
+    rw[mul_assoc]
+    rw[← int_to_nat_mul]
+  -- rewrite gcd p m as its bezout identity: ∃ x,y s.t. mx + py =1
+  -- n = n(1) = n(mx + py)
+  sorry
+
+--21/01/21 - Jakub
+--Filling out sorry's left earlier while waiting for ZMod lemmas to complete proof of Euler Totient theorem.
+--Unfortunately my idea for a proof of this did not line up with Katie's so I did not end up using the helpful lemmas
+--that she proved before. It also turned out that some of the assumptions she was working with were not required for
+--my proof, so they have been removed from the statement of Euclid's theorem, in order for it to apply more generally.
+
+theorem euclid_left_coprime {p m n : ℕ}(h: Nat.Prime p)(h1 : p ∣ m*n)(h2 : ¬(p ∣ m)) : (p ∣ n):= by
+  rw [Nat.dvd_mul] at h1
+  let ⟨x, y, h'⟩ := h1
+  let ⟨mario, ⟨luigi, bowser⟩⟩ := h'
+  have new_super_mario_bros_wii : Irreducible p := by
+    rw [Nat.irreducible_iff_prime, ← Nat.prime_iff]
+    exact h
+  have super_mario_galaxy : IsUnit x ∨ IsUnit y := by
+    apply Irreducible.isUnit_or_isUnit
+    exact new_super_mario_bros_wii
+    apply Eq.symm
+    exact bowser
+  have super_mario_galaxy_2 : x = 1 ∨ y = 1 := by
+    rw [← Nat.isUnit_iff, ← Nat.isUnit_iff]
+    exact super_mario_galaxy
+  cases super_mario_galaxy_2
+  · have : x=1 := by assumption
+    rw [this] at bowser
+    rw [one_mul] at bowser
+    rw [bowser] at luigi
+    exact luigi
+  · have : y=1 := by assumption
+    rw [this] at bowser
+    rw [mul_one] at bowser
+    rw [bowser] at mario
+    contradiction
+
+--Now we have everything to prove Euclid's lemma: if p divides a composite number m*n, then it must divide one of m or n.
+--After exploring different ways to phrase this, coming across the "or_iff_not_imp_right" lemma saved the day, and - after
+--learning how to apply it, which was a task in of itself - simplified the theorem so that I could simply apply the above lemma
+--for the result.
+
+theorem euclid {p m n : ℕ}(h: Nat.Prime p): ((p : ℕ) ∣ m*n) → ((p : ℕ) ∣ n) ∨ ((p : ℕ) ∣ m) := by
+  intro h1
+  refine or_iff_not_imp_right.mpr ?_
+  apply euclid_left_coprime
+  · exact h
+  · exact h1
+
+-- Structuring the proof of Euclid's lemma was fairly difficult; I knew how to prove it easily
+-- by hand with the theorems listed above in just a couple lines, but constructing a sort of contradiction
+-- (i.e. either gcd p n = 1 or gcd p m = 1, but can't have both occur simultaneously and wanting to structure
+-- the proof like suppose p ∣ m, and then supose p ∣ n) was very new to me.
+
+theorem gen_euclid {d m n : ℕ} (h1 : d ∣ m * n) (h2 : Nat.gcd m d = 1) : d ∣ n := by
+  -- a*m + b*d = 1
+  -- a*m*n + b*d*n = n
+  -- d∣ m*n, d ∣ d => d ∣ n
+  rw[← mul_one n]
+  rw[← bezout_one_nat]
+
 
 -- Katie: laying out the land
 
