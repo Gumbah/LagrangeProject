@@ -1420,7 +1420,7 @@ theorem euler_totient (a m : ℕ) (ha : m.Coprime a) : a^(my_totient (m)) ≡ 1 
   let a' : Units (ZMod m) := ZMod.unitOfCoprime a ha
   sorry
   --cases m
-  --· --want some lemma here that says my_totient of zero is zero, then `rw [ZMod.pow_zero]`
+  --· --want some lemma here that says my_totient of zero is zero, then `rw [pow_zero]`
   --· --need our own version of `← ZMod.card_units_eq_totient` here, then we use `CosetsMul.PowOfCardEqOne`
 
 --need: notion of `(ZMod m)^X`, having `a % m` being an element (a coprime), having `1` being the identity,
