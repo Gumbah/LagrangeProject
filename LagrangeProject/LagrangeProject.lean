@@ -1462,10 +1462,14 @@ lemma zmod_eq_iff_Mod_eq_nat (n : ℕ) {a b : ℕ} : (a : ZMod n) = b ↔ a ≡ 
   · rw [Fin.ext_iff, Mod_eq, ← ZMod.val_nat_cast, ← ZMod.val_nat_cast]
     exact Iff.rfl
 
+
+lemma my_tot_zero : my_totient (0) = 0 := by
+  rfl
+
+
 theorem totient_eq_zmod_units_card (n : ℕ) [inst : Fintype (Units (ZMod n))]: my_totient (n) = Fintype.card (Units (ZMod n)) := by
  unfold my_totient
  rw [← Fintype.card_ofFinset]
-
 
 
 
@@ -1479,11 +1483,6 @@ theorem euler_totient (a m : ℕ) (ha : m.Coprime a) : a^(my_totient (m)) ≡ 1 
   cases m
   · rw [my_tot_zero]
     rw [pow_zero]
-  have h_1 :
-
-  sorry
-  --cases m
-  --· --want some lemma here that says my_totient of zero is zero, then `rw [pow_zero]`
   --· --need our own version of `← ZMod.card_units_eq_totient` here, then we use `CosetsMul.PowOfCardEqOne`
 
 --need: notion of `(ZMod m)^X`, having `a % m` being an element (a coprime), having `1` being the identity,
