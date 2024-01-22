@@ -1378,7 +1378,7 @@ lemma dvd_less_than_nat (m n : ℕ) (h : m ∣ n) (h_n : n < m) : n = 0 := by
 
 
 
-theorem nat_gcd_prime_prime (p a : ℕ) (h_p : Nat.Prime p) (h_a : a < p) (h : Nat.gcd p a = p) : a = 0 := by
+theorem nat_gcd_prime_prime (p a : ℕ)(h_a : a < p) (h : Nat.gcd p a = p) : a = 0 := by
   rw[gcd_eq_p] at h
   apply dvd_less_than_nat at h
   rw[h]
@@ -1413,7 +1413,6 @@ theorem prime_coprime (p : ℕ) (h_p : Nat.Prime p) : ((Finset.range p).filter p
         apply nat_gcd_prime_prime at h_1
         conv at d => rw[←h_1]; simp
         apply d
-        exact h_p
         exact c
 
 @[simp] lemma finset_one : Finset.range 1 = {0} := by
@@ -1472,6 +1471,10 @@ theorem totient_eq_zmod_units_card (n : ℕ) [inst : Fintype (Units (ZMod n))]: 
  unfold my_totient
  rw [← Fintype.card_ofFinset]
 
+
+
+lemma my_tot_zero : my_totient (0) = 0 := by
+  rfl
 
 theorem euler_totient (a m : ℕ) (ha : m.Coprime a) : a^(my_totient (m)) ≡ 1 [mod m] := by
   rw [← zmod_eq_iff_Mod_eq_nat]
