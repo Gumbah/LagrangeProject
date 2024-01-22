@@ -462,13 +462,17 @@ section cosetsMul
 
   lemma AssocLeftCosetMul (a b : G) :
   a LCoset* (b LCoset* H) = (a*b) LCoset* H := by
-    --refine ((fun {α} {s t} ↦ Set.ext_iff.mpr) ?_).symm
-    --intro x
-    --constructor
-    repeat rw[LeftCosetMul]
-    rw [(image_comp _ _ _).symm, Function.comp]
-
-
+    refine ((fun {α} {s t} ↦ Set.ext_iff.mpr) ?_).symm
+    intro x
+    constructor
+    · repeat rw[LeftCosetMul]
+      simp [(image_comp _ _ _).symm, Function.comp]
+      rw[mul_assoc]
+      exact fun a ↦ a
+    · repeat rw[LeftCosetMul]
+      simp [(image_comp _ _ _).symm, Function.comp]
+      rw[mul_assoc]
+      exact fun a ↦ a
     done
 
   lemma AssocRightCosetMul (a b : G) :
@@ -476,13 +480,13 @@ section cosetsMul
     sorry
     done
 
-  lemma LeftCosetElemImpEqMul (a b : G) :
-  a = b ↔ a LCoset* H = b LCoset* H := by
-    sorry
+  lemma LeftCosetElemImpEqMul (a b : G) (h : a = b):
+  a LCoset* H = b LCoset* H := by
+    rw [h]
     done
 
   lemma RightCosetElemImpEqMul (a b : G) :
-  a = b ↔ H RCoset* a = H RCoset* b := by
+  a = b → H RCoset* a = H RCoset* b := by
     sorry
     done
 
@@ -492,7 +496,11 @@ section cosetsMul
   lemma LeftCosetEqNotDisjoinMul (g i j : G)
   (h : g ∈ (i LCoset* H) ∧ g ∈ (j LCoset* H)) :
   i LCoset* H = j LCoset* H := by
-    sorry
+    --simp [LeftCosetMul] at h
+    refine ext ?h
+    intro x
+    constructor
+    ·
     done
 
   lemma RightCosetEqNotDisjointMul (g i j : G)
