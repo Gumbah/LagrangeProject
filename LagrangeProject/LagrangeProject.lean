@@ -1204,21 +1204,21 @@ def classical_crt (m n a b : ℕ) (h : Nat.Coprime m n) : {x // x ≡ a [mod m] 
   rw[bezout]
 
 @[simp] lemma gcd_nat_prime {p m : ℕ}(h: Nat.Prime p) : (Nat.gcd p m = 1) ∨ (Nat.gcd p m  = p):= by
- intros
- refine (Nat.dvd_prime ?pp).mp ?_
- exact h
- exact Nat.gcd_dvd_left p m
+  intros
+  refine (Nat.dvd_prime ?pp).mp ?_
+  exact h
+  exact Nat.gcd_dvd_left p m
 
 @[simp] lemma gcd_nat_prime_comm {p m : ℕ}(h: Nat.Prime p): (Nat.gcd p m = p) ∨ (Nat.gcd p m  = 1):= by
- rw[← or_comm]
- apply gcd_nat_prime
- exact h
+  rw[← or_comm]
+  apply gcd_nat_prime
+  exact h
 
 
 @[simp] lemma gcd_nat_prime_elt {p m : ℕ}(h: Nat.Prime p) : (Nat.gcd p m ∈ [1,p]) := by
- refine List.mem_pair.mpr ?_
- apply gcd_nat_prime
- exact h
+  refine List.mem_pair.mpr ?_
+  apply gcd_nat_prime
+  exact h
 
 
 
@@ -1237,9 +1237,9 @@ def classical_crt (m n a b : ℕ) (h : Nat.Coprime m n) : {x // x ≡ a [mod m] 
   exact h
 
 @[simp] lemma gcd_one_false {p m : ℕ}(h: Nat.Prime p) : ¬(Nat.gcd p m = 1) → (Nat.gcd p m = p):= by
- rw[← or_iff_not_imp_left]
- apply gcd_nat_prime
- · exact h
+  rw[← or_iff_not_imp_left]
+  apply gcd_nat_prime
+  · exact h
 
 
 @[simp] lemma gcd_prime_true {p m : ℕ}(h: Nat.Prime p) : (Nat.gcd p m = p) → ¬(Nat.gcd p m = 1):= by
@@ -1250,9 +1250,9 @@ def classical_crt (m n a b : ℕ) (h : Nat.Coprime m n) : {x // x ≡ a [mod m] 
   exact h
 
 @[simp] lemma gcd_prime_false {p m : ℕ}(h: Nat.Prime p): ¬(Nat.gcd p m = p) → (Nat.gcd p m = 1):= by
- rw[← or_iff_not_imp_left]
- apply gcd_nat_prime_comm
- exact h
+  rw[← or_iff_not_imp_left]
+  apply gcd_nat_prime_comm
+  exact h
 
 
 @[simp] lemma gcd_eq_p {p x : ℕ} : (Nat.gcd p x = p) ↔ ((p : ℕ)∣ x) := by
@@ -1361,6 +1361,8 @@ theorem euclid {p m n : ℕ}(h: Nat.Prime p): ((p : ℕ) ∣ m*n) → ((p : ℕ)
   · exact h
   · exact h1
 
+-- Katie
+
 -- Structuring the proof of Euclid's lemma was fairly difficult; I knew how to prove it easily
 -- by hand with the theorems listed above in just a couple lines, but constructing a sort of contradiction
 -- (i.e. either gcd p n = 1 or gcd p m = 1, but can't have both occur simultaneously and wanting to structure
@@ -1372,8 +1374,10 @@ theorem gen_euclid {d m n : ℕ} (h1 : d ∣ m * n) (h2 : Nat.gcd m d = 1) : d �
   -- d∣ m*n, d ∣ d => d ∣ n
   rw[← mul_one n]
   rw[← bezout_one_nat]
-
-
+  sorry
+  sorry
+  sorry
+  sorry
 -- Katie: laying out the land
 
 -- 11/1/24 - Jakub filled out the sorry here
@@ -1426,9 +1430,7 @@ lemma dvd_less_than_nat (m n : ℕ) (h : m ∣ n) (h_n : n < m) : n = 0 := by
     conv at h_1 => rw[← ne_eq] ; rw[Nat.ne_zero_iff_zero_lt]
     apply Nat.le_mul_of_pos_right
     exact h_1
-
-
-
+  sorry
 
 theorem nat_gcd_prime_prime (p a : ℕ)(h_a : a < p) (h : Nat.gcd p a = p) : a = 0 := by
   rw[gcd_eq_p] at h
@@ -1549,6 +1551,10 @@ theorem zmod_mul_inv_eq_one {n : ℕ} (x : ℕ) (h : Nat.Coprime x n) : (x : ZMo
 def zmod_unit_of_coprime {n : ℕ} (x : ℕ) (h : Nat.Coprime x n) : (Units (ZMod n)) :=
   ⟨x, x⁻¹, zmod_mul_inv_eq_one x h, by rw [mul_comm, zmod_mul_inv_eq_one x h]⟩
 
+theorem coe_zmod_unit_of_coprime {n : ℕ} (x : ℕ) (h : Nat.Coprime x n) : (zmod_unit_of_coprime x h : ZMod n) = x := by
+  rfl
+
+
 --23/01/24 - Jakub
 
 --We want to use parts of `ZMod` in our proof of the Euler Totient function, one such aspect is the use of the inverse
@@ -1562,14 +1568,9 @@ def zmod_unit_of_coprime {n : ℕ} (x : ℕ) (h : Nat.Coprime x n) : (Units (ZMo
 --which is the main original contribution to this section, as well as the complete dependence on `gcd_bezout` and its
 --following results as defined and proven above.
 
-
 def my_zmod_inv : ∀ n : ℕ, ZMod n → ZMod n
   | 0, i => Int.sign i
   | n+1, i => bez_a i.val (n+1)
-
-
-theorem coe_zmod_unit_of_coprime {n : ℕ} (x : ℕ) (h : Nat.Coprime x n) : (zmod_unit_of_coprime x h : ZMod n) = x := by
-  rfl
 
 lemma bez_is_zmod_inv (n : ℕ) (a : ZMod n) (h : 0 < n) : my_zmod_inv n a = bez_a a.val n := by
   match n with
@@ -1607,9 +1608,9 @@ theorem my_mul_zmod_inv_eq_gcd {n : ℕ} (a : ZMod n) : a * (my_zmod_inv n a) = 
 --end of ZMod inverse section.
 
 theorem totient_eq_zmod_units_card (n : ℕ) [inst : Fintype (Units (ZMod n))]: my_totient (n) = Fintype.card (Units (ZMod n)) := by
- unfold my_totient
- rw [← Fintype.card_ofFinset]
-
+  unfold my_totient
+  rw [← Fintype.card_ofFinset]
+  sorry
 
 
 theorem val_coe_zmod_unit_of_coprime {n : ℕ} (y : Units (ZMod n)) : Nat.Coprime (y : ZMod n).val n := by
@@ -1626,17 +1627,19 @@ def my_zmod_unitsEquivCoprime {n : ℕ} [NeZero n] : (Units (ZMod n)) ≃ ((Fins
 
 -- Ignore these for now
 lemma finset_filter_coprime_equiv (n : ℕ) : {x // x ∈ Finset.filter (Nat.Coprime n) (Finset.range n) } = {x // x ∈ (Finset.range n).filter n.Coprime } := by
-sorry
+  sorry
 
 theorem zmod_units_equiv_card (n : ℕ) [inst : Fintype (Units (ZMod n))]: Fintype.card { x // x ∈ Finset.filter (Nat.Coprime n) (Finset.range n) } = Fintype.card (Units (ZMod n)) := by
   rw[finset_filter_coprime_equiv]
   rw[Fintype.card_subtype]
+  sorry
 
 theorem totient_eq_zmod_units_card (n : ℕ) [inst : Fintype (Units (ZMod n))]: my_totient (n) = Fintype.card (Units (ZMod n)) := by
- unfold my_totient
- rw[Fintype.card_subtype]
- --rw [zmod_units_equiv]
- rw [← Fintype.card_ofFinset]
+  unfold my_totient
+  rw[Fintype.card_subtype]
+  --rw [zmod_units_equiv]
+  rw [← Fintype.card_ofFinset]
+  sorry
 
 --
 
@@ -1647,7 +1650,7 @@ theorem euler_totient (a m : ℕ) (ha : m.Coprime a) : a^(my_totient (m)) ≡ 1 
   cases m
   · rw [my_tot_zero]
     rw [pow_zero]
-  ·
+  · sorry
   --· --need our own version of `← ZMod.card_units_eq_totient` here, then we use `CosetsMul.PowOfCardEqOne`
 
 --need: notion of `(ZMod m)^X`, having `a % m` being an element (a coprime), having `1` being the identity,
