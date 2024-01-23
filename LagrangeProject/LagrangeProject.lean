@@ -1316,6 +1316,7 @@ theorem euclid_l1_coprime {p m n : ℕ}(h: Nat.Prime p)(h_n : p < n)(h_m : p < m
   sorry
 
 --21/01/21 - Jakub
+
 --Filling out sorry's left earlier while waiting for ZMod lemmas to complete proof of Euler Totient theorem.
 --Unfortunately my idea for a proof of this did not line up with Katie's so I did not end up using the helpful lemmas
 --that she proved before. It also turned out that some of the assumptions she was working with were not required for
@@ -1517,15 +1518,61 @@ lemma zmod_eq_iff_Mod_eq_nat (n : ℕ) {a b : ℕ} : (a : ZMod n) = b ↔ a ≡ 
 lemma my_tot_zero : my_totient (0) = 0 := by
   rfl
 
+--23/01/24 - Jakub
+
+--We want to use parts of `ZMod` in our proof of the Euler Totient function, one such aspect is the use of the inverse
+--as defined in `ZMod.Basic`. We have seen that in the proofs and definitions there is significant use of the xgcd
+--algorithm in mathlib, analagous to my own `gcd_bezout` function, so we have decided to rewrite some key results.
+
+--Using my `bez_a_mod_aux` and mathlib's definition as a base, we will define our own inverse function for elements
+--of ZMod. The definition is the same as mathlib's, but using my own `bez_a` instead of mathlib's `Nat.gcdA`.
+--The proof required some tweaks due to casting errors and the statement of my `bezout` theorem not being exactly
+--the same as the one in mathlib. The simple lemma `bez_is_zmod_inv` was necessary for part of `my_mul_zmod_inv_eq_gcd`
+--which is the main original contribution to this section, as well as the complete dependence on `gcd_bezout` and its
+--following results as defined and proven above.
+
+def my_zmod_inv : ∀ n : ℕ, ZMod n → ZMod n
+  | 0, i => Int.sign i
+  | n+1, i => bez_a i.val (n+1)
+
+lemma bez_is_zmod_inv (n : ℕ) (a : ZMod n) (h : 0 < n) : my_zmod_inv n a = bez_a a.val n := by
+  match n with
+  | 0 => contradiction
+  | n+1 => rfl
+
+theorem my_zmod_inv_zero : ∀ n : ℕ, my_zmod_inv n (0 : ZMod n) = 0
+  | 0 => Int.sign_zero
+  | n+1 =>
+    show (bez_a _ (n+1) : ZMod (n+1)) = 0 by
+      rw [ZMod.val_zero]
+      rw [bez_a_zero_left]
+      rfl
+
+theorem my_mul_zmod_inv_eq_gcd {n : ℕ} (a : ZMod n) : a * (my_zmod_inv n a) = Nat.gcd a.val n := by
+  cases' n with n
+  · dsimp [ZMod] at a ⊢
+    calc
+      _ = a * Int.sign a := rfl
+      _ = a.natAbs := by rw [Int.mul_sign]
+      _ = a.natAbs.gcd 0 := by rw [Nat.gcd_zero_right]
+  · calc
+      a * (my_zmod_inv n.succ a) = a * (my_zmod_inv n.succ a) + n.succ * bez_b (ZMod.val a) n.succ := by
+        rw [ZMod.nat_cast_self, zero_mul, add_zero]
+      _ = ↑(↑a.val * bez_a (ZMod.val a) n.succ + n.succ * bez_b (ZMod.val a) n.succ) := by
+        push_cast
+        rw [ZMod.nat_cast_zmod_val]
+        have h : 0 < Nat.succ n := by apply Nat.zero_lt_succ
+        rw [bez_is_zmod_inv]
+        exact h
+      _ = (Nat.gcd a.val n.succ : ℤ) := by
+        rw [mul_comm, mul_comm (↑(Nat.succ n)) (bez_b (ZMod.val a) (Nat.succ n))]
+        rw [← bezout a.val n.succ]
+
+--end of ZMod inverse section.
 
 theorem totient_eq_zmod_units_card (n : ℕ) [inst : Fintype (Units (ZMod n))]: my_totient (n) = Fintype.card (Units (ZMod n)) := by
  unfold my_totient
  rw [← Fintype.card_ofFinset]
-
-
-
-lemma my_tot_zero : my_totient (0) = 0 := by
-  rfl
 
 theorem euler_totient (a m : ℕ) (ha : m.Coprime a) : a^(my_totient (m)) ≡ 1 [mod m] := by
   rw [← zmod_eq_iff_Mod_eq_nat]
