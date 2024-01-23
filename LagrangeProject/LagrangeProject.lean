@@ -515,11 +515,32 @@ section cosetsMul
       intro x
       simp [LeftCosetMul] at h
       let α := i⁻¹ * j
-      have a : α ∈ H := by
-        exact h
-      have b : j = i*α := by
-        simp
-
+      constructor
+      · intro k
+        let β := i⁻¹*x
+        simp [LeftCosetMul] at k
+        have e : x = j*α⁻¹*β := by
+          simp
+        simp [LeftCosetMul]
+        rw[e]
+        rw[← mul_assoc]
+        have f : j⁻¹ * (j * α⁻¹) = α⁻¹ := by
+          simp
+        rw[f]
+        refine (mul_mem_cancel_left ?h.mp.h).mpr k
+        exact Subgroup.inv_mem H h
+      · intro k
+        let β := j⁻¹*x
+        simp [LeftCosetMul] at k
+        have e : x = i*α*β := by
+          simp
+        simp [LeftCosetMul]
+        rw[e]
+        rw[← mul_assoc]
+        have f : i⁻¹ * (i * α) = α := by
+          simp
+        rw[f]
+        exact Subgroup.mul_mem H h k
     · intro h
       rw [h]
       exact ElemInOwnLeftCosetMul H j
@@ -530,20 +551,17 @@ section cosetsMul
   lemma LeftCosetEqNotDisjointMul (g i j : G)
   (h : g ∈ (i LCoset* H) ∧ g ∈ (j LCoset* H)) :
   i LCoset* H = j LCoset* H := by
-    simp [LeftCosetMul] at h
     let ⟨a, b⟩ := h
-    let α := i⁻¹ * g
-    have c : α ∈ H := by
+    have h1 : g LCoset* H = i LCoset* H := by
+      rw[LeftCosetEqIffContained] at a
+      symm
       exact a
-    let β := j⁻¹ * g
-    have d : β ∈ H := by
+    have h2 : g LCoset* H = j LCoset* H := by
+      rw[LeftCosetEqIffContained] at b
+      symm
       exact b
-
-    refine ext ?h
-    --intro x
-
-    --constructor
-    --·
+    rw [h1] at h2
+    exact h2
     done
 
   lemma RightCosetEqNotDisjointMul (g i j : G)
@@ -554,8 +572,9 @@ section cosetsMul
 
   lemma LeftCosetDisjointMul (g i j : G)
   (h : g ∈ (i LCoset* H) ∧ ¬(g ∈ (j LCoset* H))) :
-  i LCoset* H ∪ j LCoset* H = {} := by
-    sorry
+  (i LCoset* H) ∩ (j LCoset* H) = {} := by
+    have ⟨a, b⟩ := h
+
     done
 
 
