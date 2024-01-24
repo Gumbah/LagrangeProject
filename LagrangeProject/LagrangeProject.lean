@@ -456,6 +456,8 @@ section cosetsMul
   set_option quotPrecheck true
   -/
 
+
+
   namespace CosetsMul
 
   open Set Function
@@ -548,9 +550,9 @@ section cosetsMul
 
 
   -- if h ∈ iH and jH then iH = jH
-  lemma LeftCosetEqNotDisjointMul (g i j : G)
-  (h : g ∈ (i LCoset* H) ∧ g ∈ (j LCoset* H)) :
-  i LCoset* H = j LCoset* H := by
+  lemma LeftCosetEqNotDisjointMul (g i j : G) :
+  g ∈ (i LCoset* H) ∧ g ∈ (j LCoset* H) → i LCoset* H = j LCoset* H := by
+    intro h
     let ⟨a, b⟩ := h
     have h1 : g LCoset* H = i LCoset* H := by
       rw[LeftCosetEqIffContained] at a
@@ -573,8 +575,19 @@ section cosetsMul
   lemma LeftCosetDisjointMul (g i j : G)
   (h : g ∈ (i LCoset* H) ∧ ¬(g ∈ (j LCoset* H))) :
   (i LCoset* H) ∩ (j LCoset* H) = {} := by
-    have ⟨a, b⟩ := h
-
+    contrapose h
+    refine not_and.mpr ?_
+    intro h1
+    simp
+    have h2 : ∃ x, x ∈ (i LCoset* H) ∧ x ∈ (j LCoset* H) := by
+      refine inter_nonempty.mp ?_
+      exact nmem_singleton_empty.mp h
+    cases h2 with
+    | intro w y =>
+      apply LeftCosetEqNotDisjointMul at y
+      symm at y
+      rw[y]
+      exact h1
     done
 
 
@@ -582,8 +595,8 @@ section cosetsMul
   variable {A : I → Set G}
 
   lemma UnionOfLeftCosetsIsGroup : G = (⋃ i, A i)  := by
-  sorry
-  done
+    sorry
+    done
 
   theorem LagrangeLeftMul [Fintype G] [Fintype H] :
   Fintype.card H ∣ Fintype.card G := by
