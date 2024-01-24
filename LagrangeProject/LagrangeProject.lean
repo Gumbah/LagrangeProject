@@ -467,6 +467,11 @@ section cosetsMul
     exact Subgroup.one_mem H
     done
 
+  lemma ElemInOwnLeftCosetMul (i : G) : i ∈ i LCoset* H := by
+    simp [LeftCosetMul]
+    exact Subgroup.one_mem H
+    done
+
   lemma AssocLeftCosetMul (a b : G) :
   a LCoset* (b LCoset* H) = (a*b) LCoset* H := by
     refine ((fun {α} {s t} ↦ Set.ext_iff.mpr) ?_).symm
