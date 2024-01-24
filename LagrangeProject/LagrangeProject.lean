@@ -456,6 +456,8 @@ section cosetsMul
   set_option quotPrecheck true
   -/
 
+
+
   namespace CosetsMul
 
   open Set Function
@@ -548,9 +550,9 @@ section cosetsMul
 
 
   -- if h ∈ iH and jH then iH = jH
-  lemma LeftCosetEqNotDisjointMul (g i j : G)
-  (h : g ∈ (i LCoset* H) ∧ g ∈ (j LCoset* H)) :
-  i LCoset* H = j LCoset* H := by
+  lemma LeftCosetEqNotDisjointMul (g i j : G) :
+  g ∈ (i LCoset* H) ∧ g ∈ (j LCoset* H) → i LCoset* H = j LCoset* H := by
+    intro h
     let ⟨a, b⟩ := h
     have h1 : g LCoset* H = i LCoset* H := by
       rw[LeftCosetEqIffContained] at a
@@ -573,8 +575,19 @@ section cosetsMul
   lemma LeftCosetDisjointMul (g i j : G)
   (h : g ∈ (i LCoset* H) ∧ ¬(g ∈ (j LCoset* H))) :
   (i LCoset* H) ∩ (j LCoset* H) = {} := by
-    have ⟨a, b⟩ := h
-
+    contrapose h
+    refine not_and.mpr ?_
+    intro h1
+    simp
+    have h2 : ∃ x, x ∈ (i LCoset* H) ∧ x ∈ (j LCoset* H) := by
+      refine inter_nonempty.mp ?_
+      exact nmem_singleton_empty.mp h
+    cases h2 with
+    | intro w y =>
+      apply LeftCosetEqNotDisjointMul at y
+      symm at y
+      rw[y]
+      exact h1
     done
 
 
@@ -582,8 +595,8 @@ section cosetsMul
   variable {A : I → Set G}
 
   lemma UnionOfLeftCosetsIsGroup : G = (⋃ i, A i)  := by
-  sorry
-  done
+    sorry
+    done
 
   theorem LagrangeLeftMul [Fintype G] [Fintype H] :
   Fintype.card H ∣ Fintype.card G := by
@@ -1612,6 +1625,12 @@ theorem my_mul_zmod_inv_eq_gcd {n : ℕ} (a : ZMod n) : a * (my_zmod_inv n a) = 
 
 --end of proofs based heavily on mathlib ------------------------------------------
 
+--24/01/24 - Jakub
+
+--I have edited some of Katie's lemmas to work with `my_zmod_inv` instead of mathlib's built-in inverse function.
+--I have also unsorry'd `zmod_inv_eq_one` which followed as a corollary from the above theorem, and modified
+--`zmod_unit_of_coprime` so that it now causes no errors, and works with our new inverse definition.
+
 theorem zmod_mul_inv_eq_one {n : ℕ} (x : ZMod n) (h : Nat.Coprime x.val n) : x * (my_zmod_inv n x) = 1 := by
   rw [Nat.coprime_iff_gcd_eq_one] at h
   rw [← Nat.cast_one]
@@ -1626,7 +1645,6 @@ def zmod_unit_of_coprime {n : ℕ} (x : ZMod n) (h : Nat.Coprime x.val n) : (Uni
 
 theorem coe_zmod_unit_of_coprime {n : ℕ} (x : ℕ) (h : Nat.Coprime x n) : (zmod_unit_of_coprime x h : ZMod n) = x := by
   rfl
-
 
 theorem totient_eq_zmod_units_card (n : ℕ) [inst : Fintype (Units (ZMod n))]: my_totient (n) = Fintype.card (Units (ZMod n)) := by
   unfold my_totient
