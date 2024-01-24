@@ -1573,16 +1573,6 @@ lemma my_tot_zero : my_totient (0) = 0 := by
 -- results for Bezout's lemma) and hopefully create original proofs for ZMod.Basic results that we will need. Hopefully it isn't too confusing
 -- for us to pick and choose results to use from the imported ZMod.Basic file.
 
-theorem zmod_unit_val_coprime (y : (Units (ZMod n))) : Nat.Coprime (y : ZMod n).val n := by
-  sorry
-
-def zmod_unit_of_coprime {n : ℕ} (x : ℕ) (h : Nat.Coprime x n) : (Units (ZMod n)) :=
-  ⟨x, x⁻¹, zmod_mul_inv_eq_one x h, by rw [mul_comm, zmod_mul_inv_eq_one x h]⟩
-
-theorem coe_zmod_unit_of_coprime {n : ℕ} (x : ℕ) (h : Nat.Coprime x n) : (zmod_unit_of_coprime x h : ZMod n) = x := by
-  rfl
-
-
 --23/01/24 - Jakub
 
 --We want to use parts of `ZMod` in our proof of the Euler Totient function, one such aspect is the use of the inverse
@@ -1635,10 +1625,26 @@ theorem my_mul_zmod_inv_eq_gcd {n : ℕ} (a : ZMod n) : a * (my_zmod_inv n a) = 
 
 --end of proofs based heavily on mathlib ------------------------------------------
 
-theorem zmod_mul_inv_eq_one {n : ℕ} (x : ZMod n) (h : Nat.Coprime x.val n) : x * (my_zmod_inv n x) = (1 : ℕ) := by
+--24/01/24 - Jakub
+
+--I have edited some of Katie's lemmas to work with `my_zmod_inv` instead of mathlib's built-in inverse function.
+--I have also unsorry'd `zmod_inv_eq_one` which followed as a corollary from the above theorem, and modified
+--`zmod_unit_of_coprime` so that it now causes no errors, and works with our new inverse definition.
+
+theorem zmod_mul_inv_eq_one {n : ℕ} (x : ZMod n) (h : Nat.Coprime x.val n) : x * (my_zmod_inv n x) = 1 := by
   rw [Nat.coprime_iff_gcd_eq_one] at h
+  rw [← Nat.cast_one]
   rw [← h]
   rw [my_mul_zmod_inv_eq_gcd]
+
+theorem zmod_unit_val_coprime (y : (Units (ZMod n))) : Nat.Coprime (y : ZMod n).val n := by
+  sorry
+
+def zmod_unit_of_coprime {n : ℕ} (x : ZMod n) (h : Nat.Coprime x.val n) : (Units (ZMod n)) :=
+  ⟨x, my_zmod_inv n x, zmod_mul_inv_eq_one x h, by rw [mul_comm, zmod_mul_inv_eq_one x h]⟩
+
+theorem coe_zmod_unit_of_coprime {n : ℕ} (x : ℕ) (h : Nat.Coprime x n) : (zmod_unit_of_coprime x h : ZMod n) = x := by
+  rfl
 
 theorem totient_eq_zmod_units_card (n : ℕ) [inst : Fintype (Units (ZMod n))]: my_totient (n) = Fintype.card (Units (ZMod n)) := by
   unfold my_totient
