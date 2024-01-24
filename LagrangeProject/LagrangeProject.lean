@@ -460,6 +460,8 @@ section cosetsMul
 
   namespace CosetsMul
 
+
+  open groupsMul
   open Set Function
 
   lemma ElemInOwnLeftCosetMul (i : G) : i ∈ i LCoset* H := by
@@ -484,7 +486,17 @@ section cosetsMul
 
   lemma AssocRightCosetMul (a b : G) :
   (H RCoset* a) RCoset* b = H RCoset* (a*b) := by
-    sorry
+    refine (ext ?h).symm
+    intro x
+    constructor
+    · repeat rw[RightCosetMul]
+      simp [(image_comp _ _ _).symm, Function.comp]
+      rw[mul_assoc]
+      exact fun a ↦ a
+    · repeat rw[RightCosetMul]
+      simp [(image_comp _ _ _).symm, Function.comp]
+      rw[mul_assoc]
+      exact fun a ↦ a
     done
 
   lemma LeftCosetElemImpEqMul (a b : G) (h : a = b):
@@ -492,9 +504,9 @@ section cosetsMul
     rw [h]
     done
 
-  lemma RightCosetElemImpEqMul (a b : G) :
-  a = b → H RCoset* a = H RCoset* b := by
-    sorry
+  lemma RightCosetElemImpEqMul (a b : G) (h : a = b):
+  H RCoset* a = H RCoset* b := by
+    rw[h]
     done
 
   lemma LeftCosetClosureMul (g i : G) :
@@ -508,6 +520,17 @@ section cosetsMul
       exact h
     done
     --May be more lemmas needed
+
+  lemma RightCosetClosureMul (g i : G) :
+  g ∈ H RCoset* i ↔ g * i⁻¹ ∈ H := by
+    constructor
+    · intro h
+      simp [RightCosetMul] at h
+      exact h
+    · intro h
+      simp [RightCosetMul]
+      exact h
+    done
 
   lemma LeftCosetEqIffContained (i j : G) :
   j ∈ i LCoset* H ↔ i LCoset* H = j LCoset* H := by
@@ -548,6 +571,43 @@ section cosetsMul
       exact ElemInOwnLeftCosetMul H j
     done
 
+  lemma RightCosetEqIffContained [Group G] (i j : G) :
+  j ∈ H RCoset* i ↔ H RCoset* i = H RCoset* j := by
+    constructor
+    · intro h
+      refine ext ?h
+      intro x
+      simp [RightCosetMul] at h
+      let α := j * i⁻¹
+      constructor
+      · intro k
+        let β := x*i⁻¹
+        simp [RightCosetMul] at k
+        have e : x = β*α⁻¹*j := by
+          simp
+        simp [RightCosetMul]
+        rw[e]
+        rw[mul_assoc]
+        have f : j * j⁻¹ = 1 := by
+          rw[MulInv G j]
+
+      · intro k
+        let β := j⁻¹*x
+        simp [LeftCosetMul] at k
+        have e : x = i*α*β := by
+          simp
+        simp [LeftCosetMul]
+        rw[e]
+        rw[← mul_assoc]
+        have f : i⁻¹ * (i * α) = α := by
+          simp
+        rw[f]
+        exact Subgroup.mul_mem H h k
+    · intro h
+      rw [h]
+      exact ElemInOwnLeftCosetMul H j
+    done
+
 
   -- if h ∈ iH and jH then iH = jH
   lemma LeftCosetEqNotDisjointMul (g i j : G) :
@@ -564,12 +624,6 @@ section cosetsMul
       exact b
     rw [h1] at h2
     exact h2
-    done
-
-  lemma RightCosetEqNotDisjointMul (g i j : G)
-  (h : g ∈ (H RCoset* i) ∧ g ∈ (H RCoset* j)) :
-  H RCoset* i = H RCoset* j := by
-    sorry
     done
 
   lemma LeftCosetDisjointMul (g i j : G)
@@ -589,6 +643,9 @@ section cosetsMul
       rw[y]
       exact h1
     done
+
+  lemma RightCosetEqIffContained (i j : G) :
+  j ∈ i LCoset* H ↔ i LCoset* H = j LCoset* H := by
 
 
   variable {I : Type*}
