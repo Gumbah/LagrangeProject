@@ -460,24 +460,15 @@ section cosetsMul
 
   open Set Function
 
-  lemma ElemInOwnLeftCosetMul (i : G) : i ∈ i LCoset* H := by
-    simp [LeftCosetMul]
-    exact Subgroup.one_mem H
-    done
-
   lemma AssocLeftCosetMul (a b : G) :
   a LCoset* (b LCoset* H) = (a*b) LCoset* H := by
-    refine ((fun {α} {s t} ↦ Set.ext_iff.mpr) ?_).symm
-    intro x
-    constructor
-    · repeat rw[LeftCosetMul]
-      simp [(image_comp _ _ _).symm, Function.comp]
-      rw[mul_assoc]
-      exact fun a ↦ a
-    · repeat rw[LeftCosetMul]
-      simp [(image_comp _ _ _).symm, Function.comp]
-      rw[mul_assoc]
-      exact fun a ↦ a
+    --refine ((fun {α} {s t} ↦ Set.ext_iff.mpr) ?_).symm
+    --intro x
+    --constructor
+    repeat rw[LeftCosetMul]
+    rw [(image_comp _ _ _).symm, Function.comp]
+
+
     done
 
   lemma AssocRightCosetMul (a b : G) :
@@ -485,65 +476,23 @@ section cosetsMul
     sorry
     done
 
-  lemma LeftCosetElemImpEqMul (a b : G) (h : a = b):
-  a LCoset* H = b LCoset* H := by
-    rw [h]
-    done
-
-  lemma RightCosetElemImpEqMul (a b : G) :
-  a = b → H RCoset* a = H RCoset* b := by
+  lemma LeftCosetElemImpEqMul (a b : G) :
+  a = b ↔ a LCoset* H = b LCoset* H := by
     sorry
     done
 
-  lemma LeftCosetClosureMul (g i : G) :
-  g ∈ i LCoset* H ↔ i⁻¹ * g ∈ H := by
-    constructor
-    · intro h
-      simp [LeftCosetMul] at h
-      exact h
-    · intro h
-      simp [LeftCosetMul]
-      exact h
+  lemma RightCosetElemImpEqMul (a b : G) :
+  a = b ↔ H RCoset* a = H RCoset* b := by
+    sorry
     done
+
     --May be more lemmas needed
 
-  lemma LeftCosetEqIffContained (i j : G) :
-  j ∈ i LCoset* H ↔ i LCoset* H = j LCoset* H := by
-    constructor
-    · intro h
-      refine ext ?h
-      intro x
-      simp [LeftCosetMul] at h
-      let α := i⁻¹ * j
-      have a : α ∈ H := by
-        exact h
-      have b : j = i*α := by
-        simp
-
-    · intro h
-      rw [h]
-      exact ElemInOwnLeftCosetMul H j
-    done
-
-
   -- if h ∈ iH and jH then iH = jH
-  lemma LeftCosetEqNotDisjointMul (g i j : G)
+  lemma LeftCosetEqNotDisjoinMul (g i j : G)
   (h : g ∈ (i LCoset* H) ∧ g ∈ (j LCoset* H)) :
   i LCoset* H = j LCoset* H := by
-    simp [LeftCosetMul] at h
-    let ⟨a, b⟩ := h
-    let α := i⁻¹ * g
-    have c : α ∈ H := by
-      exact a
-    let β := j⁻¹ * g
-    have d : β ∈ H := by
-      exact b
-
-    refine ext ?h
-    --intro x
-
-    --constructor
-    --·
+    sorry
     done
 
   lemma RightCosetEqNotDisjointMul (g i j : G)
@@ -1316,7 +1265,6 @@ theorem euclid_l1_coprime {p m n : ℕ}(h: Nat.Prime p)(h_n : p < n)(h_m : p < m
   sorry
 
 --21/01/21 - Jakub
-
 --Filling out sorry's left earlier while waiting for ZMod lemmas to complete proof of Euler Totient theorem.
 --Unfortunately my idea for a proof of this did not line up with Katie's so I did not end up using the helpful lemmas
 --that she proved before. It also turned out that some of the assumptions she was working with were not required for
@@ -1539,81 +1487,35 @@ lemma my_tot_zero : my_totient (0) = 0 := by
 -- results for Bezout's lemma) and hopefully create original proofs for ZMod.Basic results that we will need. Hopefully it isn't too confusing
 -- for us to pick and choose results to use from the imported ZMod.Basic file.
 
-theorem zmod_unit_val_coprime (y : (Units (ZMod n))) : Nat.Coprime (y : ZMod n).val n := by
-  sorry
-
-
 theorem zmod_mul_inv_eq_one {n : ℕ} (x : ℕ) (h : Nat.Coprime x n) : (x : ZMod n) * ((x : ZMod n)⁻¹) = 1 := by
   sorry
 
 def zmod_unit_of_coprime {n : ℕ} (x : ℕ) (h : Nat.Coprime x n) : (Units (ZMod n)) :=
   ⟨x, x⁻¹, zmod_mul_inv_eq_one x h, by rw [mul_comm, zmod_mul_inv_eq_one x h]⟩
 
---23/01/24 - Jakub
-
---We want to use parts of `ZMod` in our proof of the Euler Totient function, one such aspect is the use of the inverse
---as defined in `ZMod.Basic`. We have seen that in the proofs and definitions there is significant use of the xgcd
---algorithm in mathlib, analagous to my own `gcd_bezout` function, so we have decided to rewrite some key results.
-
---Using my `bez_a_mod_aux` and mathlib's definition as a base, we will define our own inverse function for elements
---of ZMod. The definition is the same as mathlib's, but using my own `bez_a` instead of mathlib's `Nat.gcdA`.
---The proof required some tweaks due to casting errors and the statement of my `bezout` theorem not being exactly
---the same as the one in mathlib. The simple lemma `bez_is_zmod_inv` was necessary for part of `my_mul_zmod_inv_eq_gcd`
---which is the main original contribution to this section, as well as the complete dependence on `gcd_bezout` and its
---following results as defined and proven above.
-
-
-def my_zmod_inv : ∀ n : ℕ, ZMod n → ZMod n
-  | 0, i => Int.sign i
-  | n+1, i => bez_a i.val (n+1)
-
 
 theorem coe_zmod_unit_of_coprime {n : ℕ} (x : ℕ) (h : Nat.Coprime x n) : (zmod_unit_of_coprime x h : ZMod n) = x := by
   rfl
 
-lemma bez_is_zmod_inv (n : ℕ) (a : ZMod n) (h : 0 < n) : my_zmod_inv n a = bez_a a.val n := by
-  match n with
-  | 0 => contradiction
-  | n+1 => rfl
 
-theorem my_zmod_inv_zero : ∀ n : ℕ, my_zmod_inv n (0 : ZMod n) = 0
-  | 0 => Int.sign_zero
-  | n+1 =>
-    show (bez_a _ (n+1) : ZMod (n+1)) = 0 by
-      rw [ZMod.val_zero]
-      rw [bez_a_zero_left]
-      rfl
-
-theorem my_mul_zmod_inv_eq_gcd {n : ℕ} (a : ZMod n) : a * (my_zmod_inv n a) = Nat.gcd a.val n := by
-  cases' n with n
-  · dsimp [ZMod] at a ⊢
-    calc
-      _ = a * Int.sign a := rfl
-      _ = a.natAbs := by rw [Int.mul_sign]
-      _ = a.natAbs.gcd 0 := by rw [Nat.gcd_zero_right]
-  · calc
-      a * (my_zmod_inv n.succ a) = a * (my_zmod_inv n.succ a) + n.succ * bez_b (ZMod.val a) n.succ := by
-        rw [ZMod.nat_cast_self, zero_mul, add_zero]
-      _ = ↑(↑a.val * bez_a (ZMod.val a) n.succ + n.succ * bez_b (ZMod.val a) n.succ) := by
-        push_cast
-        rw [ZMod.nat_cast_zmod_val]
-        have h : 0 < Nat.succ n := by apply Nat.zero_lt_succ
-        rw [bez_is_zmod_inv]
-        exact h
-      _ = (Nat.gcd a.val n.succ : ℤ) := by
-        rw [mul_comm, mul_comm (↑(Nat.succ n)) (bez_b (ZMod.val a) (Nat.succ n))]
-        rw [← bezout a.val n.succ]
-
---end of ZMod inverse section.
-
-theorem totient_eq_zmod_units_card (n : ℕ) [inst : Fintype (Units (ZMod n))]: my_totient (n) = Fintype.card (Units (ZMod n)) := by
- unfold my_totient
- rw [← Fintype.card_ofFinset]
-
-
-
-theorem val_coe_zmod_unit_of_coprime {n : ℕ} (y : Units (ZMod n)) : Nat.Coprime (y : ZMod n).val n := by
+lemma gcd_zero_eq_one_imp_one {n : ℕ}(y : ZMod n)(h : Nat.gcd y.val Nat.zero = 1) : (y.val = 1) := by
   sorry
+
+theorem zmod_unit_val_coprime {n : ℕ} (y : Units (ZMod n)) : Nat.Coprime (y : ZMod n).val n := by
+  induction n
+  unfold Nat.Coprime
+  have h_1 : Units (ZMod Nat.zero) = Units (ℤ) := by
+    sorry
+  conv at y => rw[h_1]
+  apply Int.units_eq_one_or at y
+
+
+
+
+
+
+
+
 
 -- Probably wont need : theorem coe_zmod_inv_unit {n : ℕ} (y : Units (ZMod n)) : (y : ZMod n)⁻¹ = (y⁻¹ : (Units (ZMod n))) := by
 
