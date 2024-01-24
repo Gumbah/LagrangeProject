@@ -408,22 +408,10 @@ section rings
   rw[MulZero]
   done
 
-  def DirectRingProd [Ring R, S] (g : G) (H : Set G) : Set G :=
-    Set.image (fun h => g * h) H
+  variable {S : Type} [Ring S]
 
-  @[simp]lemma IdUniqueMul (a b : R) : a * b = b ↔ a = 1 := by
-    constructor
-    intro h1
-    rw[← mul_one a]
-    rw[← MulInv b]
-    rw[← mul_assoc]
-    rw[h1]
-    intro h2
-    rw[h2]
-    rw[one_mul]
-    sorry
-    -- this one might not be super necessary
-    done
+  def DirectRingProd [Ring R] [Ring S] (a : R) (b : S) : R × S :=
+    (a, b)
 
 end rings
 
@@ -587,6 +575,18 @@ section cosetsMul
 end CosetsMul
 
 end cosetsMul
+
+section quotientgroupmul
+
+  variable {G : Type*} [Group G] (H : Subgroup G)
+
+  def quotientGroup [Group G] (g : G) (H : Set G): Group :=
+    {g LCoset* H, g ∈ G}
+
+  --def LeftCosetMul [Group G] (g : G) (H : Set G) : Set G :=
+    --Set.image (fun h => g * h) H
+
+end quotientgroupmul
 
 /-
 section cosetsAdd
