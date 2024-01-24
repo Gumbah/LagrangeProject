@@ -1563,10 +1563,6 @@ lemma my_tot_zero : my_totient (0) = 0 := by
 theorem zmod_unit_val_coprime (y : (Units (ZMod n))) : Nat.Coprime (y : ZMod n).val n := by
   sorry
 
-
-theorem zmod_mul_inv_eq_one {n : ℕ} (x : ℕ) (h : Nat.Coprime x n) : (x : ZMod n) * ((x : ZMod n)⁻¹) = 1 := by
-  sorry
-
 def zmod_unit_of_coprime {n : ℕ} (x : ℕ) (h : Nat.Coprime x n) : (Units (ZMod n)) :=
   ⟨x, x⁻¹, zmod_mul_inv_eq_one x h, by rw [mul_comm, zmod_mul_inv_eq_one x h]⟩
 
@@ -1624,7 +1620,12 @@ theorem my_mul_zmod_inv_eq_gcd {n : ℕ} (a : ZMod n) : a * (my_zmod_inv n a) = 
         rw [mul_comm, mul_comm (↑(Nat.succ n)) (bez_b (ZMod.val a) (Nat.succ n))]
         rw [← bezout a.val n.succ]
 
---end of ZMod inverse section.
+--end of proofs based heavily on mathlib ------------------------------------------
+
+theorem zmod_mul_inv_eq_one {n : ℕ} (x : ZMod n) (h : Nat.Coprime x.val n) : x * (my_zmod_inv n x) = (1 : ℕ) := by
+  rw [Nat.coprime_iff_gcd_eq_one] at h
+  rw [← h]
+  rw [my_mul_zmod_inv_eq_gcd]
 
 theorem totient_eq_zmod_units_card (n : ℕ) [inst : Fintype (Units (ZMod n))]: my_totient (n) = Fintype.card (Units (ZMod n)) := by
   unfold my_totient
