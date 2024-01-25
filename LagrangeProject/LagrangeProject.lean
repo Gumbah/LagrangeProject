@@ -26,6 +26,7 @@ import Mathlib.Data.ZMod.Basic
 
 
 
+
 --In this file we will use the basic definitions of Groups to
 --prove basic things about them only using the axioms of acossiativity,
 --inverses and the identity
@@ -621,11 +622,12 @@ section quotientgroupmul
 
   def NormEquiv[Group G] (H: Set G) (a b : G):= a * b⁻¹ ∈ H
 
-  def QuotientGroup (G) [Group G] (H : Subgroup G) [H.Normal] :=
-    Quotient (Setoid.H)
+  namespace QuotientGroupMul
 
-  --def LeftCosetMul [Group G] (g : G) (H : Set G) : Set G :=
-    --Set.image (fun h => g * h) H
+  def QuotientGroup (G) [Group G] (H : Subgroup G) [H.Normal] :=
+    G⧸H
+
+  end QuotientGroupMul
 
 end quotientgroupmul
 
