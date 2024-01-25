@@ -1423,7 +1423,7 @@ theorem gen_euclid {d m n : ℕ} (h1 : d ∣ m * n) (h2 : Nat.gcd m d = 1) : d �
   sorry
 -- Katie: laying out the land
 
--- 11/1/24 - Jakub filled out the sorry here
+-- 11/01/24 - Jakub filled out the sorry here
 theorem coprime_mult {a b : ℕ}(ha: (Nat.gcd a m)=1) : ((Nat.gcd b m)=1) → ((Nat.gcd (a*b) m)=1) := by
   intro hb
   have h : Nat.gcd (a*b) m ∣ Nat.gcd a m * Nat.gcd b m := by
@@ -1473,7 +1473,8 @@ lemma dvd_less_than_nat (m n : ℕ) (h : m ∣ n) (h_n : n < m) : n = 0 := by
     conv at h_1 => rw[← ne_eq] ; rw[Nat.ne_zero_iff_zero_lt]
     apply Nat.le_mul_of_pos_right
     exact h_1
-  --Katie's proof finished by Jakub
+  --25/01/24 - Katie's proof finished by Jakub
+  --Trying to show that `a` has to be zero, will use cases to get a contradiction when `a≠0`
   cases' a with x
   · have : m * Nat.zero = 0 := by rw [Nat.zero_eq, mul_zero]
     rw [this] at b
@@ -1495,6 +1496,11 @@ lemma dvd_less_than_nat (m n : ℕ) (h : m ∣ n) (h_n : n < m) : n = 0 := by
       apply ne_of_lt
       exact this
     exact absurd rfl this
+  --end of Jakub work
+  --I would imagine that this proof was not particularly efficient but I wanted practice using the `calc` tactic
+  --as it seems useful in mathlib for some proofs later on.
+
+-- Katie
 
 theorem nat_gcd_prime_prime (p a : ℕ)(h_a : a < p) (h : Nat.gcd p a = p) : a = 0 := by
   rw[gcd_eq_p] at h
@@ -1551,9 +1557,11 @@ theorem my_tot_prime (p : ℕ) (h : Nat.Prime p): (my_totient (p)) = (p-1) := by
 
 --While waiting on the completion of the required definitions and properties of `ZMod`, and
 --the statement and proof of `Lagrange's theorem` from the group theory side of the project, Katie stated and sorry'd
---Euler's totient theorem in order for me to be able to complete Fermat's Little Theorem as a corollary.
+--Euler's totient theorem in order for me to be able to complete Fermat's Little Theorem as a corollary. We will be
+--working to complete the Number Theory side of theproject from both ends now, I will be working backwards from
+--Fermat's little theorem and Katie will be working forwards from what has already been proven by us.
 
---18/01/24
+--18/01/24 - Jakub
 
 --The required parts of `ZMod` are proving very difficult for the group theory side of the project, so we will be
 --helping as best we can with our limited experience working with groups in LEAN. If we have not got close enough
@@ -1561,7 +1569,7 @@ theorem my_tot_prime (p : ℕ) (h : Nat.Prime p): (my_totient (p)) = (p-1) := by
 --contained withing mathlib, which we originally tried to avoid since it contained a proof of the algebraic CRT early
 --on, which we wanted to prove ourselves, and was a significant motivation for many theorems earlier in this file.
 
---19/01/24
+--19/01/24 - Jakub
 
 --Due to being unable to import the incomplete `Grps.lean` file into `NumTheory.lean`, we were forced to concatenate
 --our two files into one, titled `LagrangeProject.lean` in order to use theorems from the Group theory file in the
@@ -1579,7 +1587,6 @@ lemma zmod_eq_iff_Mod_eq_nat (n : ℕ) {a b : ℕ} : (a : ZMod n) = b ↔ a ≡ 
     simp only [Nat.zero_eq, Nat.mod_zero]
   · rw [Fin.ext_iff, Mod_eq, ← ZMod.val_nat_cast, ← ZMod.val_nat_cast]
     exact Iff.rfl
-
 
 lemma my_tot_zero : my_totient (0) = 0 := by
   rfl
@@ -1669,7 +1676,21 @@ theorem zmod_mul_inv_eq_one {n : ℕ} (x : ZMod n) (h : Nat.Coprime x.val n) : x
   rw [← h]
   rw [my_mul_zmod_inv_eq_gcd]
 
+lemma zmod_mul_inv_eq_one_iff_coprime_n {n : ℕ} (x : ZMod n) : (Nat.Coprime x.val n) ↔  x * (my_zmod_inv n x) = 1 := by
+  constructor
+  · intro h
+    rw[← zmod_mul_inv_eq_one]
+    exact h
+  · intro h1
+    unfold Nat.Coprime
+    conv at h1 => rw[my_mul_zmod_inv_eq_gcd]
+
+
+
 lemma zmod_zero_eq_z : ZMod Nat.zero = ℤ := by rfl
+
+lemma zmod_inv_mul_eq_one_imp_unit {n : ℕ} (y : ZMod n)(h : IsUnit y) : y * my_zmod_inv n y = 1 := by
+  sorry
 
 theorem zmod_unit_val_coprime {n : ℕ} (y : Units (ZMod n)) : Nat.Coprime (y : ZMod n).val n := by
   cases n
@@ -1677,17 +1698,16 @@ theorem zmod_unit_val_coprime {n : ℕ} (y : Units (ZMod n)) : Nat.Coprime (y : 
     · rfl
     have h : y = -1 := by assumption
     rw [h]; rfl
-  · unfold ZMod.val
+-- Katie
+  · rw[zmod_mul_inv_eq_one_iff_coprime_n]
+    rw[← zmod_inv_mul_eq_one_imp_unit]
 
 
 def zmod_unit_of_coprime {n : ℕ} (x : ZMod n) (h : Nat.Coprime x.val n) : (Units (ZMod n)) :=
   ⟨x, my_zmod_inv n x, zmod_mul_inv_eq_one x h, by rw [mul_comm, zmod_mul_inv_eq_one x h]⟩
 
-theorem coe_zmod_unit_of_coprime {n : ℕ} (x : ℕ) (h : Nat.Coprime x n) : (zmod_unit_of_coprime x h : ZMod n) = x := by
+theorem coe_zmod_unit_of_coprime {n : ℕ} (x : ZMod n) (h : Nat.Coprime x.val n) : (zmod_unit_of_coprime x h : ZMod n) = x := by
   rfl
-
-theorem val_coe_zmod_unit_of_coprime {n : ℕ} (y : Units (ZMod n)) : Nat.Coprime (y : ZMod n).val n := by
-  sorry
 
 -- Probably wont need : theorem coe_zmod_inv_unit {n : ℕ} (y : Units (ZMod n)) : (y : ZMod n)⁻¹ = (y⁻¹ : (Units (ZMod n))) := by
 
@@ -1695,8 +1715,11 @@ theorem val_coe_zmod_unit_of_coprime {n : ℕ} (y : Units (ZMod n)) : Nat.Coprim
 -- theorem zmod_inv_mul_unit {n : ℕ} (x : ZMod n) (h : IsUnit x) : x⁻¹ * x = 1 := by
 
 
-def my_zmod_unitsEquivCoprime {n : ℕ} [NeZero n] : (Units (ZMod n)) ≃ ((Finset.range n).filter n.Coprime) := by
-  sorry
+def my_zmod_unitsEquivCoprime {n : ℕ} [NeZero n] : (Units (ZMod n)) ≃ ((Finset.range n).filter n.Coprime) where
+  toFun x := ⟨(ZMod.val (x : ZMod n)), zmod_unit_val_coprime⟩
+  invFun x := zmod_unit_of_coprime x.1 x.2.val
+  left_inv := fun ⟨_, _, _, _⟩ =>
+  right_inv := fun ⟨_, _⟩ =>
 
 -- Ignore these for now
 lemma finset_filter_coprime_equiv (n : ℕ) : {x // x ∈ Finset.filter (Nat.Coprime n) (Finset.range n) } = {x // x ∈ (Finset.range n).filter n.Coprime } := by
@@ -1714,7 +1737,11 @@ theorem totient_eq_zmod_units_card (n : ℕ) [inst : Fintype (Units (ZMod n))]: 
   rw [← Fintype.card_ofFinset]
   sorry
 
---
+--25/01/24 - Jakub
+
+--I have now completed the proof of Euler's Totient theorem, but it still relies on unproven theorems
+--earlier in the document, both on the Number theory and Group theory sides. As of writing, all that remains is to
+--prove `totient_eq_zmod_units_card` and `CosetsMul.PowOfCardEqOne`
 
 theorem euler_totient (a m : ℕ) (ha : m.Coprime a) : a^(my_totient (m)) ≡ 1 [mod m] := by
   rw [← zmod_eq_iff_Mod_eq_nat]
@@ -1723,15 +1750,23 @@ theorem euler_totient (a m : ℕ) (ha : m.Coprime a) : a^(my_totient (m)) ≡ 1 
   cases' m with m
   · rw [my_tot_zero]
     rw [pow_zero]
-  --· --need our own version of `← ZMod.card_units_eq_totient` here, then we use `CosetsMul.PowOfCardEqOne`
-  · have : a' ^ (my_totient (m.succ)) = 1 := by
-      rw [totient_eq_zmod_units_card]
-      rw [CosetsMul.PowOfCardEqOne]
-    --remains to cast `a'` from units back into ZMod, then prove from there
+  · have h1 : a' ^ (my_totient (m.succ)) = 1 := by
+      rw [totient_eq_zmod_units_card, CosetsMul.PowOfCardEqOne]
+    have h2 : (a' ^ (my_totient (m.succ)) : ZMod m.succ) = 1 := by
+      rw [h1]; norm_cast
+    have zmod_a'_eq_a : (a' : ZMod m.succ) = a := by rfl
+    norm_cast
+    rw [← h2]
+    rw [Nat.cast_pow]
+    rw [← zmod_a'_eq_a]
+    norm_cast
 
+--17/01/24 - Jakub
 
---need: notion of `(ZMod m)^X`, having `a % m` being an element (a coprime), having `1` being the identity,
---        having `my_totient m` being the order, then Lagrange's theorem completes the proof.
+--Relying on the sorry'd out version of Euler's Totient theorem, I have completed a proof of Fermat's Little Theorem.
+--By working from both ends of the project at once we aim to spread the workload so that we can work individually on
+--separate proofs while working toward the same goal. As of writing it remains to prove `euler_totient`, for which we
+--will be needing many results regarding `ZMod`.
 
 theorem little_fermat_1 (a p : ℕ) (h : Nat.Prime p) (h1 : ¬ p ∣ a) : a ^ (p-1) ≡ 1 [mod p] := by
   rw [← my_tot_prime]
