@@ -1462,7 +1462,28 @@ lemma dvd_less_than_nat (m n : ℕ) (h : m ∣ n) (h_n : n < m) : n = 0 := by
     conv at h_1 => rw[← ne_eq] ; rw[Nat.ne_zero_iff_zero_lt]
     apply Nat.le_mul_of_pos_right
     exact h_1
-  sorry
+  --Katie's proof finished by Jakub
+  cases' a with x
+  · have : m * Nat.zero = 0 := by rw [Nat.zero_eq, mul_zero]
+    rw [this] at b
+    exact b
+  · have hsucc : ¬(Nat.succ x = 0) := by
+      rw [← ne_eq]
+      apply Nat.succ_ne_zero
+    have : m ≤ m * Nat.succ x := by
+      apply this
+      exact hsucc
+    have : n < m * Nat.succ x := by
+      calc
+        n < m := by exact h_n
+        m ≤ m * Nat.succ x := by exact this
+    have : n < n := by
+      rw [← b] at this
+      exact this
+    have : ¬n=n := by
+      apply ne_of_lt
+      exact this
+    exact absurd rfl this
 
 theorem nat_gcd_prime_prime (p a : ℕ)(h_a : a < p) (h : Nat.gcd p a = p) : a = 0 := by
   rw[gcd_eq_p] at h
@@ -1688,11 +1709,15 @@ theorem euler_totient (a m : ℕ) (ha : m.Coprime a) : a^(my_totient (m)) ≡ 1 
   rw [← zmod_eq_iff_Mod_eq_nat]
   rw [Nat.coprime_comm] at ha
   let a' : Units (ZMod m) := ZMod.unitOfCoprime a ha
-  cases m
+  cases' m with m
   · rw [my_tot_zero]
     rw [pow_zero]
-  · sorry
   --· --need our own version of `← ZMod.card_units_eq_totient` here, then we use `CosetsMul.PowOfCardEqOne`
+  · have : a' ^ (my_totient (m.succ)) = 1 := by
+      rw [totient_eq_zmod_units_card]
+      rw [CosetsMul.PowOfCardEqOne]
+    --remains to cast `a'` from units back into ZMod, then prove from there
+
 
 --need: notion of `(ZMod m)^X`, having `a % m` being an element (a coprime), having `1` being the identity,
 --        having `my_totient m` being the order, then Lagrange's theorem completes the proof.
