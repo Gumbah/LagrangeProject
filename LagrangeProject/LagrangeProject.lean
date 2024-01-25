@@ -1637,7 +1637,21 @@ theorem zmod_mul_inv_eq_one {n : ℕ} (x : ZMod n) (h : Nat.Coprime x.val n) : x
   rw [← h]
   rw [my_mul_zmod_inv_eq_gcd]
 
+lemma zmod_mul_inv_eq_one_iff_coprime_n {n : ℕ} (x : ZMod n) : (Nat.Coprime x.val n) ↔  x * (my_zmod_inv n x) = 1 := by
+  constructor
+  · intro h
+    rw[← zmod_mul_inv_eq_one]
+    exact h
+  · intro h1
+    unfold Nat.Coprime
+    conv at h1 => rw[my_mul_zmod_inv_eq_gcd]
+
+
+
 lemma zmod_zero_eq_z : ZMod Nat.zero = ℤ := by rfl
+
+lemma zmod_inv_mul_eq_one_imp_unit {n : ℕ} (y : ZMod n)(h : IsUnit y) : y * my_zmod_inv n y = 1 := by
+  sorry
 
 theorem zmod_unit_val_coprime {n : ℕ} (y : Units (ZMod n)) : Nat.Coprime (y : ZMod n).val n := by
   cases n
@@ -1645,17 +1659,17 @@ theorem zmod_unit_val_coprime {n : ℕ} (y : Units (ZMod n)) : Nat.Coprime (y : 
     · rfl
     have h : y = -1 := by assumption
     rw [h]; rfl
-  · unfold ZMod.val
+-- Katie
+  · rw[zmod_mul_inv_eq_one_iff_coprime_n]
+    rw[← zmod_inv_mul_eq_one_imp_unit]
+
 
 
 def zmod_unit_of_coprime {n : ℕ} (x : ZMod n) (h : Nat.Coprime x.val n) : (Units (ZMod n)) :=
   ⟨x, my_zmod_inv n x, zmod_mul_inv_eq_one x h, by rw [mul_comm, zmod_mul_inv_eq_one x h]⟩
 
-theorem coe_zmod_unit_of_coprime {n : ℕ} (x : ℕ) (h : Nat.Coprime x n) : (zmod_unit_of_coprime x h : ZMod n) = x := by
+theorem coe_zmod_unit_of_coprime {n : ℕ} (x : ZMod n) (h : Nat.Coprime x.val n) : (zmod_unit_of_coprime x h : ZMod n) = x := by
   rfl
-
-theorem val_coe_zmod_unit_of_coprime {n : ℕ} (y : Units (ZMod n)) : Nat.Coprime (y : ZMod n).val n := by
-  sorry
 
 -- Probably wont need : theorem coe_zmod_inv_unit {n : ℕ} (y : Units (ZMod n)) : (y : ZMod n)⁻¹ = (y⁻¹ : (Units (ZMod n))) := by
 
@@ -1663,8 +1677,11 @@ theorem val_coe_zmod_unit_of_coprime {n : ℕ} (y : Units (ZMod n)) : Nat.Coprim
 -- theorem zmod_inv_mul_unit {n : ℕ} (x : ZMod n) (h : IsUnit x) : x⁻¹ * x = 1 := by
 
 
-def my_zmod_unitsEquivCoprime {n : ℕ} [NeZero n] : (Units (ZMod n)) ≃ ((Finset.range n).filter n.Coprime) := by
-  sorry
+def my_zmod_unitsEquivCoprime {n : ℕ} [NeZero n] : (Units (ZMod n)) ≃ ((Finset.range n).filter n.Coprime) where
+  toFun x := ⟨(ZMod.val (x : ZMod n)), zmod_unit_val_coprime⟩
+  invFun x := zmod_unit_of_coprime x.1 x.2.val
+  left_inv := fun ⟨_, _, _, _⟩ =>
+  right_inv := fun ⟨_, _⟩ =>
 
 -- Ignore these for now
 lemma finset_filter_coprime_equiv (n : ℕ) : {x // x ∈ Finset.filter (Nat.Coprime n) (Finset.range n) } = {x // x ∈ (Finset.range n).filter n.Coprime } := by
