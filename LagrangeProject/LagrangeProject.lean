@@ -1637,13 +1637,16 @@ theorem zmod_mul_inv_eq_one {n : ℕ} (x : ZMod n) (h : Nat.Coprime x.val n) : x
   rw [← h]
   rw [my_mul_zmod_inv_eq_gcd]
 
+lemma zmod_zero_eq_z : ZMod Nat.zero = ℤ := by rfl
+
 theorem zmod_unit_val_coprime {n : ℕ} (y : Units (ZMod n)) : Nat.Coprime (y : ZMod n).val n := by
-  induction n
-  unfold Nat.Coprime
-  have h_1 : Units (ZMod Nat.zero) = Units (ℤ) := by
-    sorry
-  conv at y => rw[h_1]
-  apply Int.units_eq_one_or at y
+  cases n
+  · rcases Int.units_eq_one_or y with ⟨rfl,rfl⟩
+    · rfl
+    have h : y = -1 := by assumption
+    rw [h]; rfl
+  · unfold ZMod.val
+
 
 def zmod_unit_of_coprime {n : ℕ} (x : ZMod n) (h : Nat.Coprime x.val n) : (Units (ZMod n)) :=
   ⟨x, my_zmod_inv n x, zmod_mul_inv_eq_one x h, by rw [mul_comm, zmod_mul_inv_eq_one x h]⟩
