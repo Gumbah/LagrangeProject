@@ -568,6 +568,13 @@ section cosetsMul
     sorry
     done
 
+  --we've done most of the immediately relevant stuff for cosets
+  --but to define quotient groups we need to show a fact about them and normal subgroups
+
+  theorem NormalIffEqMulCosets: H.Normal ↔ ∀ g : G, g LCoset* H = H RCoset* g := by
+    constructor
+    sorry
+    sorry
 
 
   --Langrange's Theorem corollorys
@@ -580,8 +587,10 @@ section quotientgroupmul
 
   variable {G : Type*} [Group G] (H : Subgroup G)
 
-  def quotientGroup [Group G] (g : G) (H : Set G): Group :=
-    {g LCoset* H, g ∈ G}
+  def NormEquiv[Group G] (H: Set G) (a b : G):= a * b⁻¹ ∈ H
+
+  def QuotientGroup (G) [Group G] (H : Subgroup G) [H.Normal] :=
+    Quotient (Setoid.H)
 
   --def LeftCosetMul [Group G] (g : G) (H : Set G) : Set G :=
     --Set.image (fun h => g * h) H
