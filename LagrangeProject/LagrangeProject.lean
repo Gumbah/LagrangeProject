@@ -408,22 +408,10 @@ section rings
   rw[MulZero]
   done
 
-  def DirectRingProd [Ring R, S] (g : G) (H : Set G) : Set G :=
-    Set.image (fun h => g * h) H
+  variable {S : Type} [Ring S]
 
-  @[simp]lemma IdUniqueMul (a b : R) : a * b = b ↔ a = 1 := by
-    constructor
-    intro h1
-    rw[← mul_one a]
-    rw[← MulInv b]
-    rw[← mul_assoc]
-    rw[h1]
-    intro h2
-    rw[h2]
-    rw[one_mul]
-    sorry
-    -- this one might not be super necessary
-    done
+  def DirectRingProd [Ring R] [Ring S] (a : R) (b : S) : R × S :=
+    (a, b)
 
 end rings
 
@@ -612,6 +600,13 @@ section cosetsMul
     sorry
     done
 
+  --we've done most of the immediately relevant stuff for cosets
+  --but to define quotient groups we need to show a fact about them and normal subgroups
+
+  theorem NormalIffEqMulCosets: H.Normal ↔ ∀ g : G, g LCoset* H = H RCoset* g := by
+    constructor
+    sorry
+    sorry
 
 
   --Langrange's Theorem corollorys
@@ -619,6 +614,20 @@ section cosetsMul
 end CosetsMul
 
 end cosetsMul
+
+section quotientgroupmul
+
+  variable {G : Type*} [Group G] (H : Subgroup G)
+
+  def NormEquiv[Group G] (H: Set G) (a b : G):= a * b⁻¹ ∈ H
+
+  def QuotientGroup (G) [Group G] (H : Subgroup G) [H.Normal] :=
+    Quotient (Setoid.H)
+
+  --def LeftCosetMul [Group G] (g : G) (H : Set G) : Set G :=
+    --Set.image (fun h => g * h) H
+
+end quotientgroupmul
 
 /-
 section cosetsAdd
