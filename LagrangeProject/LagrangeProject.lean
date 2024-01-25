@@ -408,22 +408,10 @@ section rings
   rw[MulZero]
   done
 
-  def DirectRingProd [Ring R, S] (g : G) (H : Set G) : Set G :=
-    Set.image (fun h => g * h) H
+  variable {S : Type} [Ring S]
 
-  @[simp]lemma IdUniqueMul (a b : R) : a * b = b ↔ a = 1 := by
-    constructor
-    intro h1
-    rw[← mul_one a]
-    rw[← MulInv b]
-    rw[← mul_assoc]
-    rw[h1]
-    intro h2
-    rw[h2]
-    rw[one_mul]
-    sorry
-    -- this one might not be super necessary
-    done
+  def DirectRingProd [Ring R] [Ring S] (a : R) (b : S) : R × S :=
+    (a, b)
 
 end rings
 
@@ -612,6 +600,13 @@ section cosetsMul
     sorry
     done
 
+  --we've done most of the immediately relevant stuff for cosets
+  --but to define quotient groups we need to show a fact about them and normal subgroups
+
+  theorem NormalIffEqMulCosets: H.Normal ↔ ∀ g : G, g LCoset* H = H RCoset* g := by
+    constructor
+    sorry
+    sorry
 
 
   --Langrange's Theorem corollorys
@@ -619,6 +614,20 @@ section cosetsMul
 end CosetsMul
 
 end cosetsMul
+
+section quotientgroupmul
+
+  variable {G : Type*} [Group G] (H : Subgroup G)
+
+  def NormEquiv[Group G] (H: Set G) (a b : G):= a * b⁻¹ ∈ H
+
+  def QuotientGroup (G) [Group G] (H : Subgroup G) [H.Normal] :=
+    Quotient (Setoid.H)
+
+  --def LeftCosetMul [Group G] (g : G) (H : Set G) : Set G :=
+    --Set.image (fun h => g * h) H
+
+end quotientgroupmul
 
 /-
 section cosetsAdd
@@ -1412,7 +1421,7 @@ theorem gen_euclid {d m n : ℕ} (h1 : d ∣ m * n) (h2 : Nat.gcd m d = 1) : d �
   sorry
 -- Katie: laying out the land
 
--- 11/1/24 - Jakub filled out the sorry here
+-- 11/01/24 - Jakub filled out the sorry here
 theorem coprime_mult {a b : ℕ}(ha: (Nat.gcd a m)=1) : ((Nat.gcd b m)=1) → ((Nat.gcd (a*b) m)=1) := by
   intro hb
   have h : Nat.gcd (a*b) m ∣ Nat.gcd a m * Nat.gcd b m := by
@@ -1462,7 +1471,34 @@ lemma dvd_less_than_nat (m n : ℕ) (h : m ∣ n) (h_n : n < m) : n = 0 := by
     conv at h_1 => rw[← ne_eq] ; rw[Nat.ne_zero_iff_zero_lt]
     apply Nat.le_mul_of_pos_right
     exact h_1
-  sorry
+  --25/01/24 - Katie's proof finished by Jakub
+  --Trying to show that `a` has to be zero, will use cases to get a contradiction when `a≠0`
+  cases' a with x
+  · have : m * Nat.zero = 0 := by rw [Nat.zero_eq, mul_zero]
+    rw [this] at b
+    exact b
+  · have hsucc : ¬(Nat.succ x = 0) := by
+      rw [← ne_eq]
+      apply Nat.succ_ne_zero
+    have : m ≤ m * Nat.succ x := by
+      apply this
+      exact hsucc
+    have : n < m * Nat.succ x := by
+      calc
+        n < m := by exact h_n
+        m ≤ m * Nat.succ x := by exact this
+    have : n < n := by
+      rw [← b] at this
+      exact this
+    have : ¬n=n := by
+      apply ne_of_lt
+      exact this
+    exact absurd rfl this
+  --end of Jakub work
+  --I would imagine that this proof was not particularly efficient but I wanted practice using the `calc` tactic
+  --as it seems useful in mathlib for some proofs later on.
+
+-- Katie
 
 theorem nat_gcd_prime_prime (p a : ℕ)(h_a : a < p) (h : Nat.gcd p a = p) : a = 0 := by
   rw[gcd_eq_p] at h
@@ -1519,9 +1555,11 @@ theorem my_tot_prime (p : ℕ) (h : Nat.Prime p): (my_totient (p)) = (p-1) := by
 
 --While waiting on the completion of the required definitions and properties of `ZMod`, and
 --the statement and proof of `Lagrange's theorem` from the group theory side of the project, Katie stated and sorry'd
---Euler's totient theorem in order for me to be able to complete Fermat's Little Theorem as a corollary.
+--Euler's totient theorem in order for me to be able to complete Fermat's Little Theorem as a corollary. We will be
+--working to complete the Number Theory side of theproject from both ends now, I will be working backwards from
+--Fermat's little theorem and Katie will be working forwards from what has already been proven by us.
 
---18/01/24
+--18/01/24 - Jakub
 
 --The required parts of `ZMod` are proving very difficult for the group theory side of the project, so we will be
 --helping as best we can with our limited experience working with groups in LEAN. If we have not got close enough
@@ -1529,7 +1567,7 @@ theorem my_tot_prime (p : ℕ) (h : Nat.Prime p): (my_totient (p)) = (p-1) := by
 --contained withing mathlib, which we originally tried to avoid since it contained a proof of the algebraic CRT early
 --on, which we wanted to prove ourselves, and was a significant motivation for many theorems earlier in this file.
 
---19/01/24
+--19/01/24 - Jakub
 
 --Due to being unable to import the incomplete `Grps.lean` file into `NumTheory.lean`, we were forced to concatenate
 --our two files into one, titled `LagrangeProject.lean` in order to use theorems from the Group theory file in the
@@ -1547,7 +1585,6 @@ lemma zmod_eq_iff_Mod_eq_nat (n : ℕ) {a b : ℕ} : (a : ZMod n) = b ↔ a ≡ 
     simp only [Nat.zero_eq, Nat.mod_zero]
   · rw [Fin.ext_iff, Mod_eq, ← ZMod.val_nat_cast, ← ZMod.val_nat_cast]
     exact Iff.rfl
-
 
 lemma my_tot_zero : my_totient (0) = 0 := by
   rfl
@@ -1664,7 +1701,6 @@ theorem zmod_unit_val_coprime {n : ℕ} (y : Units (ZMod n)) : Nat.Coprime (y : 
     rw[← zmod_inv_mul_eq_one_imp_unit]
 
 
-
 def zmod_unit_of_coprime {n : ℕ} (x : ZMod n) (h : Nat.Coprime x.val n) : (Units (ZMod n)) :=
   ⟨x, my_zmod_inv n x, zmod_mul_inv_eq_one x h, by rw [mul_comm, zmod_mul_inv_eq_one x h]⟩
 
@@ -1699,20 +1735,36 @@ theorem totient_eq_zmod_units_card (n : ℕ) [inst : Fintype (Units (ZMod n))]: 
   rw [← Fintype.card_ofFinset]
   sorry
 
---
+--25/01/24 - Jakub
+
+--I have now completed the proof of Euler's Totient theorem, but it still relies on unproven theorems
+--earlier in the document, both on the Number theory and Group theory sides. As of writing, all that remains is to
+--prove `totient_eq_zmod_units_card` and `CosetsMul.PowOfCardEqOne`
 
 theorem euler_totient (a m : ℕ) (ha : m.Coprime a) : a^(my_totient (m)) ≡ 1 [mod m] := by
   rw [← zmod_eq_iff_Mod_eq_nat]
   rw [Nat.coprime_comm] at ha
   let a' : Units (ZMod m) := ZMod.unitOfCoprime a ha
-  cases m
+  cases' m with m
   · rw [my_tot_zero]
     rw [pow_zero]
-  · sorry
-  --· --need our own version of `← ZMod.card_units_eq_totient` here, then we use `CosetsMul.PowOfCardEqOne`
+  · have h1 : a' ^ (my_totient (m.succ)) = 1 := by
+      rw [totient_eq_zmod_units_card, CosetsMul.PowOfCardEqOne]
+    have h2 : (a' ^ (my_totient (m.succ)) : ZMod m.succ) = 1 := by
+      rw [h1]; norm_cast
+    have zmod_a'_eq_a : (a' : ZMod m.succ) = a := by rfl
+    norm_cast
+    rw [← h2]
+    rw [Nat.cast_pow]
+    rw [← zmod_a'_eq_a]
+    norm_cast
 
---need: notion of `(ZMod m)^X`, having `a % m` being an element (a coprime), having `1` being the identity,
---        having `my_totient m` being the order, then Lagrange's theorem completes the proof.
+--17/01/24 - Jakub
+
+--Relying on the sorry'd out version of Euler's Totient theorem, I have completed a proof of Fermat's Little Theorem.
+--By working from both ends of the project at once we aim to spread the workload so that we can work individually on
+--separate proofs while working toward the same goal. As of writing it remains to prove `euler_totient`, for which we
+--will be needing many results regarding `ZMod`.
 
 theorem little_fermat_1 (a p : ℕ) (h : Nat.Prime p) (h1 : ¬ p ∣ a) : a ^ (p-1) ≡ 1 [mod p] := by
   rw [← my_tot_prime]
