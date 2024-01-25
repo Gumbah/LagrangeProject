@@ -461,11 +461,15 @@ section cosetsMul
   namespace CosetsMul
 
 
-  open groupsMul
   open Set Function
 
   lemma ElemInOwnLeftCosetMul (i : G) : i ∈ i LCoset* H := by
-    simp [LeftCosetMul]
+    simp only [LeftCosetMul, image_mul_left, mem_preimage, mul_left_inv, SetLike.mem_coe]
+    exact Subgroup.one_mem H
+    done
+
+  lemma ElemInOwnRightCosetMul (i : G) : i ∈ H RCoset* i := by
+    simp only [RightCosetMul, image_mul_right, mem_preimage, groupsMul.MulInv, SetLike.mem_coe]
     exact Subgroup.one_mem H
     done
 
@@ -513,10 +517,10 @@ section cosetsMul
   g ∈ i LCoset* H ↔ i⁻¹ * g ∈ H := by
     constructor
     · intro h
-      simp [LeftCosetMul] at h
+      simp only [LeftCosetMul._eq_1, image_mul_left, mem_preimage, SetLike.mem_coe] at h
       exact h
     · intro h
-      simp [LeftCosetMul]
+      simp only [LeftCosetMul._eq_1, image_mul_left, mem_preimage, SetLike.mem_coe]
       exact h
     done
     --May be more lemmas needed
@@ -525,7 +529,7 @@ section cosetsMul
   g ∈ H RCoset* i ↔ g * i⁻¹ ∈ H := by
     constructor
     · intro h
-      simp [RightCosetMul] at h
+      simp only [RightCosetMul._eq_1, image_mul_right, mem_preimage, SetLike.mem_coe] at h
       exact h
     · intro h
       simp [RightCosetMul]
@@ -589,7 +593,7 @@ section cosetsMul
         rw[e]
         rw[mul_assoc]
         have f : j * j⁻¹ = 1 := by
-          rw[MulInv G j]
+          simp [groupsMul.MulInv]
 
       · intro k
         let β := j⁻¹*x
