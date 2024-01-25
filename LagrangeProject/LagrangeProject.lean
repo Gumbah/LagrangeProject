@@ -40,7 +40,7 @@ section group
 
 namespace groupsMul
 
-  variable {G : Type} [Group G]
+  variable [Group G]
 
   @[simp]lemma LeftCancelMul (a b c : G) : a * b = a * c → b = c := by
     intro h
@@ -429,8 +429,9 @@ end rings
 
 section cosetsMul
 
+  namespace CosetsMul
 
-  variable {G : Type*} [Group G] (H : Subgroup G)
+  variable [Group G] (H : Subgroup G)
 
 
   def LeftCosetMul [Group G] (g : G) (H : Set G) : Set G :=
@@ -457,50 +458,38 @@ section cosetsMul
   -/
 
 
-
-  namespace CosetsMul
-
-
+  open groupsMul
   open Set Function
 
   lemma ElemInOwnLeftCosetMul (i : G) : i ∈ i LCoset* H := by
-    simp only [LeftCosetMul, image_mul_left, mem_preimage, mul_left_inv, SetLike.mem_coe]
+    simp only [LeftCosetMul, image_mul_left, mem_preimage]
+    rw[mul_left_inv]
     exact Subgroup.one_mem H
     done
 
   lemma ElemInOwnRightCosetMul (i : G) : i ∈ H RCoset* i := by
-    simp only [RightCosetMul, image_mul_right, mem_preimage, groupsMul.MulInv, SetLike.mem_coe]
+    simp only [RightCosetMul, image_mul_right, mem_preimage]
+    rw[MulInv]
     exact Subgroup.one_mem H
     done
 
   lemma AssocLeftCosetMul (a b : G) :
   a LCoset* (b LCoset* H) = (a*b) LCoset* H := by
-    refine ((fun {α} {s t} ↦ Set.ext_iff.mpr) ?_).symm
-    intro x
-    constructor
-    · repeat rw[LeftCosetMul]
-      simp [(image_comp _ _ _).symm, Function.comp]
-      rw[mul_assoc]
-      exact fun a ↦ a
-    · repeat rw[LeftCosetMul]
-      simp [(image_comp _ _ _).symm, Function.comp]
-      rw[mul_assoc]
-      exact fun a ↦ a
+    repeat rw[LeftCosetMul]
+    rw[(image_comp _ _ _).symm]
+    simp only [comp]
+    refine image_congr ?h
+    exact fun a_1 a_2 ↦ (mul_assoc a b a_1).symm
     done
+
 
   lemma AssocRightCosetMul (a b : G) :
   (H RCoset* a) RCoset* b = H RCoset* (a*b) := by
-    refine (ext ?h).symm
-    intro x
-    constructor
-    · repeat rw[RightCosetMul]
-      simp [(image_comp _ _ _).symm, Function.comp]
-      rw[mul_assoc]
-      exact fun a ↦ a
-    · repeat rw[RightCosetMul]
-      simp [(image_comp _ _ _).symm, Function.comp]
-      rw[mul_assoc]
-      exact fun a ↦ a
+    repeat rw[RightCosetMul]
+    rw[(image_comp _ _ _).symm]
+    simp only [comp]
+    refine image_congr ?h
+    exact fun a_1 a_2 ↦ mul_assoc a_1 a b
     done
 
   lemma LeftCosetElemImpEqMul (a b : G) (h : a = b):
@@ -531,8 +520,9 @@ section cosetsMul
     · intro h
       simp only [RightCosetMul._eq_1, image_mul_right, mem_preimage, SetLike.mem_coe] at h
       exact h
+
     · intro h
-      simp [RightCosetMul]
+      simp only [RightCosetMul._eq_1, image_mul_right, mem_preimage, SetLike.mem_coe]
       exact h
     done
 
@@ -542,12 +532,12 @@ section cosetsMul
     · intro h
       refine ext ?h
       intro x
-      simp [LeftCosetMul] at h
+      rw[LeftCosetClosureMul] at h
       let α := i⁻¹ * j
       constructor
       · intro k
         let β := i⁻¹*x
-        simp [LeftCosetMul] at k
+        rw[LeftCosetClosureMul] at k
         have e : x = j*α⁻¹*β := by
           simp
         simp [LeftCosetMul]
