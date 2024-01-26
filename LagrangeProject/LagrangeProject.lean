@@ -1674,18 +1674,14 @@ theorem zmod_mul_inv_eq_one {n : ℕ} (x : ZMod n) (h : Nat.Coprime x.val n) : x
   rw [← h]
   rw [my_mul_zmod_inv_eq_gcd]
 
+lemma zmod_zero_eq_z : ZMod Nat.zero = ℤ := by rfl
+
 lemma zmod_mul_inv_eq_one_iff_coprime_n {n : ℕ} (x : ZMod n) : (Nat.Coprime x.val n) ↔  x * (my_zmod_inv n x) = 1 := by
   constructor
   · intro h
     rw[← zmod_mul_inv_eq_one]
     exact h
-  · intro h1
-    unfold Nat.Coprime
-    conv at h1 => rw[my_mul_zmod_inv_eq_gcd]
-
-
-
-lemma zmod_zero_eq_z : ZMod Nat.zero = ℤ := by rfl
+  · sorry
 
 lemma zmod_inv_mul_eq_one_imp_unit {n : ℕ} (y : ZMod n)(h : IsUnit y) : y * my_zmod_inv n y = 1 := by
   sorry
