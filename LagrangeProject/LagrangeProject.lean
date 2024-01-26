@@ -88,42 +88,42 @@ namespace groupsMul
 
   @[simp]lemma LeftInvEqMul (a b c : G) : a = b⁻¹ * c ↔ b * a = c := by
     constructor
-    intro h1
-    rw[h1]
-    rw[← mul_assoc]
-    rw[MulInv]
-    rw[one_mul]
-    intro h2
-    rw[← h2]
-    rw[← mul_assoc]
-    rw[mul_left_inv]
-    rw[one_mul]
+    · intro h1
+      rw[h1]
+      rw[← mul_assoc]
+      rw[MulInv]
+      rw[one_mul]
+    · intro h2
+      rw[← h2]
+      rw[← mul_assoc]
+      rw[mul_left_inv]
+      rw[one_mul]
     done
 
   @[simp]lemma RightInvEqMul (a b c : G) : a = b * c⁻¹ ↔ a * c = b := by
     constructor
-    intro h1
-    rw[h1]
-    rw[mul_assoc]
-    rw[mul_left_inv]
-    rw[MulOne]
-    intro h2
-    rw[← h2]
-    rw[mul_assoc]
-    rw[MulInv]
-    rw[MulOne]
+    · intro h1
+      rw[h1]
+      rw[mul_assoc]
+      rw[mul_left_inv]
+      rw[MulOne]
+    · intro h2
+      rw[← h2]
+      rw[mul_assoc]
+      rw[MulInv]
+      rw[MulOne]
     done
 
   @[simp]lemma IdUniqueMul (a b : G) : a * b = b ↔ a = 1 := by
     constructor
-    intro h1
-    rw[← MulOne a]
-    rw[← MulInv b]
-    rw[← mul_assoc]
-    rw[h1]
-    intro h2
-    rw[h2]
-    rw[one_mul]
+    · intro h1
+      rw[← MulOne a]
+      rw[← MulInv b]
+      rw[← mul_assoc]
+      rw[h1]
+    · intro h2
+      rw[h2]
+      rw[one_mul]
     done
 
   @[simp]lemma InvUniqueRightMul (a b : G) : a * b = 1 ↔ a = b⁻¹ := by
@@ -216,42 +216,42 @@ namespace addGroups
 
   @[simp]lemma LeftNegEqAdd (a b c : G) : a = -b + c ↔ b + a = c := by
     constructor
-    intro h1
-    rw[h1]
-    rw[← add_assoc]
-    rw[AddNeg]
-    rw[zero_add]
-    intro h2
-    rw[← h2]
-    rw[← add_assoc]
-    rw[add_left_neg]
-    rw[zero_add]
+    · intro h1
+      rw[h1]
+      rw[← add_assoc]
+      rw[AddNeg]
+      rw[zero_add]
+    · intro h2
+      rw[← h2]
+      rw[← add_assoc]
+      rw[add_left_neg]
+      rw[zero_add]
     done
 
   @[simp]lemma RightNegEqAdd (a b c : G) : a = b + -c ↔ a + c = b := by
     constructor
-    intro h1
-    rw[h1]
-    rw[add_assoc]
-    rw[add_left_neg]
-    rw[AddZero]
-    intro h2
-    rw[← h2]
-    rw[add_assoc]
-    rw[AddNeg]
-    rw[AddZero]
+    · intro h1
+      rw[h1]
+      rw[add_assoc]
+      rw[add_left_neg]
+      rw[AddZero]
+    · intro h2
+      rw[← h2]
+      rw[add_assoc]
+      rw[AddNeg]
+      rw[AddZero]
     done
 
   @[simp]lemma IdUniqueAdd (a b : G) : a + b = b ↔ a = 0 := by
     constructor
-    intro h1
-    rw[← AddZero a]
-    rw[← AddNeg b]
-    rw[← add_assoc]
-    rw[h1]
-    intro h2
-    rw[h2]
-    rw[zero_add]
+    · intro h1
+      rw[← AddZero a]
+      rw[← AddNeg b]
+      rw[← add_assoc]
+      rw[h1]
+    · intro h2
+      rw[h2]
+      rw[zero_add]
     done
 
   @[simp]lemma InvUniqueRightAdd (a b : G) (h : a + b = 0) : a = -b := by
@@ -338,42 +338,42 @@ section rings
 
   @[simp]lemma LeftNegEqAdd (a b c : R) : a = -b + c ↔ b + a = c := by
     constructor
-    intro h1
-    rw[h1]
-    rw[← add_assoc]
-    rw[AddNeg]
-    rw[zero_add]
-    intro h2
-    rw[← h2]
-    rw[← add_assoc]
-    rw[add_left_neg]
-    rw[zero_add]
+    · intro h1
+      rw[h1]
+      rw[← add_assoc]
+      rw[AddNeg]
+      rw[zero_add]
+    · intro h2
+      rw[← h2]
+      rw[← add_assoc]
+      rw[add_left_neg]
+      rw[zero_add]
     done
 
   @[simp]lemma RightNegEqAdd (a b c : R) : a = b + -c ↔ a + c = b := by
     constructor
-    intro h1
-    rw[h1]
-    rw[add_assoc]
-    rw[add_left_neg]
-    rw[AddZero]
-    intro h2
-    rw[← h2]
-    rw[add_assoc]
-    rw[AddNeg]
-    rw[AddZero]
+    · intro h1
+      rw[h1]
+      rw[add_assoc]
+      rw[add_left_neg]
+      rw[AddZero]
+    · intro h2
+      rw[← h2]
+      rw[add_assoc]
+      rw[AddNeg]
+      rw[AddZero]
     done
 
   @[simp]lemma IdUniqueAdd (a b : R) : a + b = b ↔ a = 0 := by
     constructor
-    intro h1
-    rw[← AddZero a]
-    rw[← AddNeg b]
-    rw[← add_assoc]
-    rw[h1]
-    intro h2
-    rw[h2]
-    rw[zero_add]
+    · intro h1
+      rw[← AddZero a]
+      rw[← AddNeg b]
+      rw[← add_assoc]
+      rw[h1]
+    · intro h2
+      rw[h2]
+      rw[zero_add]
     done
 
   @[simp]lemma InvUniqueRightAdd (a b : R) (h : a + b = 0) : a = -b := by
@@ -705,9 +705,30 @@ section cosetsMul
   --we've done most of the immediately relevant stuff for cosets
   --but to define quotient groups we need to show a fact about them and normal subgroups
 
+  theorem CosetsOfNormEq (N : H.Normal) (g : G) : g LCoset* H = H RCoset* g :=
+    Set.ext fun a => by --turns = statement into iff
+    rw[LeftCosetClosureMul]
+    rw[RightCosetClosureMul]
+    rw[N.mem_comm_iff] -- statement saying that we have commutativity here
+
+  theorem MemLeftCoset {x : G} (g : G) (xinH : x ∈ H) : g * x ∈ g LCoset* H := by
+  rw[LeftCosetEqIffContained]
+  rw[AssocLeftCosetMul]
+    --mem_image_of_mem (fun b : G => g * b) xinH
+    --rewrite this proof EDWARD
+
+  theorem NormalofEqCosets (h : ∀ g : G, g LCoset* H = H RCoset* g) : H.Normal := by
+  have e: g * a * g⁻¹ ∈ (H : Set G):= by
+  --⟨fun a ha g =>
+    --show g * a * g⁻¹ ∈ (H : Set G) by rw [← RightCosetClosureMul H (g * a) g, ← h]; exact MemLeftCoset g ha⟩
+
   theorem NormalIffEqMulCosets: H.Normal ↔ ∀ g : G, g LCoset* H = H RCoset* g := by
     constructor
+    intro h1
+    unfold Subgroup.Normal at h1
     sorry
+    intro h2
+    unfold Subgroup.Normal
     sorry
 
 
