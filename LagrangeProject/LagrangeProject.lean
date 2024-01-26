@@ -1814,7 +1814,26 @@ lemma gcd_of_val_lt_non_zero (n : ℕ) (x : ZMod n) (h : 0 < x.val) (hn : 0 < n)
         x.val < n := by
           exact ZMod.val_lt x
 
-lemma my_cases_2_aaa (n : ℕ) (h : 0 < n): n=1 ∨ 1<n := by sorry
+lemma my_cases_2_aaa (n : ℕ) (h : 0 < n): n=1 ∨ 1<n := by
+  have : n ≤ 1 ∨ 1 < n := by
+    rw [← Nat.not_le]
+    apply or_not
+  conv at this =>
+    rw [Nat.le_one_iff_eq_zero_or_eq_one]
+  have n_ne_zero : ¬n=0 := by
+    rw [← Nat.ne_zero_iff_zero_lt] at h
+    rw [← ne_eq]
+    exact h
+  cases this
+  · have h' : n = 0 ∨ n = 1 := by assumption
+    cases h'
+    · have h'' : n = 0 := by assumption
+      contradiction
+    · have h'' : n = 1 := by assumption
+      rw [h'']; simp
+  · have h' : 1 < n := by assumption
+    apply Or.intro_right
+    exact h'
 
 --26/01/24 - Jakub
 
