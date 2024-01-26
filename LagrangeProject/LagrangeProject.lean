@@ -1678,16 +1678,71 @@ theorem zmod_mul_inv_eq_one {n : ℕ} (x : ZMod n) (h : Nat.Coprime x.val n) : x
 
 lemma zmod_zero_eq_z : ZMod Nat.zero = ℤ := by rfl
 
-lemma zmod_mul_inv_eq_one_iff_coprime_n {n : ℕ} (x : ZMod n) : (Nat.Coprime x.val n) ↔  x * (my_zmod_inv n x) = 1 := by
-  constructor
-  · intro h
-    rw[← zmod_mul_inv_eq_one]
+lemma gcd_of_val_lt_non_zero (n : ℕ) (x : ZMod n) (h : 0 < x.val) (hn : 0 < n) : Nat.gcd x.val n < n := by
+  have h1 : Nat.gcd x.val n ≤ x.val := by
+    apply Nat.gcd_le_left
     exact h
+  have : NeZero n := by
+    rw [neZero_iff, ne_comm]
+    apply ne_of_lt at hn
+    exact hn
+  have : Nat.gcd x.val n < n := by
+      calc
+        Nat.gcd x.val n ≤ x.val := by exact h1
+        x.val < n := by
+          exact ZMod.val_lt x
 
+
+lemma zmod_mul_inv_eq_one_iff_coprime_n {n : ℕ} (x : ZMod n) (h : 0 < n) : (Nat.Coprime x.val n) ↔  x * (my_zmod_inv n x) = 1 := by
+  constructor
   · intro h1
-    unfold Nat.Coprime
-    conv at h1 => rw[my_mul_zmod_inv_eq_gcd]
-    sorry
+    rw[← zmod_mul_inv_eq_one]
+    exact h1
+  · intro h2
+    conv at h2 =>
+      rw[my_mul_zmod_inv_eq_gcd]
+      --want to use ZMod.val_nat_cast_of_lt
+      --need `Nat.gcd x.val n < n`
+      --this is true when `x.val ≠ 0`
+      --this is true when `x ≠ 0` in ZMod n
+      --I'll need to split cases:
+    have n_ne_zero : NeZero n := by
+        rw [neZero_iff, ne_comm]
+        apply ne_of_lt at h
+        exact h
+    have my_cases : x = 0 ∨ ¬x=0 := by exact or_not
+    cases my_cases
+    · have h3 : x=0 := by assumption
+      have : x.val = 0 := by
+        rw [h3]
+        rw [ZMod.val_zero]
+      rw [this]
+      conv at h2 =>
+        rw [this]
+        rw [Nat.gcd_zero_left]
+        rw [ZMod.nat_cast_self]
+      sorry
+      --have 1=0, should be able to contradict somewhere.
+    · have h4 : ¬x=0 := by assumption
+      have h5 : x.val ≠ 0 := by
+        rw [← ne_eq] at h4
+        rw [ZMod.val_ne_zero]
+        exact h4
+      have h6 : 0 < x.val := by
+        apply Nat.zero_lt_of_ne_zero
+        exact h5
+      have H : Nat.gcd x.val n < n := by
+        apply gcd_of_val_lt_non_zero
+        <;> assumption
+      unfold Nat.Coprime
+
+
+
+
+
+
+
+
 
 theorem coe_zmod_inv_unit {n : ℕ} (y : Units (ZMod n)) : (my_zmod_inv n (y : ZMod n)) = (my_zmod_inv n y) := by
 
