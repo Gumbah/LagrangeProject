@@ -1814,6 +1814,14 @@ lemma gcd_of_val_lt_non_zero (n : ℕ) (x : ZMod n) (h : 0 < x.val) (hn : 0 < n)
         x.val < n := by
           exact ZMod.val_lt x
 
+lemma my_cases_2_aaa (n : ℕ) (h : 0 < n): n=1 ∨ 1<n := by sorry
+
+--26/01/24 - Jakub
+
+--I have spent a whole day on the following proof, in order to complete it I had to learn new tactics such as
+--`simp_rw`, `apply_fun`, understanding `calc`, applying custom case separation and the `NeZero` and `Fact` instances!
+--Overall I'm sure it's an extremely inefficient proof but a very informative one, perhaps the most instructive I
+--have completed so far
 
 lemma zmod_mul_inv_eq_one_iff_coprime_n {n : ℕ} (x : ZMod n) (h : 0 < n) : (Nat.Coprime x.val n) ↔  x * (my_zmod_inv n x) = 1 := by
   constructor
@@ -1843,8 +1851,18 @@ lemma zmod_mul_inv_eq_one_iff_coprime_n {n : ℕ} (x : ZMod n) (h : 0 < n) : (Na
         rw [this]
         rw [Nat.gcd_zero_left]
         rw [ZMod.nat_cast_self]
-      sorry
       --have 1=0, should be able to contradict somewhere.
+      have my_cases_2 : n = 1 ∨ 1 < n := by apply my_cases_2_aaa; exact h
+      cases my_cases_2
+      · have hn : n=1 := by assumption
+        rw [hn]
+        unfold Nat.Coprime
+        rw [Nat.gcd_zero_left]
+      · have hn : 1 < n := by assumption
+        have : Fact (1 < n) := by rw [fact_iff]; exact hn
+        apply_fun ((fun (x : ZMod n) => (x.val : ℕ)) : ZMod n → ℕ) at h2
+        conv at h2 => rw [ZMod.val_zero]; rw [ZMod.val_one]
+        contradiction
     · have h4 : ¬x=0 := by assumption
       have h5 : x.val ≠ 0 := by
         rw [← ne_eq] at h4
@@ -1856,14 +1874,19 @@ lemma zmod_mul_inv_eq_one_iff_coprime_n {n : ℕ} (x : ZMod n) (h : 0 < n) : (Na
       have H : Nat.gcd x.val n < n := by
         apply gcd_of_val_lt_non_zero
         <;> assumption
-      unfold Nat.Coprime
-
-
-
-
-
-
-
+      have my_cases_2 : n = 1 ∨ 1 < n := by apply my_cases_2_aaa; exact h
+      cases my_cases_2
+      · have hn : n=1 := by assumption
+        simp_rw [hn]
+        apply Nat.coprime_one_right
+      · have hn : 1<n := by assumption
+        unfold Nat.Coprime
+        apply_fun ((fun (x : ZMod n) => (x.val : ℕ)) : ZMod n → ℕ) at h2
+        rw [ZMod.val_nat_cast_of_lt] at h2
+        have : Fact (1 < n) := by rw [fact_iff]; exact hn
+        rw [ZMod.val_one] at h2
+        exact h2
+        exact H
 
 
 theorem coe_zmod_inv_unit {n : ℕ} (y : Units (ZMod n)) : (my_zmod_inv n (y : ZMod n)) = (my_zmod_inv n y) := by
