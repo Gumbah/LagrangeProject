@@ -26,8 +26,8 @@ import Mathlib.Data.ZMod.Basic
 
 
 
-
---In this file we will use the basic definitions of Groups to
+--Rose + Ed
+--In this section we will use the basic definitions of Groups to
 --prove basic things about them only using the axioms of acossiativity,
 --inverses and the identity
 
@@ -41,7 +41,7 @@ section group
 
 namespace groupsMul
 
-  variable {G : Type} [Group G]
+  variable [Group G]
 
   @[simp]lemma LeftCancelMul (a b c : G) : a * b = a * c → b = c := by
     intro h
@@ -88,58 +88,75 @@ namespace groupsMul
 
   @[simp]lemma LeftInvEqMul (a b c : G) : a = b⁻¹ * c ↔ b * a = c := by
     constructor
-    intro h1
-    rw[h1]
-    rw[← mul_assoc]
-    rw[MulInv]
-    rw[one_mul]
-    intro h2
-    rw[← h2]
-    rw[← mul_assoc]
-    rw[mul_left_inv]
-    rw[one_mul]
+    · intro h1
+      rw[h1]
+      rw[← mul_assoc]
+      rw[MulInv]
+      rw[one_mul]
+    · intro h2
+      rw[← h2]
+      rw[← mul_assoc]
+      rw[mul_left_inv]
+      rw[one_mul]
     done
 
   @[simp]lemma RightInvEqMul (a b c : G) : a = b * c⁻¹ ↔ a * c = b := by
     constructor
-    intro h1
-    rw[h1]
-    rw[mul_assoc]
-    rw[mul_left_inv]
-    rw[MulOne]
-    intro h2
-    rw[← h2]
-    rw[mul_assoc]
-    rw[MulInv]
-    rw[MulOne]
+    · intro h1
+      rw[h1]
+      rw[mul_assoc]
+      rw[mul_left_inv]
+      rw[MulOne]
+    · intro h2
+      rw[← h2]
+      rw[mul_assoc]
+      rw[MulInv]
+      rw[MulOne]
     done
 
   @[simp]lemma IdUniqueMul (a b : G) : a * b = b ↔ a = 1 := by
     constructor
-    intro h1
-    rw[← MulOne a]
-    rw[← MulInv b]
-    rw[← mul_assoc]
-    rw[h1]
-    intro h2
-    rw[h2]
-    rw[one_mul]
+    · intro h1
+      rw[← MulOne a]
+      rw[← MulInv b]
+      rw[← mul_assoc]
+      rw[h1]
+    · intro h2
+      rw[h2]
+      rw[one_mul]
     done
 
-  @[simp]lemma InvUniqueRightMul (a b : G) (h : a * b = 1) : a = b⁻¹ := by
-    rw[← MulOne a]
-    rw[← MulInv b]
-    rw[← mul_assoc]
-    rw[h]
-    rw[one_mul]
+  @[simp]lemma InvUniqueRightMul (a b : G) : a * b = 1 ↔ a = b⁻¹ := by
+    constructor
+    · intro h
+      rw[← MulOne a]
+      rw[← MulInv b]
+      rw[← mul_assoc]
+      rw[h]
+      rw[one_mul]
+    · intro h
+      rw[h]
+      rw [mul_left_inv]
     done
 
-  @[simp]lemma InvUniqueLeftMul (a b : G) (h : a * b = 1) : b = a⁻¹ := by
-    rw[← one_mul b]
-    rw[← mul_left_inv a]
-    rw[mul_assoc]
-    rw[h]
-    rw[MulOne]
+  @[simp]lemma InvUniqueLeftMul (a b : G) :a * b = 1 ↔ b = a⁻¹ := by
+    constructor
+    · intro h
+      rw[← one_mul b]
+      rw[← mul_left_inv a]
+      rw[mul_assoc]
+      rw[h]
+      rw[MulOne]
+    · intro h
+      rw[h]
+      rw[MulInv]
+    done
+
+  @[simp]lemma InvBracketsMul (a b : G) : (a * b)⁻¹ = b⁻¹ * a⁻¹ := by
+    apply LeftCancelMul (a*b)
+    rw[MulInv (a*b)]
+    rw[← mul_assoc, mul_assoc a b]
+    rw[MulInv, MulOne, MulInv]
     done
 
 end groupsMul
@@ -199,42 +216,42 @@ namespace addGroups
 
   @[simp]lemma LeftNegEqAdd (a b c : G) : a = -b + c ↔ b + a = c := by
     constructor
-    intro h1
-    rw[h1]
-    rw[← add_assoc]
-    rw[AddNeg]
-    rw[zero_add]
-    intro h2
-    rw[← h2]
-    rw[← add_assoc]
-    rw[add_left_neg]
-    rw[zero_add]
+    · intro h1
+      rw[h1]
+      rw[← add_assoc]
+      rw[AddNeg]
+      rw[zero_add]
+    · intro h2
+      rw[← h2]
+      rw[← add_assoc]
+      rw[add_left_neg]
+      rw[zero_add]
     done
 
   @[simp]lemma RightNegEqAdd (a b c : G) : a = b + -c ↔ a + c = b := by
     constructor
-    intro h1
-    rw[h1]
-    rw[add_assoc]
-    rw[add_left_neg]
-    rw[AddZero]
-    intro h2
-    rw[← h2]
-    rw[add_assoc]
-    rw[AddNeg]
-    rw[AddZero]
+    · intro h1
+      rw[h1]
+      rw[add_assoc]
+      rw[add_left_neg]
+      rw[AddZero]
+    · intro h2
+      rw[← h2]
+      rw[add_assoc]
+      rw[AddNeg]
+      rw[AddZero]
     done
 
   @[simp]lemma IdUniqueAdd (a b : G) : a + b = b ↔ a = 0 := by
     constructor
-    intro h1
-    rw[← AddZero a]
-    rw[← AddNeg b]
-    rw[← add_assoc]
-    rw[h1]
-    intro h2
-    rw[h2]
-    rw[zero_add]
+    · intro h1
+      rw[← AddZero a]
+      rw[← AddNeg b]
+      rw[← add_assoc]
+      rw[h1]
+    · intro h2
+      rw[h2]
+      rw[zero_add]
     done
 
   @[simp]lemma InvUniqueRightAdd (a b : G) (h : a + b = 0) : a = -b := by
@@ -321,42 +338,42 @@ section rings
 
   @[simp]lemma LeftNegEqAdd (a b c : R) : a = -b + c ↔ b + a = c := by
     constructor
-    intro h1
-    rw[h1]
-    rw[← add_assoc]
-    rw[AddNeg]
-    rw[zero_add]
-    intro h2
-    rw[← h2]
-    rw[← add_assoc]
-    rw[add_left_neg]
-    rw[zero_add]
+    · intro h1
+      rw[h1]
+      rw[← add_assoc]
+      rw[AddNeg]
+      rw[zero_add]
+    · intro h2
+      rw[← h2]
+      rw[← add_assoc]
+      rw[add_left_neg]
+      rw[zero_add]
     done
 
   @[simp]lemma RightNegEqAdd (a b c : R) : a = b + -c ↔ a + c = b := by
     constructor
-    intro h1
-    rw[h1]
-    rw[add_assoc]
-    rw[add_left_neg]
-    rw[AddZero]
-    intro h2
-    rw[← h2]
-    rw[add_assoc]
-    rw[AddNeg]
-    rw[AddZero]
+    · intro h1
+      rw[h1]
+      rw[add_assoc]
+      rw[add_left_neg]
+      rw[AddZero]
+    · intro h2
+      rw[← h2]
+      rw[add_assoc]
+      rw[AddNeg]
+      rw[AddZero]
     done
 
   @[simp]lemma IdUniqueAdd (a b : R) : a + b = b ↔ a = 0 := by
     constructor
-    intro h1
-    rw[← AddZero a]
-    rw[← AddNeg b]
-    rw[← add_assoc]
-    rw[h1]
-    intro h2
-    rw[h2]
-    rw[zero_add]
+    · intro h1
+      rw[← AddZero a]
+      rw[← AddNeg b]
+      rw[← add_assoc]
+      rw[h1]
+    · intro h2
+      rw[h2]
+      rw[zero_add]
     done
 
   @[simp]lemma InvUniqueRightAdd (a b : R) (h : a + b = 0) : a = -b := by
@@ -416,10 +433,32 @@ section rings
 
 end rings
 
+
+--Rose (Cosets)
+
+--We now will define Multiplitive left and right cosets (We do both as it will
+--be useful for quotient groups later). I first define the cosets as a function
+--the image of the function taking an element, h, from a Subgroup H of G and multiplying
+--it with elements from the group. This was heavily inspired from mathlib
+--
+
+--I then defined notation associated with taking a coset, which highly improves
+--readability of the code
+
+--From this I wrote basic lemmas for facts about cosets and things to lead
+--up to Lagranges theroems, adding more as I went along as necessary.
+--Since we are using our own lemmas for facts about elements in a group,
+--I had to take particular care not to use the facts about Groups.Defs in my
+--proofs and to use our own lemmas stating these facts. This also ended up
+--involving a lot of maintanance as many previous lemmas and definitions had
+--to be slightly altered as the project progressed.
+
+--Edward (Quotient groups)
 section cosetsMul
 
+  namespace CosetsMul
 
-  variable {G : Type*} [Group G] (H : Subgroup G)
+  variable [Group G] (H : Subgroup G)
 
 
   def LeftCosetMul [Group G] (g : G) (H : Set G) : Set G :=
@@ -446,34 +485,38 @@ section cosetsMul
   -/
 
 
-
-  namespace CosetsMul
-
+  open groupsMul
   open Set Function
 
   lemma ElemInOwnLeftCosetMul (i : G) : i ∈ i LCoset* H := by
-    simp [LeftCosetMul]
+    simp only [LeftCosetMul, image_mul_left, mem_preimage]
+    rw[mul_left_inv]
+    exact Subgroup.one_mem H
+    done
+
+  lemma ElemInOwnRightCosetMul (i : G) : i ∈ H RCoset* i := by
+    simp only [RightCosetMul, image_mul_right, mem_preimage]
+    rw[MulInv]
     exact Subgroup.one_mem H
     done
 
   lemma AssocLeftCosetMul (a b : G) :
   a LCoset* (b LCoset* H) = (a*b) LCoset* H := by
-    refine ((fun {α} {s t} ↦ Set.ext_iff.mpr) ?_).symm
-    intro x
-    constructor
-    · repeat rw[LeftCosetMul]
-      simp [(image_comp _ _ _).symm, Function.comp]
-      rw[mul_assoc]
-      exact fun a ↦ a
-    · repeat rw[LeftCosetMul]
-      simp [(image_comp _ _ _).symm, Function.comp]
-      rw[mul_assoc]
-      exact fun a ↦ a
+    repeat rw[LeftCosetMul]
+    rw[(image_comp _ _ _).symm]
+    simp only [comp]
+    refine image_congr ?h
+    exact fun a_1 a_2 ↦ (mul_assoc a b a_1).symm
     done
+
 
   lemma AssocRightCosetMul (a b : G) :
   (H RCoset* a) RCoset* b = H RCoset* (a*b) := by
-    sorry
+    repeat rw[RightCosetMul]
+    rw[(image_comp _ _ _).symm]
+    simp only [comp]
+    refine image_congr ?h
+    exact fun a_1 a_2 ↦ mul_assoc a_1 a b
     done
 
   lemma LeftCosetElemImpEqMul (a b : G) (h : a = b):
@@ -481,22 +524,69 @@ section cosetsMul
     rw [h]
     done
 
-  lemma RightCosetElemImpEqMul (a b : G) :
-  a = b → H RCoset* a = H RCoset* b := by
-    sorry
+  lemma RightCosetElemImpEqMul (a b : G) (h : a = b):
+  H RCoset* a = H RCoset* b := by
+    rw[h]
     done
 
   lemma LeftCosetClosureMul (g i : G) :
   g ∈ i LCoset* H ↔ i⁻¹ * g ∈ H := by
     constructor
     · intro h
-      simp [LeftCosetMul] at h
+      simp only [LeftCosetMul._eq_1, image_mul_left, mem_preimage, SetLike.mem_coe] at h
       exact h
     · intro h
-      simp [LeftCosetMul]
+      simp only [LeftCosetMul._eq_1, image_mul_left, mem_preimage, SetLike.mem_coe]
       exact h
     done
     --May be more lemmas needed
+
+  lemma RightCosetClosureMul (g i : G) :
+  g ∈ H RCoset* i ↔ g * i⁻¹ ∈ H := by
+    constructor
+    · intro h
+      simp only [RightCosetMul._eq_1, image_mul_right, mem_preimage, SetLike.mem_coe] at h
+      exact h
+    · intro h
+      simp only [RightCosetMul._eq_1, image_mul_right, mem_preimage, SetLike.mem_coe]
+      exact h
+    done
+
+  lemma LeftCosetOne : (1 : G) LCoset* H = H := by
+    refine (ext ?h).symm
+    intro x
+    constructor
+    · intro h1
+      rw[LeftCosetClosureMul]
+      rw[← one_mul (1⁻¹)]
+      rw[MulInv]
+      rw[one_mul]
+      exact h1
+    · intro h2
+      rw[LeftCosetClosureMul] at h2
+      rw[← one_mul (1⁻¹)] at h2
+      rw[MulInv] at h2
+      rw[one_mul] at h2
+      exact h2
+    done
+
+  lemma RightCosetOne : H RCoset* (1 : G) = H := by
+    refine (ext ?h).symm
+    intro x
+    constructor
+    · intro h1
+      rw[RightCosetClosureMul]
+      rw[← one_mul (1⁻¹)]
+      rw[MulInv]
+      rw[mul_one]
+      exact h1
+    · intro h2
+      rw[RightCosetClosureMul] at h2
+      rw[← one_mul (1⁻¹)] at h2
+      rw[MulInv] at h2
+      rw[mul_one] at h2
+      exact h2
+    done
 
   lemma LeftCosetEqIffContained (i j : G) :
   j ∈ i LCoset* H ↔ i LCoset* H = j LCoset* H := by
@@ -504,37 +594,78 @@ section cosetsMul
     · intro h
       refine ext ?h
       intro x
-      simp [LeftCosetMul] at h
+      rw[LeftCosetClosureMul] at h
       let α := i⁻¹ * j
       constructor
       · intro k
         let β := i⁻¹*x
-        simp [LeftCosetMul] at k
+        rw[LeftCosetClosureMul] at k
         have e : x = j*α⁻¹*β := by
-          simp
-        simp [LeftCosetMul]
+          simp only [α, β]
+          rw[InvBracketsMul, InvInvMul]
+          repeat rw[← mul_assoc]
+          rw[MulInv, one_mul, MulInv, one_mul]
+        rw[LeftCosetClosureMul]
         rw[e]
-        rw[← mul_assoc]
-        have f : j⁻¹ * (j * α⁻¹) = α⁻¹ := by
-          simp
-        rw[f]
+        repeat rw[← mul_assoc]
+        rw[mul_left_inv, one_mul, mul_assoc]
         refine (mul_mem_cancel_left ?h.mp.h).mpr k
         exact Subgroup.inv_mem H h
       · intro k
         let β := j⁻¹*x
-        simp [LeftCosetMul] at k
+        rw[LeftCosetClosureMul] at k
         have e : x = i*α*β := by
-          simp
-        simp [LeftCosetMul]
+          simp only [α, β]
+          repeat rw[← mul_assoc]
+          rw[MulInv, one_mul, MulInv, one_mul]
+        rw[LeftCosetClosureMul]
         rw[e]
-        rw[← mul_assoc]
-        have f : i⁻¹ * (i * α) = α := by
-          simp
-        rw[f]
+        rw[← mul_assoc, ← mul_assoc, ← mul_assoc]
+        rw[mul_left_inv, one_mul, mul_assoc]
         exact Subgroup.mul_mem H h k
     · intro h
       rw [h]
       exact ElemInOwnLeftCosetMul H j
+    done
+
+  lemma RightCosetEqIffContained (i j : G) :
+  j ∈ H RCoset* i ↔ H RCoset* i = H RCoset* j := by
+    constructor
+    · intro h
+      refine ext ?h
+      intro x
+      rw[RightCosetClosureMul] at h
+      let α := j * i⁻¹
+      constructor
+      · intro k
+        let β := x*i⁻¹
+        rw[RightCosetClosureMul] at k
+        have e : x = β*α⁻¹*j := by
+          simp only [α, β]
+          rw[InvBracketsMul, InvInvMul]
+          repeat rw[mul_assoc]
+          rw[mul_left_inv, MulOne, mul_left_inv, MulOne]
+        rw[RightCosetClosureMul]
+        rw[e]
+        repeat rw[mul_assoc]
+        rw[MulInv, MulOne, ← mul_assoc]
+        refine (mul_mem_cancel_right ?h.mp.h).mpr k
+        exact Subgroup.inv_mem H h
+      · intro k
+        let β := x*j⁻¹
+        rw[RightCosetClosureMul] at k
+        have e : x = β*α*i := by
+          simp only [α, β]
+          repeat rw[mul_assoc]
+          rw[mul_left_inv, MulOne, mul_left_inv, MulOne]
+        rw[RightCosetClosureMul]
+        rw[e]
+        repeat rw[mul_assoc]
+        rw[MulInv, MulOne, ← mul_assoc]
+        exact Subgroup.mul_mem H k h
+    · intro h
+      rw [h]
+      exact ElemInOwnRightCosetMul H j
     done
 
 
@@ -555,10 +686,20 @@ section cosetsMul
     exact h2
     done
 
-  lemma RightCosetEqNotDisjointMul (g i j : G)
-  (h : g ∈ (H RCoset* i) ∧ g ∈ (H RCoset* j)) :
-  H RCoset* i = H RCoset* j := by
-    sorry
+  lemma RightCosetEqNotDisjointMul (g i j : G) :
+  g ∈ (H RCoset* i) ∧ g ∈ (H RCoset* j) → H RCoset* i = H RCoset* j := by
+    intro h
+    let ⟨a, b⟩ := h
+    have h1 : H RCoset* g = H RCoset* i := by
+      rw[RightCosetEqIffContained] at a
+      symm
+      exact a
+    have h2 : H RCoset* g = H RCoset* j := by
+      rw[RightCosetEqIffContained] at b
+      symm
+      exact b
+    rw [h1] at h2
+    exact h2
     done
 
   lemma LeftCosetDisjointMul (g i j : G)
@@ -579,22 +720,35 @@ section cosetsMul
       exact h1
     done
 
+  lemma RightCosetDisjointMul (g i j : G)
+  (h : g ∈ (H RCoset* i) ∧ ¬(g ∈ (H RCoset* j))) :
+  (H RCoset* i) ∩ (H RCoset* j) = {} := by
+    contrapose h
+    refine not_and.mpr ?_
+    intro h1
+    simp
+    have h2 : ∃ x, x ∈ (H RCoset* i) ∧ x ∈ (H RCoset* j) := by
+      refine inter_nonempty.mp ?_
+      exact nmem_singleton_empty.mp h
+    cases h2 with
+    | intro w y =>
+      apply RightCosetEqNotDisjointMul at y
+      symm at y
+      rw[y]
+      exact h1
+    done
 
-  variable {I : Type*}
-  variable {A : I → Set G}
-
-  lemma UnionOfLeftCosetsIsGroup : G = (⋃ i, A i)  := by
+  lemma UnionOfLeftCosetsIsGroup : ⋃(g : G), g LCoset* H = G := by
     sorry
     done
 
-  theorem LagrangeLeftMul [Fintype G] [Fintype H] :
+  theorem LagrangeMul [Fintype G] [Fintype H] :
   Fintype.card H ∣ Fintype.card G := by
     sorry
     done
 
   def indexMul [Fintype G] [Fintype H] : ℕ :=
     Fintype.card G / Fintype.card H
-    -- number of cosets iH, jH ... that makes up G
 
   theorem PowOfCardEqOne [Fintype G] (g : G) :
   g ^ (Fintype.card G) = 1 := by
@@ -604,9 +758,75 @@ section cosetsMul
   --we've done most of the immediately relevant stuff for cosets
   --but to define quotient groups we need to show a fact about them and normal subgroups
 
+  theorem CosetsOfNormEq (N : H.Normal) (g : G) : g LCoset* H = H RCoset* g :=
+    Set.ext fun a => by --turns = statement into iff
+    rw[LeftCosetClosureMul]
+    rw[RightCosetClosureMul]
+    rw[N.mem_comm_iff] -- statement saying that we have commutativity here
+
+  theorem MemLeftCoset {x : G} (g : G): x ∈ H ↔ g * x ∈ g LCoset* H := by
+  have e: x LCoset* H = H := by
+      have e1: H = (1 : G) LCoset* H := by
+        rw[LeftCosetOne]
+      have e2: x ∈ H ↔ x ∈ (1 : G) LCoset* H := by
+        constructor
+        · intro h1h1
+          rw[← e1]
+          exact h1h1
+        · intro h1h2
+          rw[← e1] at h1h2
+          exact h1h2
+      rw[e2] at h1
+      rw[LeftCosetEqIffContained] at h1
+      rw[← h1]
+      nth_rewrite 2 [e1]
+      rfl
+  constructor
+  · intro h1
+    rw[LeftCosetEqIffContained]
+    rw[← AssocLeftCosetMul]
+    rw[e]
+  · intro h2
+
+    rw[LeftCosetEqIffContained] at h2
+    rw[← AssocLeftCosetMul] at h2
+    rw[e] at h2
+  done
+
+  theorem MemRightCoset {x : G} (g : G) (xinH : x ∈ H) : g * x ∈ H RCoset* g := by
+  rw[RightCosetEqIffContained]
+  rw[← AssocRightCosetMul]
+  have e: H RCoset* x = H := by
+    have e1: H = H RCoset* (1 : G) := by
+      rw[RightCosetOne]
+    have e2: x ∈ H ↔ x ∈ H RCoset* (1 : G) := by
+      constructor
+      · intro h1
+        rw[← e1]
+        exact h1
+      · intro h2
+        rw[← e1] at h2
+        exact h2
+    rw[e2] at xinH
+    rw[RightCosetEqIffContained] at xinH
+    rw[← xinH]
+    nth_rewrite 2 [e1]
+    rfl
+  rw[e]
+  done
+
+  theorem NormalofEqCosets (h : ∀ g : G, g LCoset* H = H RCoset* g) : H.Normal := by
+  have e: g * a * g⁻¹ ∈ (H : Set G):= by
+  --⟨fun a ha g =>
+    --show g * a * g⁻¹ ∈ (H : Set G) by rw [← RightCosetClosureMul H (g * a) g, ← h]; exact MemLeftCoset g ha⟩
+
   theorem NormalIffEqMulCosets: H.Normal ↔ ∀ g : G, g LCoset* H = H RCoset* g := by
     constructor
+    intro h1
+    unfold Subgroup.Normal at h1
     sorry
+    intro h2
+    unfold Subgroup.Normal
     sorry
 
 
@@ -828,22 +1048,27 @@ def my_gcd (x y : ℕ) : ℕ := (gcd_bezout x y).1
 @[simp] lemma gcd_bez_expand (x y : ℕ) : gcd_bezout x y = (my_gcd x y, bez_a x y, bez_b x y) := by
   unfold my_gcd bez_a bez_b
   rfl
+  done
 
 @[simp] lemma gcd_bez_zero_left {y : ℕ} : gcd_bezout Nat.zero y = (y, 0, 1) := by
   unfold gcd_bezout
   rfl
+  done
 
 @[simp] lemma bez_a_zero_left {y : ℕ} : bez_a Nat.zero y = 0 := by
   unfold bez_a
   simp? says simp only [Nat.zero_eq, gcd_bez_zero_left]
+  done
 
 @[simp] lemma bez_b_zero_left {y : ℕ} : bez_b Nat.zero y = 1 := by
   unfold bez_b
   simp? says simp only [Nat.zero_eq, gcd_bez_zero_left]
+  done
 
 @[simp] lemma my_gcd_zero_left {y : ℕ} : my_gcd Nat.zero y = y := by
   unfold my_gcd
   simp? says simp only [Nat.zero_eq, gcd_bez_zero_left]
+  done
 
 @[simp] lemma bez_a_zero_right {x : ℕ} (h : x ≠ 0) : bez_a x Nat.zero = 1 := by
   unfold bez_a gcd_bezout
@@ -851,12 +1076,14 @@ def my_gcd (x y : ℕ) : ℕ := (gcd_bezout x y).1
   | zero => exact absurd rfl h
   | succ x => simp? says simp only [Nat.zero_eq, Nat.zero_mod, gcd_bez_zero_left, CharP.cast_eq_zero,
     EuclideanDomain.zero_div, mul_zero, sub_zero]
+  done
 
 @[simp] lemma bez_b_zero_right {x : ℕ} (h : x ≠ 0) : bez_b x Nat.zero = 0 := by
   unfold bez_b gcd_bezout
   induction x with
   | zero => exact absurd rfl h
   | succ x => simp? says simp only [Nat.zero_eq, Nat.zero_mod, gcd_bez_zero_left]
+  done
 
 --27/11/23 - Jakub
 
@@ -876,16 +1103,19 @@ def my_gcd (x y : ℕ) : ℕ := (gcd_bezout x y).1
   | succ =>
     unfold my_gcd gcd_bezout
     simp only [Nat.mod_self, gcd_bez_expand, my_gcd_zero_left, bez_a_zero_left, bez_b_zero_left]
+  done
 
 @[simp] lemma my_gcd_succ (x y : ℕ) : my_gcd (Nat.succ x) y = my_gcd (y%(Nat.succ x)) (Nat.succ x) := by
   unfold my_gcd
   rfl
+  done
 
 @[simp] lemma my_gcd_zero_right {x : ℕ} : my_gcd x Nat.zero = x := by
   unfold my_gcd gcd_bezout
   induction x with
   | zero => rfl
   | succ x => simp? says simp only [Nat.zero_eq, Nat.zero_mod, gcd_bez_zero_left]
+  done
 
 @[simp] lemma gcd_bez_zero_right {x : ℕ} (h : x ≠ 0) : gcd_bezout x Nat.zero = (x, 1, 0) := by
   rw[gcd_bez_expand x Nat.zero]
@@ -893,6 +1123,7 @@ def my_gcd (x y : ℕ) : ℕ := (gcd_bezout x y).1
   | zero => exact absurd rfl h
   | succ => simp? says simp only [Nat.zero_eq, ne_eq, Nat.succ_ne_zero, not_false_eq_true, my_gcd_zero_right,
     bez_a_zero_right, bez_b_zero_right]
+  done
 
 --28/11/23 - Jakub
 
@@ -909,11 +1140,13 @@ def my_gcd (x y : ℕ) : ℕ := (gcd_bezout x y).1
     have := (Nat.mod_zero y).symm
     simp only [my_gcd_zero_left, Nat.mod_zero, my_gcd_zero_right]
   | x + 1 => by exact (my_gcd_succ x y).symm
+  done
 
 @[simp] theorem dvd_my_gcd : k ∣ x → k ∣ y → k ∣ my_gcd x y := by
   induction x, y using Nat.gcd.induction with intro kx ky
   | H0 y => rw [my_gcd_zero_left]; exact ky
   | H1 y x _ IH => rw [my_gcd_rec]; exact IH ((Nat.dvd_mod_iff kx).2 ky) kx
+  done
 
 theorem my_gcd_eq_gcd (x y : ℕ) : Nat.gcd x y = my_gcd x y := by
   induction x, y using Nat.gcd.induction with
@@ -922,24 +1155,29 @@ theorem my_gcd_eq_gcd (x y : ℕ) : Nat.gcd x y = my_gcd x y := by
   | H1 x y _ ih =>
     rw [Nat.gcd_rec, my_gcd_rec]
     exact ih
+  done
 
 @[simp] lemma bez_a_succ (x y : ℕ) : bez_a (Nat.succ x) y = bez_b (y%(Nat.succ x)) (Nat.succ x) - y/(Nat.succ x) * bez_a (y%(Nat.succ x)) (Nat.succ x) := by
   unfold bez_a bez_b
   rfl
+  done
 
 @[simp] lemma bez_b_succ (x y : ℕ) : bez_b (Nat.succ x) y = bez_a (y%(Nat.succ x)) (Nat.succ x) := by
   unfold bez_a bez_b
   rfl
+  done
 
 @[simp] lemma bez_a_rec (x y : ℕ) (h : 0 < x) : bez_a x y = bez_b (y%x) x - y/x * bez_a (y%x) x := by
   match x with
   | 0 => contradiction
   | x + 1 => exact bez_a_succ x y
+  done
 
 @[simp] lemma bez_b_rec (x y : ℕ) (h : 0 < x): bez_b x y = bez_a (y%x) x := by
   match x with
   | 0 => contradiction
   | x + 1 => exact bez_b_succ x y
+  done
 
 --29/11/23 - Jakub
 
@@ -950,6 +1188,7 @@ theorem my_gcd_eq_gcd (x y : ℕ) : Nat.gcd x y = my_gcd x y := by
 @[simp] lemma my_ediv_add_emod (x y : ℤ) : y-x*(y/x) = (y%x) := by
   nth_rewrite 1 [← Int.ediv_add_emod y x]
   simp only [add_sub_cancel']
+  done
 
 --Remains to prove this !!! I will continue work on this part later.
 @[simp] lemma bez_rec (x y : ℕ) (h : 0 < x) : bez_a (y%x) x * (y%x) + bez_b (y%x) x * x = bez_a x y * x + bez_b x y * y := by
@@ -966,6 +1205,7 @@ theorem my_gcd_eq_gcd (x y : ℕ) : Nat.gcd x y = my_gcd x y := by
   linarith
   exact h
   exact h
+  done
 
 --Statement of Bézout's lemma using `my_gcd`
 theorem bez_a_left_mul_bez_b_right_eq_my_gcd (x y : ℕ) : (bez_a x y)*x+(bez_b x y)*y=(my_gcd x y) := by
@@ -977,11 +1217,13 @@ theorem bez_a_left_mul_bez_b_right_eq_my_gcd (x y : ℕ) : (bez_a x y)*x+(bez_b 
     rw [← bez_rec, my_gcd_rec]
     exact ih
     exact h
+    done
 
 --Statement of Bézout's lemma using `Nat.gcd`
 theorem bezout (x y : ℕ) : (bez_a x y)*x+(bez_b x y)*y=(Nat.gcd x y) := by
   rw [my_gcd_eq_gcd]
   apply bez_a_left_mul_bez_b_right_eq_my_gcd
+  done
 
 --30/11/23 - Jakub
 
@@ -1009,27 +1251,33 @@ notation:50 a "≡" b " [mod " n "]" => Mod_eq n a b
 
 @[simp] lemma Mod_eq_rfl {n a: ℕ} : a ≡ a [mod n] := by
   rfl
+  done
 
 @[simp] lemma Mod_eq_symm {n a b: ℕ} : a ≡ b [mod n] → b ≡ a [mod n] := by
   exact Eq.symm
+  done
 
 @[simp] lemma Mod_eq_trans {n a b c : ℕ} : a ≡ b [mod n] → b ≡ c [mod n] → a ≡ c [mod n] := by
   exact Eq.trans
+  done
 
 @[simp] lemma Mod_eq_self {n : ℕ} : n ≡ 0 [mod n] := by
   rw [Mod_eq]
   rw [Nat.zero_mod]
   rw [Nat.mod_self]
+  done
 
 @[simp] lemma Mod_eq_zero_iff_dvd {n a : ℕ} : a ≡ 0 [mod n] ↔ n ∣ a := by
   rw [Mod_eq]
   rw [Nat.zero_mod]
   rw [Nat.dvd_iff_mod_eq_zero]
+  done
 
 @[simp] lemma Mod_eq_add_mul (n a b: ℕ) : a + b*n ≡ a [mod n] := by
   rw [Mod_eq]
   rw [Nat.add_mod]
   simp? says simp only [Nat.mul_mod_left, add_zero, Nat.mod_mod]
+  done
 
 --Unfortunately the above results proved less useful than I had foreseen, but I will keep them here in case they
 --are required further down the line.
@@ -1066,9 +1314,11 @@ notation:50 a "≡" b " [mod " n "]" => Mod_eq n a b
 
 lemma int_to_nat_mul_nat (x : ℤ) (y : ℕ) (h : 0 ≤ x): (Int.toNat x) * y = Int.toNat (x * y) := by
   match x, Int.eq_ofNat_of_zero_le h with | _, ⟨_, rfl⟩ => rfl
+  done
 
 lemma int_to_nat_mod_nat (x : ℤ) (y : ℕ) (h : 0 ≤ x): (Int.toNat x) % y = Int.toNat (x % y) := by
   match x, Int.eq_ofNat_of_zero_le h with | _, ⟨_, rfl⟩ => rfl
+  done
 
 --Below is again original work.
 --It proved necessary to prove these smaller auxiliary lemmas for the `bez_a_mod` and `bez_b_mod` theorems, since
@@ -1082,6 +1332,7 @@ lemma int_to_nat_mod_nat (x : ℤ) (y : ℕ) (h : 0 ≤ x): (Int.toNat x) % y = 
     apply Nat.dvd_lcm_left
   rw [Nat.mod_mod_of_dvd]
   exact h
+  done
 
 --very useful simple statement.
 @[simp] theorem bez_of_coprime (m n : ℕ) (h : Nat.Coprime m n) : bez_a m n * m + bez_b m n * n = 1 := by
@@ -1089,6 +1340,7 @@ lemma int_to_nat_mod_nat (x : ℤ) (y : ℕ) (h : 0 ≤ x): (Int.toNat x) % y = 
   rw [Nat.coprime_iff_gcd_eq_one.1]
   rfl
   exact h
+  done
 
 --slightly simpler statements of `bez_a_mod` and `bez_b_mod`, useful for the full proofs.
 lemma bez_a_mod_aux (m n : ℕ) (h : Nat.Coprime m n): ((bez_a m n % n) * m) % n = 1 % n := by
@@ -1098,6 +1350,7 @@ lemma bez_a_mod_aux (m n : ℕ) (h : Nat.Coprime m n): ((bez_a m n % n) * m) % n
     rw [← Int.mul_emod]
     rw [Int.add_mul_emod_self]
   exact h
+  done
 
 lemma bez_b_mod_aux (m n : ℕ) (h : Nat.Coprime m n): ((bez_b m n % m) * n) % m = 1 % m := by
   rw [← bez_of_coprime m n]
@@ -1107,6 +1360,7 @@ lemma bez_b_mod_aux (m n : ℕ) (h : Nat.Coprime m n): ((bez_b m n % m) * n) % m
     rw [add_comm]
     rw [Int.add_mul_emod_self]
   exact h
+  done
 
 theorem bez_a_mod (m n : ℕ) (h : Nat.Coprime m n) (hn : ¬n=0) : (Int.toNat (bez_a m n % n)) * m ≡ 1 [mod n] := by
   rw [Mod_eq]
@@ -1130,6 +1384,7 @@ theorem bez_a_mod (m n : ℕ) (h : Nat.Coprime m n) (hn : ¬n=0) : (Int.toNat (b
       exact h2
     exact h3
   exact h1
+  done
 
 theorem bez_b_mod (m n : ℕ) (h : Nat.Coprime m n) (hm : ¬m=0) : (Int.toNat (bez_b m n % m)) * n ≡ 1 [mod m] := by
   rw [Mod_eq]
@@ -1153,6 +1408,7 @@ theorem bez_b_mod (m n : ℕ) (h : Nat.Coprime m n) (hm : ¬m=0) : (Int.toNat (b
       exact h2
     exact h3
   exact h1
+  done
 
 def classical_crt (m n a b : ℕ) (h : Nat.Coprime m n) : {x // x ≡ a [mod m] ∧ x ≡ b [mod n]} :=
   if hm : m = 0 then ⟨a, by
@@ -1222,48 +1478,54 @@ def classical_crt (m n a b : ℕ) (h : Nat.Coprime m n) : {x // x ≡ a [mod m] 
 @[simp] lemma bezout_one {p n : ℕ}(h_1 : (Nat.gcd p n) = (1 : ℕ)) : (bez_a p n)*(p : ℕ)+(bez_b p n)*n= (1 : ℕ)  := by
   rw[bezout]
   rw[h_1]
+  done
 
 @[simp] lemma bezout_one_nat {p n : ℕ}(h_1 : (Nat.gcd p n) = (1 : ℕ)) : Int.toNat ((bez_a p n)*p+(bez_b p n)*n)= (1 : ℕ) := by
   rw[bezout_one]
   rw[Nat.cast_one]
   rw[Int.toNat_one]
   · exact h_1
+  done
 
 @[simp] lemma one_bezout {p n : ℕ}(h_1 : (Nat.gcd p n) = 1) : (1 : ℕ) = (bez_a (p : ℕ) n)*(p : ℕ)+(bez_b (p : ℕ) n)*n  := by
   rw[bezout]
   rw[← h_1]
+  done
 
 @[simp] lemma bezout_prime {p n : ℕ}(h_1 : (Nat.gcd (p : ℕ) n) = p) : (bez_a (p : ℕ) n)*(p : ℕ)+(bez_b (p : ℕ) n)*n= p  := by
   rw[bezout]
   rw[h_1]
+  done
 
 @[simp] lemma prime_bezout {p n : ℕ}(h_1 : (Nat.gcd (p : ℕ) n) = p) : (p : ℕ) = (bez_a (p : ℕ) n)*(p : ℕ)+(bez_b (p : ℕ) n)*n  := by
   rw[bezout]
   norm_cast
   rw[h_1]
+  done
 
 
 @[simp] lemma gen_bezout {p n : ℕ} : (Nat.gcd  (n : ℕ) (p : ℕ)) = (bez_a (n : ℕ) (p : ℕ))*(n : ℕ)+(bez_b (n : ℕ) (p : ℕ)) *(p : ℕ) := by
   rw[bezout]
+  done
 
 @[simp] lemma gcd_nat_prime {p m : ℕ}(h: Nat.Prime p) : (Nat.gcd p m = 1) ∨ (Nat.gcd p m  = p):= by
   intros
   refine (Nat.dvd_prime ?pp).mp ?_
   exact h
   exact Nat.gcd_dvd_left p m
+  done
 
 @[simp] lemma gcd_nat_prime_comm {p m : ℕ}(h: Nat.Prime p): (Nat.gcd p m = p) ∨ (Nat.gcd p m  = 1):= by
   rw[← or_comm]
   apply gcd_nat_prime
   exact h
-
+  done
 
 @[simp] lemma gcd_nat_prime_elt {p m : ℕ}(h: Nat.Prime p) : (Nat.gcd p m ∈ [1,p]) := by
   refine List.mem_pair.mpr ?_
   apply gcd_nat_prime
   exact h
-
-
+  done
 
 -- I struggled a great deal with many of these lemmas due to Lean "nat-casting" my prime variable so that, instead
 -- of working with a Nat.Prime, I had to show that the prime casted to the naturals was a nat.prime itself, which
@@ -1278,12 +1540,13 @@ def classical_crt (m n a b : ℕ) (h : Nat.Coprime m n) : {x // x ≡ a [mod m] 
   apply Ne.symm
   apply Nat.Prime.ne_one
   exact h
+  done
 
 @[simp] lemma gcd_one_false {p m : ℕ}(h: Nat.Prime p) : ¬(Nat.gcd p m = 1) → (Nat.gcd p m = p):= by
   rw[← or_iff_not_imp_left]
   apply gcd_nat_prime
   · exact h
-
+  done
 
 @[simp] lemma gcd_prime_true {p m : ℕ}(h: Nat.Prime p) : (Nat.gcd p m = p) → ¬(Nat.gcd p m = 1):= by
   intro h1
@@ -1291,12 +1554,13 @@ def classical_crt (m n a b : ℕ) (h : Nat.Coprime m n) : {x // x ≡ a [mod m] 
   rw[← ne_eq]
   apply Nat.Prime.ne_one
   exact h
+  done
 
 @[simp] lemma gcd_prime_false {p m : ℕ}(h: Nat.Prime p): ¬(Nat.gcd p m = p) → (Nat.gcd p m = 1):= by
   rw[← or_iff_not_imp_left]
   apply gcd_nat_prime_comm
   exact h
-
+  done
 
 @[simp] lemma gcd_eq_p {p x : ℕ} : (Nat.gcd p x = p) ↔ ((p : ℕ)∣ x) := by
   constructor
@@ -1305,6 +1569,7 @@ def classical_crt (m n a b : ℕ) (h : Nat.Coprime m n) : {x // x ≡ a [mod m] 
     exact Nat.gcd_dvd_right (↑p) x
   · intro h2
     exact Nat.gcd_eq_left h2
+  done
 
 @[simp] lemma gcd_eq_1 {p x : ℕ}(h: Nat.Prime p): (Nat.gcd p x = 1) ↔ ¬((p : ℕ) ∣ x) := by
   constructor
@@ -1328,6 +1593,7 @@ def classical_crt (m n a b : ℕ) (h : Nat.Coprime m n) : {x // x ≡ a [mod m] 
     rw[gcd_eq_p] at h3
     · exact h3
     · exact h
+  done
 
 #check int_to_nat_mul_nat
 #check Int.toNat_add_nat
@@ -1391,6 +1657,7 @@ theorem euclid_left_coprime {p m n : ℕ}(h: Nat.Prime p)(h1 : p ∣ m*n)(h2 : �
     rw [mul_one] at bowser
     rw [bowser] at mario
     contradiction
+  done
 
 --Now we have everything to prove Euclid's lemma: if p divides a composite number m*n, then it must divide one of m or n.
 --After exploring different ways to phrase this, coming across the "or_iff_not_imp_right" lemma saved the day, and - after
@@ -1403,6 +1670,7 @@ theorem euclid {p m n : ℕ}(h: Nat.Prime p): ((p : ℕ) ∣ m*n) → ((p : ℕ)
   apply euclid_left_coprime
   · exact h
   · exact h1
+  done
 
 -- Katie
 
@@ -1433,7 +1701,7 @@ theorem coprime_mult {a b : ℕ}(ha: (Nat.gcd a m)=1) : ((Nat.gcd b m)=1) → ((
   rw [mul_one] at h
   rw [Nat.dvd_one] at h
   exact h
-
+  done
 -- Katie
 
 open BigOperators
@@ -1499,7 +1767,7 @@ lemma dvd_less_than_nat (m n : ℕ) (h : m ∣ n) (h_n : n < m) : n = 0 := by
   --end of Jakub work
   --I would imagine that this proof was not particularly efficient but I wanted practice using the `calc` tactic
   --as it seems useful in mathlib for some proofs later on.
-
+  done
 -- Katie
 
 theorem nat_gcd_prime_prime (p a : ℕ)(h_a : a < p) (h : Nat.gcd p a = p) : a = 0 := by
@@ -1507,6 +1775,7 @@ theorem nat_gcd_prime_prime (p a : ℕ)(h_a : a < p) (h : Nat.gcd p a = p) : a =
   apply dvd_less_than_nat at h
   rw[h]
   exact h_a
+  done
 
 theorem prime_coprime (p : ℕ) (h_p : Nat.Prime p) : ((Finset.range p).filter p.Coprime) = (Finset.range p) \ {0} := by
   refine Finset.ext ?_
@@ -1538,9 +1807,10 @@ theorem prime_coprime (p : ℕ) (h_p : Nat.Prime p) : ((Finset.range p).filter p
         conv at d => rw[←h_1]; simp
         apply d
         exact c
+  done
 
 @[simp] lemma finset_one : Finset.range 1 = {0} := by
-  rfl
+  rfl; done
 
 theorem my_tot_prime (p : ℕ) (h : Nat.Prime p): (my_totient (p)) = (p-1) := by
   unfold my_totient
@@ -1552,6 +1822,7 @@ theorem my_tot_prime (p : ℕ) (h : Nat.Prime p): (my_totient (p)) = (p-1) := by
   simp only [Finset.range_one, Finset.singleton_subset_iff, Finset.mem_range]
   exact Nat.Prime.pos h
   exact h
+  done
 
 --16/01/24 - Jakub
 
@@ -1587,9 +1858,10 @@ lemma zmod_eq_iff_Mod_eq_nat (n : ℕ) {a b : ℕ} : (a : ZMod n) = b ↔ a ≡ 
     simp only [Nat.zero_eq, Nat.mod_zero]
   · rw [Fin.ext_iff, Mod_eq, ← ZMod.val_nat_cast, ← ZMod.val_nat_cast]
     exact Iff.rfl
+  done
 
 lemma my_tot_zero : my_totient (0) = 0 := by
-  rfl
+  rfl; done
 
 -- Katie
 -- Trying to tie Zmod units to the totient function (the main bridge to being able to apply Lagrange) seems
@@ -1633,6 +1905,7 @@ lemma bez_is_zmod_inv (n : ℕ) (a : ZMod n) (h : 0 < n) : my_zmod_inv n a = bez
   match n with
   | 0 => contradiction
   | n+1 => rfl
+  done
 
 theorem my_zmod_inv_zero : ∀ n : ℕ, my_zmod_inv n (0 : ZMod n) = 0
   | 0 => Int.sign_zero
@@ -1641,6 +1914,7 @@ theorem my_zmod_inv_zero : ∀ n : ℕ, my_zmod_inv n (0 : ZMod n) = 0
       rw [ZMod.val_zero]
       rw [bez_a_zero_left]
       rfl
+      done
 
 theorem my_mul_zmod_inv_eq_gcd {n : ℕ} (a : ZMod n) : a * (my_zmod_inv n a) = Nat.gcd a.val n := by
   cases' n with n
@@ -1661,6 +1935,7 @@ theorem my_mul_zmod_inv_eq_gcd {n : ℕ} (a : ZMod n) : a * (my_zmod_inv n a) = 
       _ = (Nat.gcd a.val n.succ : ℤ) := by
         rw [mul_comm, mul_comm (↑(Nat.succ n)) (bez_b (ZMod.val a) (Nat.succ n))]
         rw [← bezout a.val n.succ]
+  done
 
 --end of proofs based heavily on mathlib ------------------------------------------
 
@@ -1675,8 +1950,9 @@ theorem zmod_mul_inv_eq_one {n : ℕ} (x : ZMod n) (h : Nat.Coprime x.val n) : x
   rw [← Nat.cast_one]
   rw [← h]
   rw [my_mul_zmod_inv_eq_gcd]
+  done
 
-lemma zmod_zero_eq_z : ZMod Nat.zero = ℤ := by rfl
+lemma zmod_zero_eq_z : ZMod Nat.zero = ℤ := by rfl; done
 
 lemma gcd_of_val_lt_non_zero (n : ℕ) (x : ZMod n) (h : 0 < x.val) (hn : 0 < n) : Nat.gcd x.val n < n := by
   have h1 : Nat.gcd x.val n ≤ x.val := by
@@ -1691,7 +1967,37 @@ lemma gcd_of_val_lt_non_zero (n : ℕ) (x : ZMod n) (h : 0 < x.val) (hn : 0 < n)
         Nat.gcd x.val n ≤ x.val := by exact h1
         x.val < n := by
           exact ZMod.val_lt x
+  exact this
+  done
 
+lemma my_cases_2_aaa (n : ℕ) (h : 0 < n): n=1 ∨ 1<n := by
+  have : n ≤ 1 ∨ 1 < n := by
+    rw [← Nat.not_le]
+    apply or_not
+  conv at this =>
+    rw [Nat.le_one_iff_eq_zero_or_eq_one]
+  have n_ne_zero : ¬n=0 := by
+    rw [← Nat.ne_zero_iff_zero_lt] at h
+    rw [← ne_eq]
+    exact h
+  cases this
+  · have h' : n = 0 ∨ n = 1 := by assumption
+    cases h'
+    · have h'' : n = 0 := by assumption
+      contradiction
+    · have h'' : n = 1 := by assumption
+      rw [h'']; simp
+  · have h' : 1 < n := by assumption
+    apply Or.intro_right
+    exact h'
+  done
+
+--26/01/24 - Jakub
+
+--I have spent a whole day on the following proof, in order to complete it I had to learn new tactics such as
+--`simp_rw`, `apply_fun`, understanding `calc`, applying custom case separation and the `NeZero` and `Fact` instances!
+--Overall I'm sure it's an extremely inefficient proof but a very informative one, perhaps the most instructive I
+--have completed so far
 
 lemma zmod_mul_inv_eq_one_iff_coprime_n {n : ℕ} (x : ZMod n) (h : 0 < n) : (Nat.Coprime x.val n) ↔  x * (my_zmod_inv n x) = 1 := by
   constructor
@@ -1721,8 +2027,18 @@ lemma zmod_mul_inv_eq_one_iff_coprime_n {n : ℕ} (x : ZMod n) (h : 0 < n) : (Na
         rw [this]
         rw [Nat.gcd_zero_left]
         rw [ZMod.nat_cast_self]
-      sorry
       --have 1=0, should be able to contradict somewhere.
+      have my_cases_2 : n = 1 ∨ 1 < n := by apply my_cases_2_aaa; exact h
+      cases my_cases_2
+      · have hn : n=1 := by assumption
+        rw [hn]
+        unfold Nat.Coprime
+        rw [Nat.gcd_zero_left]
+      · have hn : 1 < n := by assumption
+        have : Fact (1 < n) := by rw [fact_iff]; exact hn
+        apply_fun ((fun (x : ZMod n) => (x.val : ℕ)) : ZMod n → ℕ) at h2
+        conv at h2 => rw [ZMod.val_zero]; rw [ZMod.val_one]
+        contradiction
     · have h4 : ¬x=0 := by assumption
       have h5 : x.val ≠ 0 := by
         rw [← ne_eq] at h4
@@ -1734,7 +2050,20 @@ lemma zmod_mul_inv_eq_one_iff_coprime_n {n : ℕ} (x : ZMod n) (h : 0 < n) : (Na
       have H : Nat.gcd x.val n < n := by
         apply gcd_of_val_lt_non_zero
         <;> assumption
-      unfold Nat.Coprime
+      have my_cases_2 : n = 1 ∨ 1 < n := by apply my_cases_2_aaa; exact h
+      cases my_cases_2
+      · have hn : n=1 := by assumption
+        simp_rw [hn]
+        apply Nat.coprime_one_right
+      · have hn : 1<n := by assumption
+        unfold Nat.Coprime
+        apply_fun ((fun (x : ZMod n) => (x.val : ℕ)) : ZMod n → ℕ) at h2
+        rw [ZMod.val_nat_cast_of_lt] at h2
+        have : Fact (1 < n) := by rw [fact_iff]; exact hn
+        rw [ZMod.val_one] at h2
+        exact h2
+        exact H
+  done
 
 theorem coe_zmod_inv_unit {n : ℕ} (y : Units (ZMod n)) : (my_zmod_inv n (y : ZMod n)) = (my_zmod_inv n y) := by
   sorry
@@ -1761,6 +2090,12 @@ theorem zmod_unit_val_coprime {n : ℕ} (y : ZMod n) (h : IsUnit y) : Nat.Coprim
     exact zmod_inv_mul_eq_one_imp_unit y h
     rw[Nat.succ_eq_add_one]
     linarith
+    
+lemma zmod_inv_mul_eq_one_imp_unit {n : ℕ} (y : ZMod n)(h : IsUnit y) : y * my_zmod_inv n y = 1 := by
+  rw[Units.mul_inv]
+  sorry
+
+
 
   rcases Int.units_eq_one_or y with ⟨rfl,h⟩
     rfl
@@ -1770,7 +2105,7 @@ def zmod_unit_of_coprime {n : ℕ} (x : ZMod n) (h : Nat.Coprime x.val n) : (Uni
   ⟨x, my_zmod_inv n x, zmod_mul_inv_eq_one x h, by rw [mul_comm, zmod_mul_inv_eq_one x h]⟩
 
 theorem coe_zmod_unit_of_coprime {n : ℕ} (x : ZMod n) (h : Nat.Coprime x.val n) : (zmod_unit_of_coprime x h : ZMod n) = x := by
-  rfl
+  rfl; done
 
 -- Probably wont need : theorem coe_zmod_inv_unit {n : ℕ} (y : Units (ZMod n)) : (y : ZMod n)⁻¹ = (y⁻¹ : (Units (ZMod n))) := by
 
@@ -1792,16 +2127,19 @@ def my_zmod_unitsEquivCoprime {n : ℕ} [NeZero n] : (Units (ZMod n)) ≃ ((Fins
 lemma totient_subtype {n x : ℕ} : Finset.card ((Finset.range n).filter n.Coprime) = Fintype.card { x // x ∈ (Finset.range n).filter n.Coprime} := by
   rw[Fintype.subtype_card]
   exact fun x ↦ Iff.rfl
+  done
 
 theorem zmod_units_equiv_card (n : ℕ) [NeZero n] [inst : Fintype (Units (ZMod n))] [inst : Fintype ({x // x ∈ (Finset.range n).filter n.Coprime}) ] : Fintype.card (Units ((ZMod n))) = Fintype.card { x // x ∈ (Finset.range n).filter n.Coprime } := by
   refine Fintype.card_congr ?f
   exact my_zmod_unitsEquivCoprime
+  done
 
 theorem totient_eq_zmod_units_card (n : ℕ) [NeZero n] [inst : Fintype (Units (ZMod n))]: my_totient (n) = Fintype.card (Units (ZMod n)) := by
   unfold my_totient
   rw[totient_subtype]
   rw[zmod_units_equiv_card]
   exact n
+  done
 
 --25/01/24 - Jakub
 
@@ -1826,6 +2164,7 @@ theorem euler_totient (a m : ℕ) (ha : m.Coprime a) : a^(my_totient (m)) ≡ 1 
     rw [Nat.cast_pow]
     rw [← zmod_a'_eq_a]
     norm_cast
+  done
 
 --17/01/24 - Jakub
 
@@ -1843,6 +2182,7 @@ theorem little_fermat_1 (a p : ℕ) (h : Nat.Prime p) (h1 : ¬ p ∣ a) : a ^ (p
   apply euler_totient
   exact ha
   exact h
+  done
 
 theorem little_fermat_2 (a p : ℕ) (h : Nat.Prime p) (h1 : p ∣ a ∨ ¬(p ∣ a)): a^p ≡ a [mod p] := by
   have : p = 1 + (p-1) := by
@@ -1874,6 +2214,7 @@ theorem little_fermat_2 (a p : ℕ) (h : Nat.Prime p) (h1 : p ∣ a ∨ ¬(p ∣
       exact h
       exact hp
     rw [Nat.mul_mod, hh, ← Nat.mul_mod, mul_one]
+  done
 
 --def my_mod_order (a m : ℕ) (h : Nat.Coprime a m) :
 
