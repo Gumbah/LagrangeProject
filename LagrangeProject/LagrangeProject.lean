@@ -26,8 +26,8 @@ import Mathlib.Data.ZMod.Basic
 
 
 
-
---In this file we will use the basic definitions of Groups to
+--Rose + Ed
+--In this section we will use the basic definitions of Groups to
 --prove basic things about them only using the axioms of acossiativity,
 --inverses and the identity
 
@@ -433,6 +433,27 @@ section rings
 
 end rings
 
+
+--Rose (Cosets)
+
+--We now will define Multiplitive left and right cosets (We do both as it will
+--be useful for quotient groups later). I first define the cosets as a function
+--the image of the function taking an element, h, from a Subgroup H of G and multiplying
+--it with elements from the group. This was heavily inspired from mathlib
+--
+
+--I then defined notation associated with taking a coset, which highly improves
+--readability of the code
+
+--From this I wrote basic lemmas for facts about cosets and things to lead
+--up to Lagranges theroems, adding more as I went along as necessary.
+--Since we are using our own lemmas for facts about elements in a group,
+--I had to take particular care not to use the facts about Groups.Defs in my
+--proofs and to use our own lemmas stating these facts. This also ended up
+--involving a lot of maintanance as many previous lemmas and definitions had
+--to be slightly altered as the project progressed.
+
+--Edward (Quotient groups)
 section cosetsMul
 
   namespace CosetsMul
@@ -681,21 +702,17 @@ section cosetsMul
       exact h1
     done
 
-  variable {I : Type*}
-  variable {A : I → Set G}
-
-  lemma UnionOfLeftCosetsIsGroup : G = (⋃ i, A i)  := by
+  lemma UnionOfLeftCosetsIsGroup : ⋃(g : G), g LCoset* H = G := by
     sorry
     done
 
-  theorem LagrangeLeftMul [Fintype G] [Fintype H] :
+  theorem LagrangeMul [Fintype G] [Fintype H] :
   Fintype.card H ∣ Fintype.card G := by
     sorry
     done
 
   def indexMul [Fintype G] [Fintype H] : ℕ :=
     Fintype.card G / Fintype.card H
-    -- number of cosets iH, jH ... that makes up G
 
   theorem PowOfCardEqOne [Fintype G] (g : G) :
   g ^ (Fintype.card G) = 1 := by
