@@ -1604,7 +1604,7 @@ lemma my_tot_zero : my_totient (0) = 0 := by
 #eval (-26 : ZMod 10).val
 #eval (8 : ZMod 10).inv
 #eval (33 : ZMod 10).inv
-
+-- It took some time to understand the ZMod Mathlib functions, and matching everything with my own knowledge of how the ZMod n ring works.
 -- Would like to create an isomorphism between units of ZMod n and {x : ZMod n // Nat.Coprime x.val n} so that we can
 -- say the cardinalities are the same. For this, we need to construct our own isomorphism (heavily inspired by the Mathlib version)
 -- using zmod_unit_val_coprime and zmod_unit_of_coprime.
@@ -1745,7 +1745,7 @@ lemma zmod_mul_inv_eq_one_iff_coprime_n {n : ℕ} (x : ZMod n) (h : 0 < n) : (Na
 
 
 theorem coe_zmod_inv_unit {n : ℕ} (y : Units (ZMod n)) : (my_zmod_inv n (y : ZMod n)) = (my_zmod_inv n y) := by
-
+  sorry
 
 lemma zmod_inv_mul_eq_one_imp_unit {n : ℕ} (y : ZMod n)(h : IsUnit y) : y * my_zmod_inv n y = 1 := by
 
@@ -1760,7 +1760,6 @@ theorem zmod_unit_val_coprime {n : ℕ} (y : Units (ZMod n)) : Nat.Coprime (y : 
     rw [h]; rfl
 -- Katie
   · rw[zmod_mul_inv_eq_one_iff_coprime_n]
-    have : ↑y * my_zmod_inv (Nat.succ n✝) ↑y ≅ 1 [mod (n+1)]
     rw[ZMod.nat_cast_eq_nat_cast_iff]
 
 
@@ -1785,24 +1784,27 @@ theorem coe_zmod_unit_of_coprime {n : ℕ} (x : ZMod n) (h : Nat.Coprime x.val n
 def my_zmod_unitsEquivCoprime {n : ℕ} [NeZero n] : (Units (ZMod n)) ≃ ((Finset.range n).filter n.Coprime) where
   toFun x := ⟨(ZMod.val (x : ZMod n)), zmod_unit_val_coprime⟩
   invFun x := zmod_unit_of_coprime x.1 x.2.val
-  left_inv := fun ⟨_, _, _, _⟩ =>
+  left_inv := fun ⟨_, _, _, _⟩ => Units.ext (nat_cast_zmod_val _)
   right_inv := fun ⟨_, _⟩ =>
-
--- Ignore these for now
-lemma finset_filter_coprime_equiv (n : ℕ) : {x // x ∈ Finset.filter (Nat.Coprime n) (Finset.range n) } = {x // x ∈ (Finset.range n).filter n.Coprime } := by
   sorry
 
-theorem zmod_units_equiv_card (n : ℕ) [inst : Fintype (Units (ZMod n))]: Fintype.card { x // x ∈ Finset.filter (Nat.Coprime n) (Finset.range n) } = Fintype.card (Units (ZMod n)) := by
-  rw[finset_filter_coprime_equiv]
-  rw[Fintype.card_subtype]
-  sorry
+-- Getting the following lemmas to synthesize was a pain in of itself; type errors everywhere, in spite of my level of understanding. The main issue was
+-- zmod_units_equiv_card, which did not allow me to apply/rw Fintype.card_congr no matter what I tried, or what extra lemmas I created. Eventually, I found that
+-- using refine somehow made it successful. Now the main issue is finishing constructing the isomorphism above.
 
-theorem totient_eq_zmod_units_card (n : ℕ) [inst : Fintype (Units (ZMod n))]: my_totient (n) = Fintype.card (Units (ZMod n)) := by
+lemma totient_subtype {n x : ℕ} : Finset.card ((Finset.range n).filter n.Coprime) = Fintype.card { x // x ∈ (Finset.range n).filter n.Coprime} := by
+  rw[Fintype.subtype_card]
+  exact fun x ↦ Iff.rfl
+
+theorem zmod_units_equiv_card (n : ℕ) [NeZero n] [inst : Fintype (Units (ZMod n))] [inst : Fintype ({x // x ∈ (Finset.range n).filter n.Coprime}) ] : Fintype.card (Units ((ZMod n))) = Fintype.card { x // x ∈ (Finset.range n).filter n.Coprime } := by
+  refine Fintype.card_congr ?f
+  exact my_zmod_unitsEquivCoprime
+
+theorem totient_eq_zmod_units_card (n : ℕ) [NeZero n] [inst : Fintype (Units (ZMod n))]: my_totient (n) = Fintype.card (Units (ZMod n)) := by
   unfold my_totient
-  rw[Fintype.card_subtype]
-  --rw [zmod_units_equiv]
-  rw [← Fintype.card_ofFinset]
-  sorry
+  rw[totient_subtype]
+  rw[zmod_units_equiv_card]
+  exact n
 
 --25/01/24 - Jakub
 
