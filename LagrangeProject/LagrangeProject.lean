@@ -2065,31 +2065,42 @@ lemma zmod_mul_inv_eq_one_iff_coprime_n {n : ℕ} (x : ZMod n) (h : 0 < n) : (Na
         exact H
   done
 
-
 theorem coe_zmod_inv_unit {n : ℕ} (y : Units (ZMod n)) : (my_zmod_inv n (y : ZMod n)) = (my_zmod_inv n y) := by
   sorry
 
 lemma zmod_inv_mul_eq_one_imp_unit {n : ℕ} (y : ZMod n)(h : IsUnit y) : y * my_zmod_inv n y = 1 := by
+
+
+  rw[Units.mul_inv]
+
+theorem nat_gcd_zero_eq_one {n : ℕ} (y : ZMod n) : (y = 1 ∨ y = -1) → (Nat.gcd (ZMod.val y) (Nat.zero) = 1) := by
+  sorry
+
+theorem zmod_unit_val_coprime {n : ℕ} (y : ZMod n) (h : IsUnit y) : Nat.Coprime (y : ZMod n).val n := by
+  cases' n with n
+  · unfold Nat.Coprime
+    rw[← nat_gcd_zero_eq_one]
+    --conv at y => rw[zmod_zero_eq_z]
+    apply_fun ((fun (x : ZMod n) => (x : Units (ZMod n))) : ZMod n → Units (ZMod n))
+
+
+
+-- Katie
+  · rw[zmod_mul_inv_eq_one_iff_coprime_n]
+    exact zmod_inv_mul_eq_one_imp_unit y h
+    rw[Nat.succ_eq_add_one]
+    linarith
+    
+lemma zmod_inv_mul_eq_one_imp_unit {n : ℕ} (y : ZMod n)(h : IsUnit y) : y * my_zmod_inv n y = 1 := by
   rw[Units.mul_inv]
   sorry
 
-theorem zmod_unit_val_coprime {n : ℕ} (y : Units (ZMod n)) : Nat.Coprime (y : ZMod n).val n := by
-  cases n
-  · rcases Int.units_eq_one_or y with ⟨rfl,rfl⟩
-    · rfl
+
+
+  rcases Int.units_eq_one_or y with ⟨rfl,h⟩
+    rfl
     have h : y = -1 := by assumption
     rw [h]; rfl
--- Katie
-  · rw[zmod_mul_inv_eq_one_iff_coprime_n]
-    rw[ZMod.nat_cast_eq_nat_cast_iff]
-
-
-    rw[← Int.mod_coprime]
-    rw[ZMod.cast_id]
-    rw[zmod_eq_iff_Mod_eq_nat]
-    rw[← zmod_inv_mul_eq_one_imp_unit]
-    sorry
-
 def zmod_unit_of_coprime {n : ℕ} (x : ZMod n) (h : Nat.Coprime x.val n) : (Units (ZMod n)) :=
   ⟨x, my_zmod_inv n x, zmod_mul_inv_eq_one x h, by rw [mul_comm, zmod_mul_inv_eq_one x h]⟩
 
