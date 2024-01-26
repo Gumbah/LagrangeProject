@@ -125,20 +125,37 @@ namespace groupsMul
     rw[one_mul]
     done
 
-  @[simp]lemma InvUniqueRightMul (a b : G) (h : a * b = 1) : a = b⁻¹ := by
-    rw[← MulOne a]
-    rw[← MulInv b]
-    rw[← mul_assoc]
-    rw[h]
-    rw[one_mul]
+  @[simp]lemma InvUniqueRightMul (a b : G) : a * b = 1 ↔ a = b⁻¹ := by
+    constructor
+    · intro h
+      rw[← MulOne a]
+      rw[← MulInv b]
+      rw[← mul_assoc]
+      rw[h]
+      rw[one_mul]
+    · intro h
+      rw[h]
+      rw [mul_left_inv]
     done
 
-  @[simp]lemma InvUniqueLeftMul (a b : G) (h : a * b = 1) : b = a⁻¹ := by
-    rw[← one_mul b]
-    rw[← mul_left_inv a]
-    rw[mul_assoc]
-    rw[h]
-    rw[MulOne]
+  @[simp]lemma InvUniqueLeftMul (a b : G) :a * b = 1 ↔ b = a⁻¹ := by
+    constructor
+    · intro h
+      rw[← one_mul b]
+      rw[← mul_left_inv a]
+      rw[mul_assoc]
+      rw[h]
+      rw[MulOne]
+    · intro h
+      rw[h]
+      rw[MulInv]
+    done
+
+  @[simp]lemma InvBracketsMul (a b : G) : (a * b)⁻¹ = b⁻¹ * a⁻¹ := by
+    apply LeftCancelMul (a*b)
+    rw[MulInv (a*b)]
+    rw[← mul_assoc, mul_assoc a b]
+    rw[MulInv, MulOne, MulInv]
     done
 
 end groupsMul
@@ -520,7 +537,6 @@ section cosetsMul
     · intro h
       simp only [RightCosetMul._eq_1, image_mul_right, mem_preimage, SetLike.mem_coe] at h
       exact h
-
     · intro h
       simp only [RightCosetMul._eq_1, image_mul_right, mem_preimage, SetLike.mem_coe]
       exact h
@@ -539,67 +555,71 @@ section cosetsMul
         let β := i⁻¹*x
         rw[LeftCosetClosureMul] at k
         have e : x = j*α⁻¹*β := by
-          simp
-        simp [LeftCosetMul]
+          simp only [α, β]
+          rw[InvBracketsMul, InvInvMul]
+          repeat rw[← mul_assoc]
+          rw[MulInv, one_mul, MulInv, one_mul]
+        rw[LeftCosetClosureMul]
         rw[e]
-        rw[← mul_assoc]
-        have f : j⁻¹ * (j * α⁻¹) = α⁻¹ := by
-          simp
-        rw[f]
+        repeat rw[← mul_assoc]
+        rw[mul_left_inv, one_mul, mul_assoc]
         refine (mul_mem_cancel_left ?h.mp.h).mpr k
         exact Subgroup.inv_mem H h
       · intro k
         let β := j⁻¹*x
-        simp [LeftCosetMul] at k
+        rw[LeftCosetClosureMul] at k
         have e : x = i*α*β := by
-          simp
-        simp [LeftCosetMul]
+          simp only [α, β]
+          repeat rw[← mul_assoc]
+          rw[MulInv, one_mul, MulInv, one_mul]
+        rw[LeftCosetClosureMul]
         rw[e]
-        rw[← mul_assoc]
-        have f : i⁻¹ * (i * α) = α := by
-          simp
-        rw[f]
+        rw[← mul_assoc, ← mul_assoc, ← mul_assoc]
+        rw[mul_left_inv, one_mul, mul_assoc]
         exact Subgroup.mul_mem H h k
     · intro h
       rw [h]
       exact ElemInOwnLeftCosetMul H j
     done
 
-  lemma RightCosetEqIffContained [Group G] (i j : G) :
+  lemma RightCosetEqIffContained (i j : G) :
   j ∈ H RCoset* i ↔ H RCoset* i = H RCoset* j := by
     constructor
     · intro h
       refine ext ?h
       intro x
-      simp [RightCosetMul] at h
+      rw[RightCosetClosureMul] at h
       let α := j * i⁻¹
       constructor
       · intro k
         let β := x*i⁻¹
-        simp [RightCosetMul] at k
+        rw[RightCosetClosureMul] at k
         have e : x = β*α⁻¹*j := by
-          simp
-        simp [RightCosetMul]
+          simp only [α, β]
+          rw[InvBracketsMul, InvInvMul]
+          repeat rw[mul_assoc]
+          rw[mul_left_inv, MulOne, mul_left_inv, MulOne]
+        rw[RightCosetClosureMul]
         rw[e]
-        rw[mul_assoc]
-        have f : j * j⁻¹ = 1 := by
-          simp [groupsMul.MulInv]
-
+        repeat rw[mul_assoc]
+        rw[MulInv, MulOne, ← mul_assoc]
+        refine (mul_mem_cancel_right ?h.mp.h).mpr k
+        exact Subgroup.inv_mem H h
       · intro k
-        let β := j⁻¹*x
-        simp [LeftCosetMul] at k
-        have e : x = i*α*β := by
-          simp
-        simp [LeftCosetMul]
+        let β := x*j⁻¹
+        rw[RightCosetClosureMul] at k
+        have e : x = β*α*i := by
+          simp only [α, β]
+          repeat rw[mul_assoc]
+          rw[mul_left_inv, MulOne, mul_left_inv, MulOne]
+        rw[RightCosetClosureMul]
         rw[e]
-        rw[← mul_assoc]
-        have f : i⁻¹ * (i * α) = α := by
-          simp
-        rw[f]
-        exact Subgroup.mul_mem H h k
+        repeat rw[mul_assoc]
+        rw[MulInv, MulOne, ← mul_assoc]
+        exact Subgroup.mul_mem H k h
     · intro h
       rw [h]
-      exact ElemInOwnLeftCosetMul H j
+      exact ElemInOwnRightCosetMul H j
     done
 
 
@@ -614,6 +634,22 @@ section cosetsMul
       exact a
     have h2 : g LCoset* H = j LCoset* H := by
       rw[LeftCosetEqIffContained] at b
+      symm
+      exact b
+    rw [h1] at h2
+    exact h2
+    done
+
+  lemma RightCosetEqNotDisjointMul (g i j : G) :
+  g ∈ (H RCoset* i) ∧ g ∈ (H RCoset* j) → H RCoset* i = H RCoset* j := by
+    intro h
+    let ⟨a, b⟩ := h
+    have h1 : H RCoset* g = H RCoset* i := by
+      rw[RightCosetEqIffContained] at a
+      symm
+      exact a
+    have h2 : H RCoset* g = H RCoset* j := by
+      rw[RightCosetEqIffContained] at b
       symm
       exact b
     rw [h1] at h2
@@ -638,9 +674,23 @@ section cosetsMul
       exact h1
     done
 
-  lemma RightCosetEqIffContained (i j : G) :
-  j ∈ i LCoset* H ↔ i LCoset* H = j LCoset* H := by
-
+  lemma RightCosetDisjointMul (g i j : G)
+  (h : g ∈ (H RCoset* i) ∧ ¬(g ∈ (H RCoset* j))) :
+  (H RCoset* i) ∩ (H RCoset* j) = {} := by
+    contrapose h
+    refine not_and.mpr ?_
+    intro h1
+    simp
+    have h2 : ∃ x, x ∈ (H RCoset* i) ∧ x ∈ (H RCoset* j) := by
+      refine inter_nonempty.mp ?_
+      exact nmem_singleton_empty.mp h
+    cases h2 with
+    | intro w y =>
+      apply RightCosetEqNotDisjointMul at y
+      symm at y
+      rw[y]
+      exact h1
+    done
 
   variable {I : Type*}
   variable {A : I → Set G}
