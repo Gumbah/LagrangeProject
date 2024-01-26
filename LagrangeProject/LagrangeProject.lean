@@ -531,6 +531,42 @@ section cosetsMul
       exact h
     done
 
+  lemma LeftCosetOne : (1 : G) LCoset* H = H := by
+    refine (ext ?h).symm
+    intro x
+    constructor
+    · intro h1
+      rw[LeftCosetClosureMul]
+      rw[← one_mul (1⁻¹)]
+      rw[MulInv]
+      rw[one_mul]
+      exact h1
+    · intro h2
+      rw[LeftCosetClosureMul] at h2
+      rw[← one_mul (1⁻¹)] at h2
+      rw[MulInv] at h2
+      rw[one_mul] at h2
+      exact h2
+    done
+
+  lemma RightCosetOne : H RCoset* (1 : G) = H := by
+    refine (ext ?h).symm
+    intro x
+    constructor
+    · intro h1
+      rw[RightCosetClosureMul]
+      rw[← one_mul (1⁻¹)]
+      rw[MulInv]
+      rw[mul_one]
+      exact h1
+    · intro h2
+      rw[RightCosetClosureMul] at h2
+      rw[← one_mul (1⁻¹)] at h2
+      rw[MulInv] at h2
+      rw[mul_one] at h2
+      exact h2
+    done
+
   lemma LeftCosetEqIffContained (i j : G) :
   j ∈ i LCoset* H ↔ i LCoset* H = j LCoset* H := by
     constructor
@@ -711,11 +747,56 @@ section cosetsMul
     rw[RightCosetClosureMul]
     rw[N.mem_comm_iff] -- statement saying that we have commutativity here
 
-  theorem MemLeftCoset {x : G} (g : G) (xinH : x ∈ H) : g * x ∈ g LCoset* H := by
-  rw[LeftCosetEqIffContained]
-  rw[AssocLeftCosetMul]
-    --mem_image_of_mem (fun b : G => g * b) xinH
-    --rewrite this proof EDWARD
+  theorem MemLeftCoset {x : G} (g : G): x ∈ H ↔ g * x ∈ g LCoset* H := by
+  have e: x LCoset* H = H := by
+      have e1: H = (1 : G) LCoset* H := by
+        rw[LeftCosetOne]
+      have e2: x ∈ H ↔ x ∈ (1 : G) LCoset* H := by
+        constructor
+        · intro h1h1
+          rw[← e1]
+          exact h1h1
+        · intro h1h2
+          rw[← e1] at h1h2
+          exact h1h2
+      rw[e2] at h1
+      rw[LeftCosetEqIffContained] at h1
+      rw[← h1]
+      nth_rewrite 2 [e1]
+      rfl
+  constructor
+  · intro h1
+    rw[LeftCosetEqIffContained]
+    rw[← AssocLeftCosetMul]
+    rw[e]
+  · intro h2
+
+    rw[LeftCosetEqIffContained] at h2
+    rw[← AssocLeftCosetMul] at h2
+    rw[e] at h2
+  done
+
+  theorem MemRightCoset {x : G} (g : G) (xinH : x ∈ H) : g * x ∈ H RCoset* g := by
+  rw[RightCosetEqIffContained]
+  rw[← AssocRightCosetMul]
+  have e: H RCoset* x = H := by
+    have e1: H = H RCoset* (1 : G) := by
+      rw[RightCosetOne]
+    have e2: x ∈ H ↔ x ∈ H RCoset* (1 : G) := by
+      constructor
+      · intro h1
+        rw[← e1]
+        exact h1
+      · intro h2
+        rw[← e1] at h2
+        exact h2
+    rw[e2] at xinH
+    rw[RightCosetEqIffContained] at xinH
+    rw[← xinH]
+    nth_rewrite 2 [e1]
+    rfl
+  rw[e]
+  done
 
   theorem NormalofEqCosets (h : ∀ g : G, g LCoset* H = H RCoset* g) : H.Normal := by
   have e: g * a * g⁻¹ ∈ (H : Set G):= by
