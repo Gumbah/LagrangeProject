@@ -19,6 +19,7 @@ import Mathlib.GroupTheory.Subgroup.Basic
 import Mathlib.Algebra.Ring.MinimalAxioms
 import Mathlib.Algebra.Group.Defs
 import Mathlib.Algebra.Ring.Defs
+import Mathlib.Data.Setoid.Partition
 --import Mathlib.Data.Finite.Card
 --Universal imports
 import Mathlib.Tactic
@@ -461,10 +462,10 @@ section cosetsMul
   variable [Group G] (H : Subgroup G)
 
 
-  def LeftCosetMul [Group G] (g : G) (H : Set G) : Set G :=
+  def LeftCosetMul (g : G) (H : Set G) : Set G :=
     Set.image (fun h => g * h) H
 
-  def RightCosetMul [Group G] (H : Set G) (g : G) : Set G :=
+  def RightCosetMul (H : Set G) (g : G) : Set G :=
     Set.image (fun h => h * g) H
 
   notation:70 i:70 "LCoset*" H:70 => LeftCosetMul i H
@@ -738,7 +739,7 @@ section cosetsMul
       exact h1
     done
 
-  lemma UnionOfLeftCosetsIsGroup : ⋃(g : G), g LCoset* H = G := by
+  lemma LeftCosetsPartitionGroup (g : G) (c : Set (Group G)): c.IsPartitionvb  := by
     sorry
     done
 
