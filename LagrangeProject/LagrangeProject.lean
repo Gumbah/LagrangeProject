@@ -2092,10 +2092,15 @@ theorem nat_gcd_zero_eq_one {n : ℕ} (y : ZMod n) (h : n = 0) : (y = 1 ∨ y = 
     aesop_subst [h_1, h]
     simp only
 
+
+lemma zmod_nat_zero_eqiv_int (y : ZMod Nat.zero) : (Int.y) := by
+  sorry
+
 theorem zmod_unit_val_coprime {n : ℕ} (y : ZMod n) (h : IsUnit y) : Nat.Coprime (y : ZMod n).val n := by
   cases' n with n
   · unfold Nat.Coprime
     rw[← nat_gcd_zero_eq_one]
+    rw[zmod_nat_zero_eqiv_int]
     · rfl
     --conv at y => rw[zmod_zero_eq_z]
     apply_fun ((fun (x : ZMod n) => (x : Units (ZMod n))) : ZMod n → Units (ZMod n))
