@@ -2088,8 +2088,6 @@ lemma zmod_inv_mul_eq_one_imp_unit {n : ℕ} (y : Units (ZMod n)) : y * my_zmod_
   --rw[ZMod.inv_coe_unit]
   rw[Units.mul_inv]
 
-theorem nat_gcd_zero_eq_one {n : ℕ} (y : ZMod n) (h : n = 0) : (y = 1 ∨ y = -1) → (Nat.gcd (ZMod.val y) (Nat.zero) = 1) := by
-
 --27/01/24 - Jakub
 
 --I proved the below lemma. I was struggling associating `ZMod 0` to `ZMod n` even with the assumption that `n=0` but
