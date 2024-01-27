@@ -762,7 +762,7 @@ section cosetsMul
     Set.ext fun a => by --turns = statement into iff
     rw[LeftCosetClosureMul]
     rw[RightCosetClosureMul]
-    rw[N.mem_comm_iff] -- statement saying that we have commutativity here
+    rw[N.mem_comm_iff] -- statement saying that we have commutativity here due to being normal
 
   theorem MemLeftCoset {x : G} (g : G): x ∈ H ↔ g * x ∈ g LCoset* H := by
   constructor
@@ -825,18 +825,19 @@ section cosetsMul
   done
 
   theorem NormalofEqCosets (h : ∀ g : G, g LCoset* H = H RCoset* g) : H.Normal := by
-  have e: g * a * g⁻¹ ∈ (H : Set G):= by
-  --⟨fun a ha g =>
-    --show g * a * g⁻¹ ∈ (H : Set G) by rw [← RightCosetClosureMul H (g * a) g, ← h]; exact MemLeftCoset g ha⟩
+  constructor
+  done
+
 
   theorem NormalIffEqMulCosets: H.Normal ↔ ∀ g : G, g LCoset* H = H RCoset* g := by
     constructor
-    intro h1
-    unfold Subgroup.Normal at h1
-    sorry
-    intro h2
-    unfold Subgroup.Normal
-    sorry
+    · intro h1
+      exact fun g ↦ CosetsOfNormEq H h1 g
+    · intro h2
+      exact NormalofEqCosets H h2
+      done
+
+
 
 
   --Langrange's Theorem corollorys
@@ -1798,7 +1799,7 @@ theorem prime_coprime (p : ℕ) (h_p : Nat.Prime p) : ((Finset.range p).filter p
     · rw[Finset.mem_filter] at h
       intro h_1
       conv at h => unfold Nat.Coprime; rw[h_1]; rw[Nat.gcd_zero_right]
-      let ⟨a,b⟩ := h
+      let ⟨_,b⟩ := h
       apply Nat.Prime.ne_one at b
       apply b
       exact h_p
@@ -2078,6 +2079,7 @@ theorem coe_zmod_inv_unit {n : ℕ} (y : Units (ZMod n)) : (my_zmod_inv n (y : Z
   rfl; done
 
 
+
 theorem my_zmod_inv_eq_zmod_inv {n : ℕ} (y : ZMod n) : my_zmod_inv n y = (y : ZMod n)⁻¹ := by
   sorry
 
@@ -2087,6 +2089,20 @@ lemma zmod_inv_mul_eq_one_imp_unit {n : ℕ} (y : Units (ZMod n)) : y * my_zmod_
   rw[Units.mul_inv]
 
 theorem nat_gcd_zero_eq_one {n : ℕ} (y : ZMod n) (h : n = 0) : (y = 1 ∨ y = -1) → (Nat.gcd (ZMod.val y) (Nat.zero) = 1) := by
+
+--27/01/24 - Jakub
+
+--I proved the below lemma. I was struggling associating `ZMod 0` to `ZMod n` even with the assumption that `n=0` but
+--thankfully the `aesop` tactic had no trouble sorting that issue for me. It is the first time I have used this tactic
+--and I wish I knew about it sooner! I also helped Katie proving the zero case of `zmod_unit_val_coprime` since the
+--statement had been slightly modified from `(y : Units (ZMod n))` to `(y : ZMod n) (h : IsUnit y)` which unfortunately
+--broke my previous proof of the statement, but that is now fixed. Applying the fact that `ZMod 0` is defined as the
+--integers proves finnicky, as applying `Int.isUnit_iff` in the forwards direction at the assumption `h` did not work,
+--which was what Katie tried, but applying it in the reverse direction at the goal, then `rfl`ing worked perfectly.
+--I will be looking more into the `ZMod.Basic.lean` file in order to better understand this strange property. Hopefully
+--a better understanding of mathlib will be beneficial in proving our main goal of ZMod
+
+lemma nat_gcd_zero_eq_one {n : ℕ} (y : ZMod n) (h : n = 0) : (y = 1 ∨ y = -1) → (Nat.gcd (ZMod.val y) (Nat.zero) = 1) := by
   intro h1
   cases' h1 with h1
   · rw [h1, Nat.gcd_zero_right]
@@ -2094,36 +2110,23 @@ theorem nat_gcd_zero_eq_one {n : ℕ} (y : ZMod n) (h : n = 0) : (y = 1 ∨ y = 
     exact ZMod.val_one'
   · rename_i h_1
     aesop_subst [h_1, h]
-    simp only
+    rfl
+  done
 
 theorem zmod_unit_val_coprime {n : ℕ} (y : ZMod n) (h : IsUnit y) : Nat.Coprime (y : ZMod n).val n := by
   cases' n with n
   · unfold Nat.Coprime
     rw[← nat_gcd_zero_eq_one]
     · rfl
-    ·
-
-    --conv at y => rw[zmod_zero_eq_z]
-    apply_fun ((fun (x : ZMod n) => (x : Units (ZMod n))) : ZMod n → Units (ZMod n))
-
-
-
+    rw [← Int.isUnit_iff]
+    exact h
 -- Katie
   · rw[zmod_mul_inv_eq_one_iff_coprime_n]
     exact zmod_inv_mul_eq_one_imp_unit y h
     rw[Nat.succ_eq_add_one]
     linarith
+  done
 
-lemma zmod_inv_mul_eq_one_imp_unit {n : ℕ} (y : ZMod n)(h : IsUnit y) : y * my_zmod_inv n y = 1 := by
-  rw[Units.mul_inv]
-  sorry
-
-
-
-  rcases Int.units_eq_one_or y with ⟨rfl,h⟩
-    rfl
-    have h : y = -1 := by assumption
-    rw [h]; rfl
 def zmod_unit_of_coprime {n : ℕ} (x : ZMod n) (h : Nat.Coprime x.val n) : (Units (ZMod n)) :=
   ⟨x, my_zmod_inv n x, zmod_mul_inv_eq_one x h, by rw [mul_comm, zmod_mul_inv_eq_one x h]⟩
 
