@@ -2078,11 +2078,6 @@ lemma zmod_mul_inv_eq_one_iff_coprime_n {n : ℕ} (x : ZMod n) (h : 0 < n) : (Na
 theorem coe_zmod_inv_unit {n : ℕ} (y : Units (ZMod n)) : (my_zmod_inv n (y : ZMod n)) = (my_zmod_inv n y) := by
   rfl; done
 
-lemma zmod_inv_mul_eq_one_imp_unit {n : ℕ} (y : ZMod n)(h : IsUnit y) : y * my_zmod_inv n y = 1 := by
-
-
-  rw[Units.mul_inv]
-
 --27/01/24 - Jakub
 
 --I proved the below lemma. I was struggling associating `ZMod 0` to `ZMod n` even with the assumption that `n=0` but
@@ -2106,15 +2101,10 @@ lemma nat_gcd_zero_eq_one {n : ℕ} (y : ZMod n) (h : n = 0) : (y = 1 ∨ y = -1
     rfl
   done
 
-
-lemma zmod_nat_zero_eqiv_int (y : ZMod Nat.zero) : (Int.y) := by
-  sorry
-
 theorem zmod_unit_val_coprime {n : ℕ} (y : ZMod n) (h : IsUnit y) : Nat.Coprime (y : ZMod n).val n := by
   cases' n with n
   · unfold Nat.Coprime
     rw[← nat_gcd_zero_eq_one]
-    rw[zmod_nat_zero_eqiv_int]
     · rfl
     rw [← Int.isUnit_iff]
     exact h
