@@ -2090,7 +2090,8 @@ theorem nat_gcd_zero_eq_one {n : ℕ} (y : ZMod n) (h : n = 0) : (y = 1 ∨ y = 
     exact ZMod.val_one'
   · rename_i h_1
     aesop_subst [h_1, h]
-    simp only
+    rfl
+  done
 
 
 lemma zmod_nat_zero_eqiv_int (y : ZMod Nat.zero) : (Int.y) := by
@@ -2102,16 +2103,14 @@ theorem zmod_unit_val_coprime {n : ℕ} (y : ZMod n) (h : IsUnit y) : Nat.Coprim
     rw[← nat_gcd_zero_eq_one]
     rw[zmod_nat_zero_eqiv_int]
     · rfl
-    --conv at y => rw[zmod_zero_eq_z]
-    apply_fun ((fun (x : ZMod n) => (x : Units (ZMod n))) : ZMod n → Units (ZMod n))
-
-
-
+    rw [← Int.isUnit_iff]
+    exact h
 -- Katie
   · rw[zmod_mul_inv_eq_one_iff_coprime_n]
     exact zmod_inv_mul_eq_one_imp_unit y h
     rw[Nat.succ_eq_add_one]
     linarith
+  done
 
 lemma zmod_inv_mul_eq_one_imp_unit {n : ℕ} (y : ZMod n)(h : IsUnit y) : y * my_zmod_inv n y = 1 := by
   rw[Units.mul_inv]
