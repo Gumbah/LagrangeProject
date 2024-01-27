@@ -2075,17 +2075,17 @@ lemma zmod_mul_inv_eq_one_iff_coprime_n {n : ℕ} (x : ZMod n) (h : 0 < n) : (Na
         exact H
   done
 
-theorem coe_zmod_inv_unit {n : ℕ} (y : Units (ZMod n)) : (my_zmod_inv n (y : ZMod n)) = (my_zmod_inv n y) := by
-  rfl; done
-
-
 
 theorem my_zmod_inv_eq_zmod_inv {n : ℕ} (y : ZMod n) : my_zmod_inv n y = (y : ZMod n)⁻¹ := by
   sorry
 
+theorem coe_zmod_inv_unit {n : ℕ} (y : Units (ZMod n)) : (y : ZMod n)⁻¹ = (y⁻¹ : Units (ZMod n)) := by
+  rfl; done
+
+
 lemma zmod_inv_mul_eq_one_imp_unit {n : ℕ} (y : Units (ZMod n)) : y * my_zmod_inv n y = 1 := by
   rw[my_zmod_inv_eq_zmod_inv]
-  --rw[ZMod.inv_coe_unit]
+  rw[coe_zmod_inv_unit]
   rw[Units.mul_inv]
 
 --27/01/24 - Jakub
