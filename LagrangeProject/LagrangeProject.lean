@@ -2101,6 +2101,17 @@ lemma nat_gcd_zero_eq_one {n : ℕ} (y : ZMod n) (h : n = 0) : (y = 1 ∨ y = -1
     rfl
   done
 
+lemma zmod_inv_mul_eq_one_imp_unit {n : ℕ} (y : ZMod n)(h : IsUnit y) : y * my_zmod_inv n y = 1 := by
+  rw[Units.mul_inv]
+  sorry
+
+
+
+  rcases Int.units_eq_one_or y with ⟨rfl,h⟩
+    rfl
+    have h : y = -1 := by assumption
+    rw [h]; rfl
+
 theorem zmod_unit_val_coprime {n : ℕ} (y : ZMod n) (h : IsUnit y) : Nat.Coprime (y : ZMod n).val n := by
   cases' n with n
   · unfold Nat.Coprime
@@ -2115,16 +2126,6 @@ theorem zmod_unit_val_coprime {n : ℕ} (y : ZMod n) (h : IsUnit y) : Nat.Coprim
     linarith
   done
 
-lemma zmod_inv_mul_eq_one_imp_unit {n : ℕ} (y : ZMod n)(h : IsUnit y) : y * my_zmod_inv n y = 1 := by
-  rw[Units.mul_inv]
-  sorry
-
-
-
-  rcases Int.units_eq_one_or y with ⟨rfl,h⟩
-    rfl
-    have h : y = -1 := by assumption
-    rw [h]; rfl
 def zmod_unit_of_coprime {n : ℕ} (x : ZMod n) (h : Nat.Coprime x.val n) : (Units (ZMod n)) :=
   ⟨x, my_zmod_inv n x, zmod_mul_inv_eq_one x h, by rw [mul_comm, zmod_mul_inv_eq_one x h]⟩
 
