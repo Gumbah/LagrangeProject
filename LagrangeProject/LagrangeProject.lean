@@ -1799,7 +1799,7 @@ theorem prime_coprime (p : ℕ) (h_p : Nat.Prime p) : ((Finset.range p).filter p
     · rw[Finset.mem_filter] at h
       intro h_1
       conv at h => unfold Nat.Coprime; rw[h_1]; rw[Nat.gcd_zero_right]
-      let ⟨a,b⟩ := h
+      let ⟨_,b⟩ := h
       apply Nat.Prime.ne_one at b
       apply b
       exact h_p
