@@ -2076,10 +2076,16 @@ lemma zmod_inv_mul_eq_one_imp_unit {n : ℕ} (y : ZMod n)(h : IsUnit y) : y * my
 theorem nat_gcd_zero_eq_one {n : ℕ} (y : ZMod n) : (y = 1 ∨ y = -1) → (Nat.gcd (ZMod.val y) (Nat.zero) = 1) := by
   sorry
 
+
+lemma zmod_nat_zero_eqiv_int (y : ZMod Nat.zero) : (Int.y) := by
+  sorry
+
 theorem zmod_unit_val_coprime {n : ℕ} (y : ZMod n) (h : IsUnit y) : Nat.Coprime (y : ZMod n).val n := by
   cases' n with n
   · unfold Nat.Coprime
     rw[← nat_gcd_zero_eq_one]
+    rw[zmod_nat_zero_eqiv_int]
+    apply_fun ((fun (x : ZMod n) => (x.val : ℕ)) : ZMod n → ℕ) at y
     --conv at y => rw[zmod_zero_eq_z]
     apply_fun ((fun (x : ZMod n) => (x : Units (ZMod n))) : ZMod n → Units (ZMod n))
 
@@ -2090,7 +2096,7 @@ theorem zmod_unit_val_coprime {n : ℕ} (y : ZMod n) (h : IsUnit y) : Nat.Coprim
     exact zmod_inv_mul_eq_one_imp_unit y h
     rw[Nat.succ_eq_add_one]
     linarith
-    
+
 lemma zmod_inv_mul_eq_one_imp_unit {n : ℕ} (y : ZMod n)(h : IsUnit y) : y * my_zmod_inv n y = 1 := by
   rw[Units.mul_inv]
   sorry
