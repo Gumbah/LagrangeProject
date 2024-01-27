@@ -765,54 +765,63 @@ section cosetsMul
     rw[N.mem_comm_iff] -- statement saying that we have commutativity here
 
   theorem MemLeftCoset {x : G} (g : G): x ∈ H ↔ g * x ∈ g LCoset* H := by
-  have e: x LCoset* H = H := by
-      have e1: H = (1 : G) LCoset* H := by
-        rw[LeftCosetOne]
-      have e2: x ∈ H ↔ x ∈ (1 : G) LCoset* H := by
-        constructor
-        · intro h1h1
-          rw[← e1]
-          exact h1h1
-        · intro h1h2
-          rw[← e1] at h1h2
-          exact h1h2
-      rw[e2] at h1
-      rw[LeftCosetEqIffContained] at h1
-      rw[← h1]
-      nth_rewrite 2 [e1]
-      rfl
   constructor
   · intro h1
+    have e: x LCoset* H = H := by
+        have e1: H = (1 : G) LCoset* H := by
+          rw[LeftCosetOne]
+        have e2: x ∈ H ↔ x ∈ (1 : G) LCoset* H := by
+          constructor
+          · intro h1h1
+            rw[← e1]
+            exact h1h1
+          · intro h1h2
+            rw[← e1] at h1h2
+            exact h1h2
+        rw[e2] at h1
+        rw[LeftCosetEqIffContained] at h1
+        rw[← h1]
+        nth_rewrite 2 [e1]
+        rfl
     rw[LeftCosetEqIffContained]
     rw[← AssocLeftCosetMul]
     rw[e]
   · intro h2
-
-    rw[LeftCosetEqIffContained] at h2
-    rw[← AssocLeftCosetMul] at h2
-    rw[e] at h2
+    rw[LeftCosetClosureMul] at h2
+    rw[← mul_assoc] at h2
+    rw[mul_left_inv] at h2
+    rw[one_mul] at h2
+    exact h2
   done
 
-  theorem MemRightCoset {x : G} (g : G) (xinH : x ∈ H) : g * x ∈ H RCoset* g := by
-  rw[RightCosetEqIffContained]
-  rw[← AssocRightCosetMul]
-  have e: H RCoset* x = H := by
-    have e1: H = H RCoset* (1 : G) := by
-      rw[RightCosetOne]
-    have e2: x ∈ H ↔ x ∈ H RCoset* (1 : G) := by
-      constructor
-      · intro h1
-        rw[← e1]
-        exact h1
-      · intro h2
-        rw[← e1] at h2
-        exact h2
-    rw[e2] at xinH
-    rw[RightCosetEqIffContained] at xinH
-    rw[← xinH]
-    nth_rewrite 2 [e1]
-    rfl
-  rw[e]
+  theorem MemRightCoset {x : G} (g : G): x ∈ H ↔ x * g ∈ H RCoset* g := by
+  constructor
+  · intro h1
+    have e: H RCoset* x = H := by
+        have e1: H = H RCoset* (1 : G) := by
+          rw[RightCosetOne]
+        have e2: x ∈ H ↔ x ∈ H RCoset* (1 : G) := by
+          constructor
+          · intro h1h1
+            rw[← e1]
+            exact h1h1
+          · intro h1h2
+            rw[← e1] at h1h2
+            exact h1h2
+        rw[e2] at h1
+        rw[RightCosetEqIffContained] at h1
+        rw[← h1]
+        nth_rewrite 2 [e1]
+        rfl
+    rw[RightCosetEqIffContained]
+    rw[← AssocRightCosetMul]
+    rw[e]
+  · intro h2
+    rw[RightCosetClosureMul] at h2
+    rw[mul_assoc] at h2
+    rw[MulInv] at h2
+    rw[MulOne] at h2
+    exact h2
   done
 
   theorem NormalofEqCosets (h : ∀ g : G, g LCoset* H = H RCoset* g) : H.Normal := by
@@ -2066,15 +2075,22 @@ lemma zmod_mul_inv_eq_one_iff_coprime_n {n : ℕ} (x : ZMod n) (h : 0 < n) : (Na
   done
 
 theorem coe_zmod_inv_unit {n : ℕ} (y : Units (ZMod n)) : (my_zmod_inv n (y : ZMod n)) = (my_zmod_inv n y) := by
-  sorry
+  rfl; done
 
 lemma zmod_inv_mul_eq_one_imp_unit {n : ℕ} (y : ZMod n)(h : IsUnit y) : y * my_zmod_inv n y = 1 := by
 
 
   rw[Units.mul_inv]
 
-theorem nat_gcd_zero_eq_one {n : ℕ} (y : ZMod n) : (y = 1 ∨ y = -1) → (Nat.gcd (ZMod.val y) (Nat.zero) = 1) := by
-  sorry
+theorem nat_gcd_zero_eq_one {n : ℕ} (y : ZMod n) (h : n = 0) : (y = 1 ∨ y = -1) → (Nat.gcd (ZMod.val y) (Nat.zero) = 1) := by
+  intro h1
+  cases' h1 with h1
+  · rw [h1, Nat.gcd_zero_right]
+    aesop_subst [h1, h]
+    exact ZMod.val_one'
+  · rename_i h_1
+    aesop_subst [h_1, h]
+    simp only
 
 
 lemma zmod_nat_zero_eqiv_int (y : ZMod Nat.zero) : (Int.y) := by
@@ -2085,7 +2101,7 @@ theorem zmod_unit_val_coprime {n : ℕ} (y : ZMod n) (h : IsUnit y) : Nat.Coprim
   · unfold Nat.Coprime
     rw[← nat_gcd_zero_eq_one]
     rw[zmod_nat_zero_eqiv_int]
-    apply_fun ((fun (x : ZMod n) => (x.val : ℕ)) : ZMod n → ℕ) at y
+    · rfl
     --conv at y => rw[zmod_zero_eq_z]
     apply_fun ((fun (x : ZMod n) => (x : Units (ZMod n))) : ZMod n → Units (ZMod n))
 
