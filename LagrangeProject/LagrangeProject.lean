@@ -762,7 +762,7 @@ section cosetsMul
     Set.ext fun a => by --turns = statement into iff
     rw[LeftCosetClosureMul]
     rw[RightCosetClosureMul]
-    rw[N.mem_comm_iff] -- statement saying that we have commutativity here
+    rw[N.mem_comm_iff] -- statement saying that we have commutativity here due to being normal
 
   theorem MemLeftCoset {x : G} (g : G): x ∈ H ↔ g * x ∈ g LCoset* H := by
   constructor
@@ -825,18 +825,19 @@ section cosetsMul
   done
 
   theorem NormalofEqCosets (h : ∀ g : G, g LCoset* H = H RCoset* g) : H.Normal := by
-  have e: g * a * g⁻¹ ∈ (H : Set G):= by
-  --⟨fun a ha g =>
-    --show g * a * g⁻¹ ∈ (H : Set G) by rw [← RightCosetClosureMul H (g * a) g, ← h]; exact MemLeftCoset g ha⟩
+  constructor
+  done
+
 
   theorem NormalIffEqMulCosets: H.Normal ↔ ∀ g : G, g LCoset* H = H RCoset* g := by
     constructor
-    intro h1
-    unfold Subgroup.Normal at h1
-    sorry
-    intro h2
-    unfold Subgroup.Normal
-    sorry
+    · intro h1
+      exact fun g ↦ CosetsOfNormEq H h1 g
+    · intro h2
+      exact NormalofEqCosets H h2
+      done
+
+
 
 
   --Langrange's Theorem corollorys
