@@ -2073,7 +2073,19 @@ lemma zmod_inv_mul_eq_one_imp_unit {n : ℕ} (y : ZMod n)(h : IsUnit y) : y * my
 
   rw[Units.mul_inv]
 
-theorem nat_gcd_zero_eq_one {n : ℕ} (y : ZMod n) (h : n = 0) : (y = 1 ∨ y = -1) → (Nat.gcd (ZMod.val y) (Nat.zero) = 1) := by
+--27/01/24 - Jakub
+
+--I proved the below lemma. I was struggling associating `ZMod 0` to `ZMod n` even with the assumption that `n=0` but
+--thankfully the `aesop` tactic had no trouble sorting that issue for me. It is the first time I have used this tactic
+--and I wish I knew about it sooner! I also helped Katie proving the zero case of `zmod_unit_val_coprime` since the
+--statement had been slightly modified from `(y : Units (ZMod n))` to `(y : ZMod n) (h : IsUnit y)` which unfortunately
+--broke my previous proof of the statement, but that is now fixed. Applying the fact that `ZMod 0` is defined as the
+--integers proves finnicky, as applying `Int.isUnit_iff` in the forwards direction at the assumption `h` did not work,
+--which was what Katie tried, but applying it in the reverse direction at the goal, then `rfl`ing worked perfectly.
+--I will be looking more into the `ZMod.Basic.lean` file in order to better understand this strange property. Hopefully
+--a better understanding of mathlib will be beneficial in proving our main goal of ZMod
+
+lemma nat_gcd_zero_eq_one {n : ℕ} (y : ZMod n) (h : n = 0) : (y = 1 ∨ y = -1) → (Nat.gcd (ZMod.val y) (Nat.zero) = 1) := by
   intro h1
   cases' h1 with h1
   · rw [h1, Nat.gcd_zero_right]
