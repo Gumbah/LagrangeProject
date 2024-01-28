@@ -709,7 +709,7 @@ section cosetsMul
     contrapose h
     refine not_and.mpr ?_
     intro h1
-    simp
+    refine not_not_mem.mpr ?_
     have h2 : ∃ x, x ∈ (i LCoset* H) ∧ x ∈ (j LCoset* H) := by
       refine inter_nonempty.mp ?_
       exact nmem_singleton_empty.mp h
@@ -727,7 +727,7 @@ section cosetsMul
     contrapose h
     refine not_and.mpr ?_
     intro h1
-    simp
+    refine not_not_mem.mpr ?_
     have h2 : ∃ x, x ∈ (H RCoset* i) ∧ x ∈ (H RCoset* j) := by
       refine inter_nonempty.mp ?_
       exact nmem_singleton_empty.mp h
@@ -739,9 +739,15 @@ section cosetsMul
       exact h1
     done
 
-  lemma LeftCosetsPartitionGroup (g : G) (c : Set (Group G)): c.IsPartitionvb  := by
+  variable {ι : Type*} (s : ι → G) (e : G)
+
+  #check IndexedPartition.mk
+
+  /-
+  lemma LeftCosetsPartitionGroup  := by
     sorry
     done
+  -/
 
   theorem LagrangeMul [Fintype G] [Fintype H] :
   Fintype.card H ∣ Fintype.card G := by
