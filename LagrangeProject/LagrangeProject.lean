@@ -1150,7 +1150,6 @@ def my_gcd (x y : ℕ) : ℕ := (gcd_bezout x y).1
     have := (Nat.mod_zero y).symm
     simp only [my_gcd_zero_left, Nat.mod_zero, my_gcd_zero_right]
   | x + 1 => by exact (my_gcd_succ x y).symm
-  done
 
 @[simp] theorem dvd_my_gcd : k ∣ x → k ∣ y → k ∣ my_gcd x y := by
   induction x, y using Nat.gcd.induction with intro kx ky
@@ -2120,12 +2119,33 @@ theorem zmod_unit_val_coprime' {n : ℕ} (x : (ZMod n)ˣ) : Nat.Coprime (x : ZMo
   rw [← ZMod.nat_cast_zmod_val ((x * x⁻¹ : Units (ZMod (n + 1))) : ZMod (n + 1))]
   rw [Units.val_mul, ZMod.val_mul, ZMod.nat_cast_mod]
 
+lemma bez_a_is_gcdA (x y : ℕ) : Nat.gcdA x y = bez_a x y := by
+  induction x, y using Nat.gcd.induction with
+  | H0 y =>
+    rw [bez_a_zero_left, Nat.gcdA_zero_left]
+  | H1 x y _ ih =>
+    sorry
+  done
+
+theorem my_zmod_inv_eq_zmod_inv {n : ℕ} (y : ZMod n) : my_zmod_inv n y = (y : ZMod n)⁻¹ := by
+  unfold my_zmod_inv
+  unfold Inv.inv
+  unfold ZMod.instInvZMod
+  unfold ZMod.inv
+  conv =>
+    lhs
+    congr
+    · rfl
+    intro n i
+    rw [←bez_a_is_gcdA]
+    rfl
+  done
+
 lemma zmod_inv_mul_eq_one_imp_unit {n : ℕ} (y : Units (ZMod n)) : y * my_zmod_inv n y = 1 := by
-  sorry
-  --rw[my_zmod_inv_eq_zmod_inv]
-  --rw[coe_zmod_inv_unit]
-  --rw[Units.mul_inv]
-  --done
+  rw[my_zmod_inv_eq_zmod_inv]
+  rw[ZMod.mul_inv_of_unit]
+  apply Units.isUnit
+  done
 
 --27/01/24 - Jakub
 
