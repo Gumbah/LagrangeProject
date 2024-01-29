@@ -2075,6 +2075,8 @@ lemma zmod_mul_inv_eq_one_iff_coprime_n {n : ℕ} (x : ZMod n) (h : 0 < n) : (Na
         exact H
   done
 
+--29/01/24 - Jakub
+
 theorem coe_zmod_mul_inv_eq_one {n : ℕ} (x : ℕ) (h : Nat.Coprime x n) : (x : ZMod n) * (my_zmod_inv n x) = 1 := by
   rw [Nat.coprime_iff_gcd_eq_one] at h
   rw [← Nat.cast_one]
@@ -2090,22 +2092,40 @@ def my_unit_of_coprime {n : ℕ} (x : ℕ) (h : Nat.Coprime x n) : (ZMod n)ˣ :=
 theorem coe_my_unit_of_coprime {n : ℕ} (x : ℕ) (h : Nat.Coprime x n) : (my_unit_of_coprime x h : ZMod n) = x := by
   rfl; done
 
--- Katie
+lemma nat_gcd_zero_eq_one {n : ℕ} (y : ZMod n) (h : n = 0) : (y = 1 ∨ y = -1) → (Nat.gcd (ZMod.val y) (Nat.zero) = 1) := by
+  intro h1
+  cases' h1 with h1
+  · rw [h1, Nat.gcd_zero_right]
+    aesop_subst [h1, h]
+    exact ZMod.val_one'
+  · rename_i h_1
+    aesop_subst [h_1, h]
+    rfl
+  done
 
-theorem my_zmod_inv_eq_zmod_inv {n : ℕ} (y : ZMod n) : my_zmod_inv n y = (y : ZMod n)⁻¹ := by
-  have : Nat.Coprime y.val n ∨ ¬Nat.Coprime y.val n := by exact or_not
-  cases' this with h
-  · sorry
-  sorry
+#check Units.isUnit
 
-theorem coe_zmod_inv_unit {n : ℕ} (y : Units (ZMod n)) : (y : ZMod n)⁻¹ = (y⁻¹ : Units (ZMod n)) := by
-  sorry
+theorem zmod_unit_val_coprime' {n : ℕ} (x : (ZMod n)ˣ) : Nat.Coprime (x : ZMod n).val n := by
+  cases' n with n
+  · unfold Nat.Coprime
+    rw[← nat_gcd_zero_eq_one]
+    · rfl
+    rw [← Int.isUnit_iff]
+    apply Units.isUnit
+  --the successive case is currently taken from mathlib, while we try to understand it in order to prove it for ourselves.
+  apply Nat.coprime_of_mul_modEq_one ((x⁻¹ : Units (ZMod (n + 1))) : ZMod (n + 1)).val
+  have := Units.ext_iff.1 (mul_right_inv x)
+  rw [Units.val_one] at this
+  rw [← ZMod.eq_iff_modEq_nat, Nat.cast_one, ← this]; clear this
+  rw [← ZMod.nat_cast_zmod_val ((x * x⁻¹ : Units (ZMod (n + 1))) : ZMod (n + 1))]
+  rw [Units.val_mul, ZMod.val_mul, ZMod.nat_cast_mod]
 
 lemma zmod_inv_mul_eq_one_imp_unit {n : ℕ} (y : Units (ZMod n)) : y * my_zmod_inv n y = 1 := by
-  rw[my_zmod_inv_eq_zmod_inv]
-  rw[coe_zmod_inv_unit]
-  rw[Units.mul_inv]
-  done
+  sorry
+  --rw[my_zmod_inv_eq_zmod_inv]
+  --rw[coe_zmod_inv_unit]
+  --rw[Units.mul_inv]
+  --done
 
 --27/01/24 - Jakub
 
@@ -2118,17 +2138,6 @@ lemma zmod_inv_mul_eq_one_imp_unit {n : ℕ} (y : Units (ZMod n)) : y * my_zmod_
 --which was what Katie tried, but applying it in the reverse direction at the goal, then `rfl`ing worked perfectly.
 --I will be looking more into the `ZMod.Basic.lean` file in order to better understand this strange property. Hopefully
 --a better understanding of mathlib will be beneficial in proving our main goal of ZMod
-
-lemma nat_gcd_zero_eq_one {n : ℕ} (y : ZMod n) (h : n = 0) : (y = 1 ∨ y = -1) → (Nat.gcd (ZMod.val y) (Nat.zero) = 1) := by
-  intro h1
-  cases' h1 with h1
-  · rw [h1, Nat.gcd_zero_right]
-    aesop_subst [h1, h]
-    exact ZMod.val_one'
-  · rename_i h_1
-    aesop_subst [h_1, h]
-    rfl
-  done
 
 theorem zmod_unit_val_coprime {n : ℕ} (y : ZMod n) (h : IsUnit y) : Nat.Coprime (y : ZMod n).val n := by
   cases' n with n
