@@ -2075,9 +2075,27 @@ lemma zmod_mul_inv_eq_one_iff_coprime_n {n : ℕ} (x : ZMod n) (h : 0 < n) : (Na
         exact H
   done
 
+theorem coe_zmod_mul_inv_eq_one {n : ℕ} (x : ℕ) (h : Nat.Coprime x n) : (x : ZMod n) * (my_zmod_inv n x) = 1 := by
+  rw [Nat.coprime_iff_gcd_eq_one] at h
+  rw [← Nat.cast_one]
+  rw [← h]
+  rw [my_mul_zmod_inv_eq_gcd]
+  rw [ZMod.val_nat_cast]
+  rw [← Nat.gcd_rec, Nat.gcd_comm]
+  done
+
+def my_unit_of_coprime {n : ℕ} (x : ℕ) (h : Nat.Coprime x n) : (ZMod n)ˣ :=
+  ⟨x, my_zmod_inv n x, coe_zmod_mul_inv_eq_one x h, by rw [mul_comm, coe_zmod_mul_inv_eq_one x h]⟩
+
+theorem coe_my_unit_of_coprime {n : ℕ} (x : ℕ) (h : Nat.Coprime x n) : (my_unit_of_coprime x h : ZMod n) = x := by
+  rfl; done
+
 -- Katie
 
 theorem my_zmod_inv_eq_zmod_inv {n : ℕ} (y : ZMod n) : my_zmod_inv n y = (y : ZMod n)⁻¹ := by
+  have : Nat.Coprime y.val n ∨ ¬Nat.Coprime y.val n := by exact or_not
+  cases' this with h
+  · sorry
   sorry
 
 theorem coe_zmod_inv_unit {n : ℕ} (y : Units (ZMod n)) : (y : ZMod n)⁻¹ = (y⁻¹ : Units (ZMod n)) := by
@@ -2087,6 +2105,7 @@ lemma zmod_inv_mul_eq_one_imp_unit {n : ℕ} (y : Units (ZMod n)) : y * my_zmod_
   rw[my_zmod_inv_eq_zmod_inv]
   rw[coe_zmod_inv_unit]
   rw[Units.mul_inv]
+  done
 
 --27/01/24 - Jakub
 
