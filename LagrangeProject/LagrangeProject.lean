@@ -1150,7 +1150,6 @@ def my_gcd (x y : ℕ) : ℕ := (gcd_bezout x y).1
     have := (Nat.mod_zero y).symm
     simp only [my_gcd_zero_left, Nat.mod_zero, my_gcd_zero_right]
   | x + 1 => by exact (my_gcd_succ x y).symm
-  done
 
 @[simp] theorem dvd_my_gcd : k ∣ x → k ∣ y → k ∣ my_gcd x y := by
   induction x, y using Nat.gcd.induction with intro kx ky
@@ -2075,6 +2074,7 @@ lemma zmod_mul_inv_eq_one_iff_coprime_n {n : ℕ} (x : ZMod n) (h : 0 < n) : (Na
         exact H
   done
 
+--29/01/24 - Jakub
 
 instance (n : ℕ) : Inv (ZMod n) :=
   ⟨my_zmod_inv n⟩
@@ -2090,17 +2090,20 @@ lemma zmod_inv_mul_eq_one_imp_unit {n : ℕ} (y : Units (ZMod n)) : y * y⁻¹ =
   rw[coe_zmod_inv_unit]
   rw[Units.mul_inv]
 
---27/01/24 - Jakub
+theorem coe_zmod_mul_inv_eq_one {n : ℕ} (x : ℕ) (h : Nat.Coprime x n) : (x : ZMod n) * (my_zmod_inv n x) = 1 := by
+  rw [Nat.coprime_iff_gcd_eq_one] at h
+  rw [← Nat.cast_one]
+  rw [← h]
+  rw [my_mul_zmod_inv_eq_gcd]
+  rw [ZMod.val_nat_cast]
+  rw [← Nat.gcd_rec, Nat.gcd_comm]
+  done
 
---I proved the below lemma. I was struggling associating `ZMod 0` to `ZMod n` even with the assumption that `n=0` but
---thankfully the `aesop` tactic had no trouble sorting that issue for me. It is the first time I have used this tactic
---and I wish I knew about it sooner! I also helped Katie proving the zero case of `zmod_unit_val_coprime` since the
---statement had been slightly modified from `(y : Units (ZMod n))` to `(y : ZMod n) (h : IsUnit y)` which unfortunately
---broke my previous proof of the statement, but that is now fixed. Applying the fact that `ZMod 0` is defined as the
---integers proves finnicky, as applying `Int.isUnit_iff` in the forwards direction at the assumption `h` did not work,
---which was what Katie tried, but applying it in the reverse direction at the goal, then `rfl`ing worked perfectly.
---I will be looking more into the `ZMod.Basic.lean` file in order to better understand this strange property. Hopefully
---a better understanding of mathlib will be beneficial in proving our main goal of ZMod
+def my_unit_of_coprime {n : ℕ} (x : ℕ) (h : Nat.Coprime x n) : (ZMod n)ˣ :=
+  ⟨x, my_zmod_inv n x, coe_zmod_mul_inv_eq_one x h, by rw [mul_comm, coe_zmod_mul_inv_eq_one x h]⟩
+
+theorem coe_my_unit_of_coprime {n : ℕ} (x : ℕ) (h : Nat.Coprime x n) : (my_unit_of_coprime x h : ZMod n) = x := by
+  rfl; done
 
 lemma nat_gcd_zero_eq_one {n : ℕ} (y : ZMod n) (h : n = 0) : (y = 1 ∨ y = -1) → (Nat.gcd (ZMod.val y) (Nat.zero) = 1) := by
   intro h1
@@ -2112,6 +2115,63 @@ lemma nat_gcd_zero_eq_one {n : ℕ} (y : ZMod n) (h : n = 0) : (y = 1 ∨ y = -1
     aesop_subst [h_1, h]
     rfl
   done
+
+#check Units.isUnit
+
+theorem zmod_unit_val_coprime' {n : ℕ} (x : (ZMod n)ˣ) : Nat.Coprime (x : ZMod n).val n := by
+  cases' n with n
+  · unfold Nat.Coprime
+    rw[← nat_gcd_zero_eq_one]
+    · rfl
+    rw [← Int.isUnit_iff]
+    apply Units.isUnit
+  --the successive case is currently taken from mathlib, while we try to understand it in order to prove it for ourselves.
+  apply Nat.coprime_of_mul_modEq_one ((x⁻¹ : Units (ZMod (n + 1))) : ZMod (n + 1)).val
+  have := Units.ext_iff.1 (mul_right_inv x)
+  rw [Units.val_one] at this
+  rw [← ZMod.eq_iff_modEq_nat, Nat.cast_one, ← this]; clear this
+  rw [← ZMod.nat_cast_zmod_val ((x * x⁻¹ : Units (ZMod (n + 1))) : ZMod (n + 1))]
+  rw [Units.val_mul, ZMod.val_mul, ZMod.nat_cast_mod]
+
+lemma bez_a_is_gcdA (x y : ℕ) : Nat.gcdA x y = bez_a x y := by
+  induction x, y using Nat.gcd.induction with
+  | H0 y =>
+    rw [bez_a_zero_left, Nat.gcdA_zero_left]
+  | H1 x y _ ih =>
+    sorry
+  done
+
+theorem my_zmod_inv_eq_zmod_inv {n : ℕ} (y : ZMod n) : my_zmod_inv n y = (y : ZMod n)⁻¹ := by
+  unfold my_zmod_inv
+  unfold Inv.inv
+  unfold ZMod.instInvZMod
+  unfold ZMod.inv
+  conv =>
+    lhs
+    congr
+    · rfl
+    intro n i
+    rw [←bez_a_is_gcdA]
+    rfl
+  done
+
+lemma zmod_inv_mul_eq_one_imp_unit {n : ℕ} (y : Units (ZMod n)) : y * my_zmod_inv n y = 1 := by
+  rw[my_zmod_inv_eq_zmod_inv]
+  rw[ZMod.mul_inv_of_unit]
+  apply Units.isUnit
+  done
+
+--27/01/24 - Jakub
+
+--I proved the below lemma. I was struggling associating `ZMod 0` to `ZMod n` even with the assumption that `n=0` but
+--thankfully the `aesop` tactic had no trouble sorting that issue for me. It is the first time I have used this tactic
+--and I wish I knew about it sooner! I also helped Katie proving the zero case of `zmod_unit_val_coprime` since the
+--statement had been slightly modified from `(y : Units (ZMod n))` to `(y : ZMod n) (h : IsUnit y)` which unfortunately
+--broke my previous proof of the statement, but that is now fixed. Applying the fact that `ZMod 0` is defined as the
+--integers proves finnicky, as applying `Int.isUnit_iff` in the forwards direction at the assumption `h` did not work,
+--which was what Katie tried, but applying it in the reverse direction at the goal, then `rfl`ing worked perfectly.
+--I will be looking more into the `ZMod.Basic.lean` file in order to better understand this strange property. Hopefully
+--a better understanding of mathlib will be beneficial in proving our main goal of ZMod
 
 theorem zmod_unit_val_coprime {n : ℕ} (y : ZMod n) (h : IsUnit y) : Nat.Coprime (y : ZMod n).val n := by
   cases' n with n
