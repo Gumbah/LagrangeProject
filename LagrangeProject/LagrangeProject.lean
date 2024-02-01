@@ -2086,6 +2086,18 @@ theorem inv_coe_unit {n : ℕ} (u : (ZMod n)ˣ) : (u : ZMod n)⁻¹ = (u⁻¹ : 
 theorem coe_zmod_inv_unit {n : ℕ} (y : (ZMod n)ˣ) : my_zmod_inv n (y : ZMod n) = ((my_zmod_inv n (y : ZMod n)) : (ZMod n)ˣ) := by
   sorry
 
+--01/02/24 - Jakub
+
+--Attempted to prove `my_zmod_eq_zmod_inv`, my proof was affected when Katie defined our own instance of an inverse on
+--`ZMod` using `my_zmod_inv`, so the proof was reduced to just a `rfl`. In the previous version of the proof I struggled
+--to show that `bez_a` was the same as `Nat.gcdA`, which they are and have been defined similarly. Unfortunately the
+--mathlib definition uses the function `Nat.xgcdAux` which is a more complex version of my own `gcd_bezout` function,
+--using 6 variables instead of my 3 in the recursion for some sort of counting purpose. This proved too difficult for
+--me to work around and prove what should have been a simple equality of definition. It is key to the completion of this
+--project that Katie and I work together to understand what we do and do not need for the formalisation of
+--`totient_eq_zmod_units_card`, which is currently reduced to `my_zmod_unitsEquivCoprime`. I believe we are close and
+--are capable of completing our initial goal on schedule, provided the group theory side also finish `Lagrange`.
+
 theorem my_zmod_inv_eq_zmod_inv {n : ℕ} (y : ZMod n) : my_zmod_inv n y = (y : ZMod n)⁻¹ := by
   rfl
 /- Old proof from before we declared our own instance inverse
@@ -2152,7 +2164,7 @@ theorem zmod_unit_val_coprime' {n : ℕ} (x : (ZMod n)ˣ) : Nat.Coprime (x : ZMo
 
 --27/01/24 - Jakub
 
---I proved the below lemma. I was struggling associating `ZMod 0` to `ZMod n` even with the assumption that `n=0` but
+--Proved `nat_gcd_zero_eq_one`. I was struggling associating `ZMod 0` to `ZMod n` even with the assumption that `n=0` but
 --thankfully the `aesop` tactic had no trouble sorting that issue for me. It is the first time I have used this tactic
 --and I wish I knew about it sooner! I also helped Katie proving the zero case of `zmod_unit_val_coprime` since the
 --statement had been slightly modified from `(y : Units (ZMod n))` to `(y : ZMod n) (h : IsUnit y)` which unfortunately
