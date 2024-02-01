@@ -19,6 +19,7 @@ import Mathlib.GroupTheory.Subgroup.Basic
 import Mathlib.Algebra.Ring.MinimalAxioms
 import Mathlib.Algebra.Group.Defs
 import Mathlib.Algebra.Ring.Defs
+import Mathlib.Data.Setoid.Partition
 --import Mathlib.Data.Finite.Card
 --Universal imports
 import Mathlib.Tactic
@@ -440,10 +441,10 @@ section cosetsMul
   variable [Group G] (H : Subgroup G)
 
 
-  def LeftCosetMul [Group G] (g : G) (H : Set G) : Set G :=
+  def LeftCosetMul (g : G) (H : Set G) : Set G :=
     Set.image (fun h => g * h) H
 
-  def RightCosetMul [Group G] (H : Set G) (g : G) : Set G :=
+  def RightCosetMul (H : Set G) (g : G) : Set G :=
     Set.image (fun h => h * g) H
 
   notation:70 i:70 "LCoset*" H:70 => LeftCosetMul i H
@@ -687,7 +688,7 @@ section cosetsMul
     contrapose h
     refine not_and.mpr ?_
     intro h1
-    simp
+    refine not_not_mem.mpr ?_
     have h2 : ∃ x, x ∈ (i LCoset* H) ∧ x ∈ (j LCoset* H) := by
       refine inter_nonempty.mp ?_
       exact nmem_singleton_empty.mp h
@@ -705,7 +706,7 @@ section cosetsMul
     contrapose h
     refine not_and.mpr ?_
     intro h1
-    simp
+    refine not_not_mem.mpr ?_
     have h2 : ∃ x, x ∈ (H RCoset* i) ∧ x ∈ (H RCoset* j) := by
       refine inter_nonempty.mp ?_
       exact nmem_singleton_empty.mp h
@@ -717,12 +718,19 @@ section cosetsMul
       exact h1
     done
 
-  variable {I : Type*}
-  variable {A : I → Set G}
+  class SetOfLeftCosetsMul ()
 
-  lemma UnionOfLeftCosetsIsGroup : G = (⋃ i, A i)  := by
+  variable {ι : Type*} (s : ι → G) (e : G)
+
+  #check IndexedPartition.mk
+
+  instance : IndexedPartition where
+
+  /-
+  lemma LeftCosetsPartitionGroup  := by
     sorry
     done
+  -/
 
   theorem LagrangeLeftMul [Fintype G] [Fintype H] :
   Fintype.card H ∣ Fintype.card G := by
@@ -924,6 +932,12 @@ end CosetsAdd
 end cosetsAdd
 -/
 --Beginning of Number Theory Side
+
+
+--Initial very naive/ not lean-optimised/ bad definition trying to make a
+--Bézout algorithm, skip to my 24/11/23 timestamp about 80 lines down to 
+--see the one we actually used, just thought I'd keep this in for the
+--sake of showing how far we've come.
 
 --18/11/23 - Jakub
 
@@ -1743,7 +1757,7 @@ theorem prime_coprime (p : ℕ) (h_p : Nat.Prime p) : ((Finset.range p).filter p
     · rw[Finset.mem_filter] at h
       intro h_1
       conv at h => unfold Nat.Coprime; rw[h_1]; rw[Nat.gcd_zero_right]
-      let ⟨a,b⟩ := h
+      let ⟨_,b⟩ := h
       apply Nat.Prime.ne_one at b
       apply b
       exact h_p
@@ -1959,38 +1973,120 @@ lemma zmod_mul_inv_eq_one_iff_coprime_n {n : ℕ} (x : ZMod n) (h : 0 < n) : (Na
         <;> assumption
       unfold Nat.Coprime
 
+--29/01/24 - Jakub
 
+instance (n : ℕ) : Inv (ZMod n) :=
+  ⟨my_zmod_inv n⟩
 
+#eval (15 : ZMod 10).inv
 
+theorem inv_coe_unit {n : ℕ} (u : (ZMod n)ˣ) : (u : ZMod n)⁻¹ = (u⁻¹ : (ZMod n)ˣ) := by
 
-
-
-
-
-theorem coe_zmod_inv_unit {n : ℕ} (y : Units (ZMod n)) : (my_zmod_inv n (y : ZMod n)) = (my_zmod_inv n y) := by
+theorem coe_zmod_inv_unit {n : ℕ} (y : (ZMod n)ˣ) : my_zmod_inv n (y : ZMod n) = ((my_zmod_inv n (y : ZMod n)) : (ZMod n)ˣ) := by
   sorry
 
-lemma zmod_inv_mul_eq_one_imp_unit {n : ℕ} (y : ZMod n)(h : IsUnit y) : y * my_zmod_inv n y = 1 := by
+--01/02/24 - Jakub
 
+--Attempted to prove `my_zmod_eq_zmod_inv`, my proof was affected when Katie defined our own instance of an inverse on
+--`ZMod` using `my_zmod_inv`, so the proof was reduced to just a `rfl`. In the previous version of the proof I struggled
+--to show that `bez_a` was the same as `Nat.gcdA`, which they are and have been defined similarly. Unfortunately the
+--mathlib definition uses the function `Nat.xgcdAux` which is a more complex version of my own `gcd_bezout` function,
+--using 6 variables instead of my 3 in the recursion for some sort of counting purpose. This proved too difficult for
+--me to work around and prove what should have been a simple equality of definition. It is key to the completion of this
+--project that Katie and I work together to understand what we do and do not need for the formalisation of
+--`totient_eq_zmod_units_card`, which is currently reduced to `my_zmod_unitsEquivCoprime`. I believe we are close and
+--are capable of completing our initial goal on schedule, provided the group theory side also finish `Lagrange`.
 
+theorem my_zmod_inv_eq_zmod_inv {n : ℕ} (y : ZMod n) : my_zmod_inv n y = (y : ZMod n)⁻¹ := by
+  rfl
+/- Old proof from before we declared our own instance inverse
+  unfold my_zmod_inv
+  unfold Inv.inv
+  unfold ZMod.instInvZMod
+  unfold ZMod.inv
+  conv =>
+    lhs
+    congr
+    · rfl
+    intro n i
+    rw [←bez_a_is_gcdA] -- failed to prove this step, though it is true.
+    rfl
+-/
+  done
+
+lemma zmod_inv_mul_eq_one_imp_unit {n : ℕ} (y : Units (ZMod n)) : y * y⁻¹ = 1 := by
+  rw[inv_coe_unit]
   rw[Units.mul_inv]
 
-theorem zmod_unit_val_coprime {n : ℕ} (y : Units (ZMod n)) : Nat.Coprime (y : ZMod n).val n := by
-  cases n
-  · rcases Int.units_eq_one_or y with ⟨rfl,rfl⟩
+theorem coe_zmod_mul_inv_eq_one {n : ℕ} (x : ℕ) (h : Nat.Coprime x n) : (x : ZMod n) * (my_zmod_inv n x) = 1 := by
+  rw [Nat.coprime_iff_gcd_eq_one] at h
+  rw [← Nat.cast_one]
+  rw [← h]
+  rw [my_mul_zmod_inv_eq_gcd]
+  rw [ZMod.val_nat_cast]
+  rw [← Nat.gcd_rec, Nat.gcd_comm]
+  done
+
+def my_unit_of_coprime {n : ℕ} (x : ℕ) (h : Nat.Coprime x n) : (ZMod n)ˣ :=
+  ⟨x, my_zmod_inv n x, coe_zmod_mul_inv_eq_one x h, by rw [mul_comm, coe_zmod_mul_inv_eq_one x h]⟩
+
+theorem coe_my_unit_of_coprime {n : ℕ} (x : ℕ) (h : Nat.Coprime x n) : (my_unit_of_coprime x h : ZMod n) = x := by
+  rfl; done
+
+lemma nat_gcd_zero_eq_one {n : ℕ} (y : ZMod n) (h : n = 0) : (y = 1 ∨ y = -1) → (Nat.gcd (ZMod.val y) (Nat.zero) = 1) := by
+  intro h1
+  cases' h1 with h1
+  · rw [h1, Nat.gcd_zero_right]
+    aesop_subst [h1, h]
+    exact ZMod.val_one'
+  · rename_i h_1
+    aesop_subst [h_1, h]
+    rfl
+  done
+
+#check Units.isUnit
+
+
+theorem zmod_unit_val_coprime' {n : ℕ} (x : (ZMod n)ˣ) : Nat.Coprime (x : ZMod n).val n := by
+  cases' n with n
+  · unfold Nat.Coprime
+    rw[← nat_gcd_zero_eq_one]
     · rfl
-    have h : y = -1 := by assumption
-    rw [h]; rfl
+    rw [← Int.isUnit_iff]
+    apply Units.isUnit
+  --the successive case is currently taken from mathlib, while we try to understand it in order to prove it for ourselves.
+  apply Nat.coprime_of_mul_modEq_one ((x⁻¹ : Units (ZMod (n + 1))) : ZMod (n + 1)).val
+  have := Units.ext_iff.1 (mul_right_inv x)
+  rw [Units.val_one] at this
+  rw [← ZMod.eq_iff_modEq_nat, Nat.cast_one, ← this]; clear this
+  rw [← ZMod.nat_cast_zmod_val ((x * x⁻¹ : Units (ZMod (n + 1))) : ZMod (n + 1))]
+  rw [Units.val_mul, ZMod.val_mul, ZMod.nat_cast_mod]
+
+--27/01/24 - Jakub
+
+--Proved `nat_gcd_zero_eq_one`. I was struggling associating `ZMod 0` to `ZMod n` even with the assumption that `n=0` but
+--thankfully the `aesop` tactic had no trouble sorting that issue for me. It is the first time I have used this tactic
+--and I wish I knew about it sooner! I also helped Katie proving the zero case of `zmod_unit_val_coprime` since the
+--statement had been slightly modified from `(y : Units (ZMod n))` to `(y : ZMod n) (h : IsUnit y)` which unfortunately
+--broke my previous proof of the statement, but that is now fixed. Applying the fact that `ZMod 0` is defined as the
+--integers proves finnicky, as applying `Int.isUnit_iff` in the forwards direction at the assumption `h` did not work,
+--which was what Katie tried, but applying it in the reverse direction at the goal, then `rfl`ing worked perfectly.
+--I will be looking more into the `ZMod.Basic.lean` file in order to better understand this strange property. Hopefully
+--a better understanding of mathlib will be beneficial in proving our main goal of ZMod
+
+theorem zmod_unit_val_coprime {n : ℕ} (y : ZMod n) (h : IsUnit y) : Nat.Coprime (y : ZMod n).val n := by
+  cases' n with n
+  · unfold Nat.Coprime
+    rw[← nat_gcd_zero_eq_one]
+    · rfl
+    rw [← Int.isUnit_iff]
+    exact h
 -- Katie
   · rw[zmod_mul_inv_eq_one_iff_coprime_n]
-    rw[ZMod.nat_cast_eq_nat_cast_iff]
-
-
-    rw[← Int.mod_coprime]
-    rw[ZMod.cast_id]
-    rw[zmod_eq_iff_Mod_eq_nat]
-    rw[← zmod_inv_mul_eq_one_imp_unit]
-    sorry
+    exact zmod_inv_mul_eq_one_imp_unit y h
+    rw[Nat.succ_eq_add_one]
+    linarith
+  done
 
 def zmod_unit_of_coprime {n : ℕ} (x : ZMod n) (h : Nat.Coprime x.val n) : (Units (ZMod n)) :=
   ⟨x, my_zmod_inv n x, zmod_mul_inv_eq_one x h, by rw [mul_comm, zmod_mul_inv_eq_one x h]⟩
