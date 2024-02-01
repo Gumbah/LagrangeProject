@@ -740,8 +740,8 @@ section cosetsMul
     done
 
   lemma LeftCosetFinTypeMul [Fintype G] [Fintype H] (g : G) :
-  (g LCoset* H).isFintype := by
-
+  (g LCoset* H).Finite := by
+    exact toFinite (g LCoset*↑H)
   done
 
   lemma CardLeftCosetEqCardSubgroupMul [Fintype H] [Fintype G] (g : G) :
