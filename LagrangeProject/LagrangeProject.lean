@@ -932,6 +932,12 @@ end cosetsAdd
 -/
 --Beginning of Number Theory Side
 
+
+--Initial very naive/ not lean-optimised/ bad definition trying to make a
+--Bézout algorithm, skip to my 24/11/23 timestamp about 80 lines down to 
+--see the one we actually used, just thought I'd keep this in for the
+--sake of showing how far we've come.
+
 --18/11/23 - Jakub
 
 --First we want to prove Bézout's lemma, first we will
