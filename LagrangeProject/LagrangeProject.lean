@@ -19,6 +19,7 @@ import Mathlib.GroupTheory.Subgroup.Basic
 import Mathlib.Algebra.Ring.MinimalAxioms
 import Mathlib.Algebra.Group.Defs
 import Mathlib.Algebra.Ring.Defs
+import Mathlib.Data.Setoid.Partition
 --import Mathlib.Data.Finite.Card
 --Universal imports
 import Mathlib.Tactic
@@ -461,10 +462,10 @@ section cosetsMul
   variable [Group G] (H : Subgroup G)
 
 
-  def LeftCosetMul [Group G] (g : G) (H : Set G) : Set G :=
+  def LeftCosetMul (g : G) (H : Set G) : Set G :=
     Set.image (fun h => g * h) H
 
-  def RightCosetMul [Group G] (H : Set G) (g : G) : Set G :=
+  def RightCosetMul (H : Set G) (g : G) : Set G :=
     Set.image (fun h => h * g) H
 
   notation:70 i:70 "LCoset*" H:70 => LeftCosetMul i H
@@ -708,7 +709,7 @@ section cosetsMul
     contrapose h
     refine not_and.mpr ?_
     intro h1
-    simp
+    refine not_not_mem.mpr ?_
     have h2 : ∃ x, x ∈ (i LCoset* H) ∧ x ∈ (j LCoset* H) := by
       refine inter_nonempty.mp ?_
       exact nmem_singleton_empty.mp h
@@ -726,7 +727,7 @@ section cosetsMul
     contrapose h
     refine not_and.mpr ?_
     intro h1
-    simp
+    refine not_not_mem.mpr ?_
     have h2 : ∃ x, x ∈ (H RCoset* i) ∧ x ∈ (H RCoset* j) := by
       refine inter_nonempty.mp ?_
       exact nmem_singleton_empty.mp h
@@ -738,9 +739,19 @@ section cosetsMul
       exact h1
     done
 
-  lemma UnionOfLeftCosetsIsGroup : ⋃(g : G), g LCoset* H = G := by
+  class SetOfLeftCosetsMul ()
+
+  variable {ι : Type*} (s : ι → G) (e : G)
+
+  #check IndexedPartition.mk
+
+  instance : IndexedPartition where
+
+  /-
+  lemma LeftCosetsPartitionGroup  := by
     sorry
     done
+  -/
 
   theorem LagrangeMul [Fintype G] [Fintype H] :
   Fintype.card H ∣ Fintype.card G := by
