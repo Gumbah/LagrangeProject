@@ -739,9 +739,13 @@ section cosetsMul
       exact h1
     done
 
+  class SetOfLeftCosetsMul ()
+
   variable {ι : Type*} (s : ι → G) (e : G)
 
   #check IndexedPartition.mk
+
+  instance : IndexedPartition where
 
   /-
   lemma LeftCosetsPartitionGroup  := by
