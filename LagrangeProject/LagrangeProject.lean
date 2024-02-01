@@ -745,13 +745,13 @@ section cosetsMul
     done
 
   lemma CardLeftCosetEqCardSubgroupMul [Fintype H] [Fintype G] (g : G) :
-  Fintype.card H = Fintype.card ((g LCoset* H).Finite) := by
-
+  Fintype.card H = Fintype.card (toFinite (g LCoset* H)) := by
+    sorry
     done
 
   variable {ι : Type*} (s : ι → G) (e : G)
 
-  class SetOfLeftCosetsMul [] (Q : Set (Set G)) where
+  class SetOfLeftCosetsMul (Q : Set (Set G)) where
     (closure : ∀(g : G), g LCoset* H ∈ Q)
 
   #check SetOfLeftCosetsMul
