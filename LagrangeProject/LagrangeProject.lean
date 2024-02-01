@@ -739,13 +739,28 @@ section cosetsMul
       exact h1
     done
 
-  class SetOfLeftCosetsMul ()
+  lemma LeftCosetFinTypeMul [Fintype G] [Fintype H] (g : G) :
+  (g LCoset* H).isFintype := by
+
+  done
+
+  lemma CardLeftCosetEqCardSubgroupMul [Fintype H] [Fintype G] (g : G) :
+  Fintype.card H = Fintype.card (g LCoset* H) := by
+
+    done
 
   variable {ι : Type*} (s : ι → G) (e : G)
 
+  class SetOfLeftCosetsMul [] (Q : Set (Set G)) where
+    (closure : ∀(g : G), g LCoset* H ∈ Q)
+
+  #check SetOfLeftCosetsMul
+
   #check IndexedPartition.mk
 
-  instance : IndexedPartition where
+  instance : IndexedPartition SetOfLeftCosetsMul where
+
+
 
   /-
   lemma LeftCosetsPartitionGroup  := by
@@ -945,7 +960,7 @@ end cosetsAdd
 
 
 --Initial very naive/ not lean-optimised/ bad definition trying to make a
---Bézout algorithm, skip to my 24/11/23 timestamp about 80 lines down to 
+--Bézout algorithm, skip to my 24/11/23 timestamp about 80 lines down to
 --see the one we actually used, just thought I'd keep this in for the
 --sake of showing how far we've come.
 
