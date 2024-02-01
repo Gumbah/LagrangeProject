@@ -745,7 +745,7 @@ section cosetsMul
     done
 
   lemma CardLeftCosetEqCardSubgroupMul [Fintype H] [Fintype G] (g : G) :
-  Fintype.card H = Fintype.card (g LCoset* H) := by
+  Fintype.card H = Fintype.card ((g LCoset* H).Finite) := by
 
     done
 
