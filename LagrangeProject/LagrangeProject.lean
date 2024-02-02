@@ -1929,7 +1929,6 @@ lemma gcd_of_val_lt_non_zero (n : ℕ) (x : ZMod n) (h : 0 < x.val) (hn : 0 < n)
         x.val < n := by
           exact ZMod.val_lt x
 
-
 lemma zmod_mul_inv_eq_one_iff_coprime_n {n : ℕ} (x : ZMod n) (h : 0 < n) : (Nat.Coprime x.val n) ↔  x * (my_zmod_inv n x) = 1 := by
   constructor
   · intro h1
@@ -2061,6 +2060,34 @@ theorem zmod_unit_val_coprime' {n : ℕ} (x : (ZMod n)ˣ) : Nat.Coprime (x : ZMo
   rw [← ZMod.eq_iff_modEq_nat, Nat.cast_one, ← this]; clear this
   rw [← ZMod.nat_cast_zmod_val ((x * x⁻¹ : Units (ZMod (n + 1))) : ZMod (n + 1))]
   rw [Units.val_mul, ZMod.val_mul, ZMod.nat_cast_mod]
+
+lemma bez_a_is_gcdA (x y : ℕ) : Nat.gcdA x y = bez_a x y := by
+  induction x, y using Nat.gcd.induction with
+  | H0 y =>
+    rw [bez_a_zero_left, Nat.gcdA_zero_left]
+  | H1 x y _ ih =>
+    sorry
+  done
+
+theorem my_zmod_inv_eq_zmod_inv {n : ℕ} (y : ZMod n) : my_zmod_inv n y = (y : ZMod n)⁻¹ := by
+  unfold my_zmod_inv
+  unfold Inv.inv
+  unfold ZMod.instInvZMod
+  unfold ZMod.inv
+  conv =>
+    lhs
+    congr
+    · rfl
+    intro n i
+    rw [←bez_a_is_gcdA]
+    rfl
+  done
+
+lemma zmod_inv_mul_eq_one_imp_unit {n : ℕ} (y : Units (ZMod n)) : y * my_zmod_inv n y = 1 := by
+  rw[my_zmod_inv_eq_zmod_inv]
+
+  apply Units.isUnit
+  done
 
 --27/01/24 - Jakub
 
