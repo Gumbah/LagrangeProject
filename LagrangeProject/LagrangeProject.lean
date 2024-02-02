@@ -945,7 +945,7 @@ end cosetsAdd
 
 
 --Initial very naive/ not lean-optimised/ bad definition trying to make a
---Bézout algorithm, skip to my 24/11/23 timestamp about 80 lines down to 
+--Bézout algorithm, skip to my 24/11/23 timestamp about 80 lines down to
 --see the one we actually used, just thought I'd keep this in for the
 --sake of showing how far we've come.
 
@@ -2217,8 +2217,19 @@ theorem coe_zmod_unit_of_coprime {n : ℕ} (x : ZMod n) (h : Nat.Coprime x.val n
 -- theorem zmod_inv_mul_unit {n : ℕ} (x : ZMod n) (h : IsUnit x) : x⁻¹ * x = 1 := by
 
 
-def my_zmod_unitsEquivCoprime {n : ℕ} [NeZero n] : (Units (ZMod n)) ≃ ((Finset.range n).filter n.Coprime) where
-  toFun x := ⟨(ZMod.val (x : ZMod n)), zmod_unit_val_coprime⟩
+def my_zmod_unitsEquivCoprime {n : ℕ} [NeZero n] : (Units (ZMod n)) ≃ {x // x ∈ (Finset.range n).filter n.Coprime} where
+  toFun x := ⟨(ZMod.val (x : ZMod n)), by
+    refine Finset.mem_filter.mpr ?_
+    constructor
+    · rw[Finset.mem_range]
+      exact ZMod.val_lt (x : ZMod n)
+    · unfold Nat.Coprime
+
+
+
+
+
+    ⟩
   invFun x := zmod_unit_of_coprime x.1 x.2.val
   left_inv := fun ⟨_, _, _, _⟩ => Units.ext (nat_cast_zmod_val _)
   right_inv := fun ⟨_, _⟩ =>
@@ -2228,7 +2239,7 @@ def my_zmod_unitsEquivCoprime {n : ℕ} [NeZero n] : (Units (ZMod n)) ≃ ((Fins
 -- zmod_units_equiv_card, which did not allow me to apply/rw Fintype.card_congr no matter what I tried, or what extra lemmas I created. Eventually, I found that
 -- using refine somehow made it successful. Now the main issue is finishing constructing the isomorphism above.
 
-lemma totient_subtype {n x : ℕ} : Finset.card ((Finset.range n).filter n.Coprime) = Fintype.card { x // x ∈ (Finset.range n).filter n.Coprime} := by
+lemma totient_subtype {n : ℕ} : Finset.card ((Finset.range n).filter n.Coprime) = Fintype.card { x // x ∈ (Finset.range n).filter n.Coprime} := by
   rw[Fintype.subtype_card]
   exact fun x ↦ Iff.rfl
   done
@@ -2242,7 +2253,6 @@ theorem totient_eq_zmod_units_card (n : ℕ) [NeZero n] [inst : Fintype (Units (
   unfold my_totient
   rw[totient_subtype]
   rw[zmod_units_equiv_card]
-  exact n
   done
 
 --25/01/24 - Jakub
