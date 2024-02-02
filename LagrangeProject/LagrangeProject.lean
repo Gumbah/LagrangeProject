@@ -2226,11 +2226,20 @@ theorem coe_zmod_unit_of_coprime {n : ℕ} (x : ZMod n) (h : Nat.Coprime x.val n
 -- Probably wont need : theorem zmod_mul_inv_unit {n : ℕ} (x : ZMod n) (h : IsUnit x) : x * x⁻¹ = 1 := by
 -- theorem zmod_inv_mul_unit {n : ℕ} (x : ZMod n) (h : IsUnit x) : x⁻¹ * x = 1 := by
 
-lemma filter_mem_nat_coprime_iff_nat_coprime {n : ℕ} (x : ℕ) : x ∈ Finset.filter (Nat.Coprime n) (Finset.range n) ↔ Nat.Coprime n x := by
-  sorry
-
 -- Since proving it ourselves would be more of a fuss than is worth (messing with the definition of val and its sources in Fin.val), we decided to
 -- use ZMod.val_lt straight from mathlib in the isomorphism below.
+
+--02/02/2024 - Jakub & Katie
+
+--Katie and I worked together to complete the following theorem. Katie was responsible for `toFun` and most of `invFun`,
+--where I offered little more than reversing the order of `a` and `n` in the have statement after she was stuck on it.
+--The proof for `left_inv` is simple and near-identical to mathlib's version of the same thing but `right_inv` is where
+--we came into our own. The sequential `have` statments we me trying to get closer to applying `this` directly into the
+--function using the `conv` tactic, each step making the next possible. The `simpa only` in the final `have` statement
+--was suggested by `aesop`, after I had been struggling to apply my lemmas in the correct places, but all are used and
+--required for this proof. This proof marks the end of what was essential for completing the number theory side of our
+--initial goal of proving `Fermat's little theorem`, the rest of which was completed long ago using a sorry'd out form
+--of this isomorphism laid out by Katie.
 
 def my_zmod_unitsEquivCoprime {n : ℕ} [NeZero n] : (Units (ZMod n)) ≃ {x // x ∈ (Finset.range n).filter n.Coprime} where
   toFun x := ⟨(ZMod.val (x : ZMod n)), by
@@ -2244,17 +2253,42 @@ def my_zmod_unitsEquivCoprime {n : ℕ} [NeZero n] : (Units (ZMod n)) ≃ {x // 
   invFun x :=
     let ⟨a,b⟩ := x
     have : a.Coprime n := by
-     simp_all only[Finset.mem_filter]
-     let ⟨c,d⟩ := b
-     rw[Nat.coprime_comm]
-     exact d
+      simp_all only[Finset.mem_filter]
+      let ⟨_,d⟩ := b
+      rw [Nat.coprime_comm]
+      exact d
     nat_to_zmod_unit_of_coprime a this
+  left_inv := fun ⟨_, _, _, _⟩ => by
+    apply Units.ext (ZMod.nat_cast_zmod_val _)
+    done
+  right_inv := fun ⟨a, b⟩ => by
+    simp_all only [Finset.mem_filter]
+    have h : a.Coprime n := by
+      simp_all only[Finset.mem_filter]
+      let ⟨_,d⟩ := b
+      rw [Nat.coprime_comm]
+      exact d
+    have h1 : a < n := by
+      simp_all only[Finset.mem_filter]
+      let ⟨c,_⟩ := b
+      rw [Finset.mem_range] at c
+      exact c
+    have h2 : (a : ZMod n).val = a := by
+      exact ZMod.val_cast_of_lt h1
+    have h3 : nat_to_zmod_unit_of_coprime a h = zmod_unit_of_coprime a _ := by
+      unfold nat_to_zmod_unit_of_coprime
+      rfl
+    have : ZMod.val (nat_to_zmod_unit_of_coprime a h : ZMod n) = a := by
+      rw [h3]
+      unfold zmod_unit_of_coprime
+      simpa only
+    conv =>
+      lhs
+      congr
+      rw [this]
+    done
 
-  left_inv := fun ⟨_, _, _, _⟩ => Units.ext (nat_cast_zmod_val _)
-  right_inv := fun ⟨_, _⟩ =>
-  sorry
-
--- Getting the following lemmas to synthesize was a pain in of itself; type errors everywhere, in spite of my level of understanding. The main issue was
+-- Getting the following lemmas to synthesize was a pain in oaf itself; type errors everywhere, in spite of my level of understanding. The main issue was
 -- zmod_units_equiv_card, which did not allow me to apply/rw Fintype.card_congr no matter what I tried, or what extra lemmas I created. Eventually, I found that
 -- using refine somehow made it successful. Now the main issue is finishing constructing the isomorphism above.
 
