@@ -739,13 +739,28 @@ section cosetsMul
       exact h1
     done
 
-  class SetOfLeftCosetsMul ()
+  lemma LeftCosetFinTypeMul [Fintype G] [Fintype H] (g : G) :
+  (g LCoset* H).Finite := by
+    exact toFinite (g LCoset*↑H)
+    done
+
+  lemma CardLeftCosetEqCardSubgroupMul [Fintype H] [Fintype G] (g : G) :
+  Fintype.card H = Fintype.card (toFinite (g LCoset* H)) := by
+    sorry
+    done
 
   variable {ι : Type*} (s : ι → G) (e : G)
 
+  class SetOfLeftCosetsMul (Q : Set (Set G)) where
+    (closure : ∀(g : G), g LCoset* H ∈ Q)
+
+  #check SetOfLeftCosetsMul
+
   #check IndexedPartition.mk
 
-  instance : IndexedPartition where
+  instance : IndexedPartition SetOfLeftCosetsMul where
+
+
 
   /-
   lemma LeftCosetsPartitionGroup  := by
