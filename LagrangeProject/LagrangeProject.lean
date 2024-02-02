@@ -835,10 +835,19 @@ section cosetsMul
     exact h2
   done
 
-  theorem NormalofEqCosets (h : ∀ g : G, g LCoset* H = H RCoset* g) : H.Normal := by
-  constructor
-  done
-
+  theorem NormalofEqCosets (g : G) (n : H) (h : ∀ g : G, g LCoset* H = H RCoset* g) : H.Normal := by
+    constructor
+    · intro n h1 g
+      have e1: g * n  ∈ g LCoset* H := by
+        rw[← MemLeftCoset]
+        exact h1
+      rw[← MulOne (g * n)] at e1
+      rw[h] at e1
+      rw[← mul_left_inv g] at e1
+      rw[← mul_assoc] at e1
+      rw[← MemRightCoset] at e1
+      exact e1
+    done
 
   theorem NormalIffEqMulCosets: H.Normal ↔ ∀ g : G, g LCoset* H = H RCoset* g := by
     constructor
@@ -847,9 +856,6 @@ section cosetsMul
     · intro h2
       exact NormalofEqCosets H h2
       done
-
-
-
 
   --Langrange's Theorem corollorys
 
@@ -867,6 +873,10 @@ section quotientgroupmul
 
   def QuotientGroup (G) [Group G] (H : Subgroup G) [H.Normal] :=
     G⧸H
+
+  theorem QuotientGroupSetofLeftCosets (g : G) [H.Normal]: G⧸H = {∀ g, g LCoset* H} :=
+  sorry
+  done
 
   end QuotientGroupMul
 
