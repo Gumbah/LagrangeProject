@@ -2079,17 +2079,6 @@ lemma zmod_mul_inv_eq_one_iff_coprime_n {n : ℕ} (x : ZMod n) (h : 0 < n) : (Na
 instance (n : ℕ) : Inv (ZMod n) :=
   ⟨my_zmod_inv n⟩
 
-#eval (15 : ZMod 10).inv
-
-theorem inv_coe_unit {n : ℕ} (u : (ZMod n)ˣ) : (u : ZMod n)⁻¹ = (u⁻¹ : (ZMod n)ˣ) := by
-
-theorem coe_zmod_inv_unit {n : ℕ} (y : (ZMod n)ˣ) : my_zmod_inv n (y : ZMod n) = ((my_zmod_inv n (y : ZMod n)) : (ZMod n)ˣ) := by
-  sorry
-
-lemma zmod_inv_mul_eq_one_imp_unit {n : ℕ} (y : Units (ZMod n)) : y * y⁻¹ = 1 := by
-  rw[coe_zmod_inv_unit]
-  rw[Units.mul_inv]
-
 theorem coe_zmod_mul_inv_eq_one {n : ℕ} (x : ℕ) (h : Nat.Coprime x n) : (x : ZMod n) * (my_zmod_inv n x) = 1 := by
   rw [Nat.coprime_iff_gcd_eq_one] at h
   rw [← Nat.cast_one]
@@ -2157,7 +2146,7 @@ theorem my_zmod_inv_eq_zmod_inv {n : ℕ} (y : ZMod n) : my_zmod_inv n y = (y : 
 
 lemma zmod_inv_mul_eq_one_imp_unit {n : ℕ} (y : Units (ZMod n)) : y * my_zmod_inv n y = 1 := by
   rw[my_zmod_inv_eq_zmod_inv]
-  rw[ZMod.mul_inv_of_unit]
+
   apply Units.isUnit
   done
 
