@@ -2172,6 +2172,7 @@ theorem zmod_unit_val_coprime' {n : ℕ} (x : (ZMod n)ˣ) : Nat.Coprime (x : ZMo
     rw [← Int.isUnit_iff]
     apply Units.isUnit
   --the successive case is currently taken from mathlib, while we try to understand it in order to prove it for ourselves.
+  --WE have not used this theorem further on.
   apply Nat.coprime_of_mul_modEq_one ((x⁻¹ : Units (ZMod (n + 1))) : ZMod (n + 1)).val
   have := Units.ext_iff.1 (mul_right_inv x)
   rw [Units.val_one] at this
@@ -2231,17 +2232,13 @@ def my_zmod_unitsEquivCoprime {n : ℕ} [NeZero n] : (Units (ZMod n)) ≃ {x // 
     constructor
     · rw[Finset.mem_range]
       exact ZMod.val_lt (x : ZMod n)
-    · unfold Nat.Coprime
-
-
-
-
-
-    ⟩
+    · rw [Nat.coprime_comm]
+      apply zmod_unit_val_coprime
+      apply Units.isUnit⟩
   invFun x :=
-    have h : n.Coprime x := by
-      sorry
-    nat_to_zmod_unit_of_coprime x ?_
+
+
+
   left_inv := fun ⟨_, _, _, _⟩ => Units.ext (nat_cast_zmod_val _)
   right_inv := fun ⟨_, _⟩ =>
   sorry
