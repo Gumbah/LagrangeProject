@@ -739,6 +739,41 @@ section cosetsMul
       exact h1
     done
 
+  lemma LeftCosetCardEqSubgroupCard [Fintype G] [Fintype H] (g : G) :
+  Fintype.card H = Fintype.card (g LCoset* H) := by
+
+    done
+
+
+  lemma LeftCosetBijectionMul (g : G) : g LCoset* H ≃ H := by
+    rw[LeftCosetMul]
+
+
+
+    refine (BijOn.equiv ?f ?h).symm
+    · exact fun a ↦ g
+    rw [@image_eq_iUnion]
+
+    constructor
+    · rw[MapsTo]
+      intro x
+      intro h
+      exact ElemInOwnLeftCosetMul H g
+    · constructor
+      · refine injOn_iff_injective.mpr ?h.right.left.a
+
+        rw[InjOn]
+
+
+      · rw[SurjOn]
+        rw[LeftCosetMul]
+
+
+    cases
+
+    done
+  class SetOfLeftCosetsMul ()
+  
   lemma LeftCosetFinTypeMul [Fintype G] [Fintype H] (g : G) :
   (g LCoset* H).Finite := by
     exact toFinite (g LCoset*↑H)
@@ -762,15 +797,14 @@ section cosetsMul
 
 
 
-  /-
-  lemma LeftCosetsPartitionGroup  := by
-    sorry
+  lemma LeftCosetsPartitionGroup  : (⨆ g ∈ ↑H, g LCoset* H) = G := by
+    simp only [mul_right_inj, mul_left_inj, iSup_eq_iUnion]
     done
-  -/
 
   theorem LagrangeMul [Fintype G] [Fintype H] :
   Fintype.card H ∣ Fintype.card G := by
-    sorry
+    rw [@dvd_iff_exists_eq_mul_left]
+
     done
 
   def indexMul [Fintype G] [Fintype H] : ℕ :=
@@ -778,7 +812,7 @@ section cosetsMul
 
   theorem PowOfCardEqOne [Fintype G] (g : G) :
   g ^ (Fintype.card G) = 1 := by
-    sorry
+
     done
 
   --we've done most of the immediately relevant stuff for cosets
