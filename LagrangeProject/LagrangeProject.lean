@@ -2209,11 +2209,11 @@ theorem zmod_unit_val_coprime {n : ℕ} (y : ZMod n) (h : IsUnit y) : Nat.Coprim
 def zmod_unit_of_coprime {n : ℕ} (x : ZMod n) (h : Nat.Coprime x.val n) : (Units (ZMod n)) :=
   ⟨x, my_zmod_inv n x, zmod_mul_inv_eq_one x h, by rw [mul_comm, zmod_mul_inv_eq_one x h]⟩
 
-def nat_to_zmod_unit_of_coprime {n : ℕ} (x : ℕ) (h : Nat.Coprime n x) : (Units (ZMod n)) :=
+def nat_to_zmod_unit_of_coprime {n : ℕ} (x : ℕ) (h : Nat.Coprime x n) : (Units (ZMod n)) :=
   have h1 : Nat.Coprime (x : ZMod n).val n := by
     rw [ZMod.val_nat_cast]
     unfold Nat.Coprime
-    rw [← Nat.gcd_rec]
+    rw [← Nat.gcd_rec, Nat.gcd_comm]
     rw [← Nat.coprime_iff_gcd_eq_one]
     exact h
   zmod_unit_of_coprime (x : ZMod n) h1
@@ -2226,6 +2226,12 @@ theorem coe_zmod_unit_of_coprime {n : ℕ} (x : ZMod n) (h : Nat.Coprime x.val n
 -- Probably wont need : theorem zmod_mul_inv_unit {n : ℕ} (x : ZMod n) (h : IsUnit x) : x * x⁻¹ = 1 := by
 -- theorem zmod_inv_mul_unit {n : ℕ} (x : ZMod n) (h : IsUnit x) : x⁻¹ * x = 1 := by
 
+lemma filter_mem_nat_coprime_iff_nat_coprime {n : ℕ} (x : ℕ) : x ∈ Finset.filter (Nat.Coprime n) (Finset.range n) ↔ Nat.Coprime n x := by
+  sorry
+
+-- Since proving it ourselves would be more of a fuss than is worth (messing with the definition of val and its sources in Fin.val), we decided to
+-- use ZMod.val_lt straight from mathlib in the isomorphism below.
+
 def my_zmod_unitsEquivCoprime {n : ℕ} [NeZero n] : (Units (ZMod n)) ≃ {x // x ∈ (Finset.range n).filter n.Coprime} where
   toFun x := ⟨(ZMod.val (x : ZMod n)), by
     refine Finset.mem_filter.mpr ?_
@@ -2236,8 +2242,13 @@ def my_zmod_unitsEquivCoprime {n : ℕ} [NeZero n] : (Units (ZMod n)) ≃ {x // 
       apply zmod_unit_val_coprime
       apply Units.isUnit⟩
   invFun x :=
-
-
+    let ⟨a,b⟩ := x
+    have : a.Coprime n := by
+     simp_all only[Finset.mem_filter]
+     let ⟨c,d⟩ := b
+     rw[Nat.coprime_comm]
+     exact d
+    nat_to_zmod_unit_of_coprime a this
 
   left_inv := fun ⟨_, _, _, _⟩ => Units.ext (nat_cast_zmod_val _)
   right_inv := fun ⟨_, _⟩ =>
