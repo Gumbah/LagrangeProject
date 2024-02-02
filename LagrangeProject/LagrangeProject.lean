@@ -2172,6 +2172,7 @@ theorem zmod_unit_val_coprime' {n : ℕ} (x : (ZMod n)ˣ) : Nat.Coprime (x : ZMo
     rw [← Int.isUnit_iff]
     apply Units.isUnit
   --the successive case is currently taken from mathlib, while we try to understand it in order to prove it for ourselves.
+  --WE have not used this theorem further on.
   apply Nat.coprime_of_mul_modEq_one ((x⁻¹ : Units (ZMod (n + 1))) : ZMod (n + 1)).val
   have := Units.ext_iff.1 (mul_right_inv x)
   rw [Units.val_one] at this
@@ -2225,13 +2226,19 @@ theorem coe_zmod_unit_of_coprime {n : ℕ} (x : ZMod n) (h : Nat.Coprime x.val n
 -- Probably wont need : theorem zmod_mul_inv_unit {n : ℕ} (x : ZMod n) (h : IsUnit x) : x * x⁻¹ = 1 := by
 -- theorem zmod_inv_mul_unit {n : ℕ} (x : ZMod n) (h : IsUnit x) : x⁻¹ * x = 1 := by
 
-
-def my_zmod_unitsEquivCoprime {n : ℕ} [NeZero n] : (Units (ZMod n)) ≃ { x // x ∈ (Finset.range n).filter n.Coprime} where
-  toFun x := ⟨(ZMod.val (x : ZMod n)), by sorry⟩
+def my_zmod_unitsEquivCoprime {n : ℕ} [NeZero n] : (Units (ZMod n)) ≃ {x // x ∈ (Finset.range n).filter n.Coprime} where
+  toFun x := ⟨(ZMod.val (x : ZMod n)), by
+    refine Finset.mem_filter.mpr ?_
+    constructor
+    · rw[Finset.mem_range]
+      exact ZMod.val_lt (x : ZMod n)
+    · rw [Nat.coprime_comm]
+      apply zmod_unit_val_coprime
+      apply Units.isUnit⟩
   invFun x :=
-    have h : n.Coprime x := by
-      sorry
-    nat_to_zmod_unit_of_coprime x ?_
+
+
+
   left_inv := fun ⟨_, _, _, _⟩ => Units.ext (nat_cast_zmod_val _)
   right_inv := fun ⟨_, _⟩ =>
   sorry
@@ -2240,7 +2247,7 @@ def my_zmod_unitsEquivCoprime {n : ℕ} [NeZero n] : (Units (ZMod n)) ≃ { x //
 -- zmod_units_equiv_card, which did not allow me to apply/rw Fintype.card_congr no matter what I tried, or what extra lemmas I created. Eventually, I found that
 -- using refine somehow made it successful. Now the main issue is finishing constructing the isomorphism above.
 
-lemma totient_subtype {n x : ℕ} : Finset.card ((Finset.range n).filter n.Coprime) = Fintype.card { x // x ∈ (Finset.range n).filter n.Coprime} := by
+lemma totient_subtype {n : ℕ} : Finset.card ((Finset.range n).filter n.Coprime) = Fintype.card { x // x ∈ (Finset.range n).filter n.Coprime} := by
   rw[Fintype.subtype_card]
   exact fun x ↦ Iff.rfl
   done
@@ -2254,7 +2261,6 @@ theorem totient_eq_zmod_units_card (n : ℕ) [NeZero n] [inst : Fintype (Units (
   unfold my_totient
   rw[totient_subtype]
   rw[zmod_units_equiv_card]
-  exact n
   done
 
 --25/01/24 - Jakub
