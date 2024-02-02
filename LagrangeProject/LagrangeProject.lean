@@ -2208,11 +2208,11 @@ theorem zmod_unit_val_coprime {n : ℕ} (y : ZMod n) (h : IsUnit y) : Nat.Coprim
 def zmod_unit_of_coprime {n : ℕ} (x : ZMod n) (h : Nat.Coprime x.val n) : (Units (ZMod n)) :=
   ⟨x, my_zmod_inv n x, zmod_mul_inv_eq_one x h, by rw [mul_comm, zmod_mul_inv_eq_one x h]⟩
 
-def nat_to_zmod_unit_of_coprime {n : ℕ} (x : ℕ) (h : Nat.Coprime x n) : (Units (ZMod n)) :=
+def nat_to_zmod_unit_of_coprime {n : ℕ} (x : ℕ) (h : Nat.Coprime n x) : (Units (ZMod n)) :=
   have h1 : Nat.Coprime (x : ZMod n).val n := by
     rw [ZMod.val_nat_cast]
     unfold Nat.Coprime
-    rw [← Nat.gcd_rec, Nat.gcd_comm]
+    rw [← Nat.gcd_rec]
     rw [← Nat.coprime_iff_gcd_eq_one]
     exact h
   zmod_unit_of_coprime (x : ZMod n) h1
@@ -2241,7 +2241,7 @@ def my_zmod_unitsEquivCoprime {n : ℕ} [NeZero n] : (Units (ZMod n)) ≃ {x // 
   invFun x :=
     have h : n.Coprime x := by
       sorry
-    nat_to_zmod_unit_of_coprime x _
+    nat_to_zmod_unit_of_coprime x ?_
   left_inv := fun ⟨_, _, _, _⟩ => Units.ext (nat_cast_zmod_val _)
   right_inv := fun ⟨_, _⟩ =>
   sorry
