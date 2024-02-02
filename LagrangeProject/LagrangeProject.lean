@@ -773,12 +773,29 @@ section cosetsMul
 
     done
   class SetOfLeftCosetsMul ()
+  
+  lemma LeftCosetFinTypeMul [Fintype G] [Fintype H] (g : G) :
+  (g LCoset* H).Finite := by
+    exact toFinite (g LCoset*↑H)
+    done
+
+  lemma CardLeftCosetEqCardSubgroupMul [Fintype H] [Fintype G] (g : G) :
+  Fintype.card H = Fintype.card (toFinite (g LCoset* H)) := by
+    sorry
+    done
 
   variable {ι : Type*} (s : ι → G) (e : G)
 
+  class SetOfLeftCosetsMul (Q : Set (Set G)) where
+    (closure : ∀(g : G), g LCoset* H ∈ Q)
+
+  #check SetOfLeftCosetsMul
+
   #check IndexedPartition.mk
 
-  instance : IndexedPartition where
+  instance : IndexedPartition SetOfLeftCosetsMul where
+
+
 
   lemma LeftCosetsPartitionGroup  : (⨆ g ∈ ↑H, g LCoset* H) = G := by
     simp only [mul_right_inj, mul_left_inj, iSup_eq_iUnion]
@@ -867,10 +884,19 @@ section cosetsMul
     exact h2
   done
 
-  theorem NormalofEqCosets (h : ∀ g : G, g LCoset* H = H RCoset* g) : H.Normal := by
-  constructor
-  done
-
+  theorem NormalofEqCosets (g : G) (n : H) (h : ∀ g : G, g LCoset* H = H RCoset* g) : H.Normal := by
+    constructor
+    · intro n h1 g
+      have e1: g * n  ∈ g LCoset* H := by
+        rw[← MemLeftCoset]
+        exact h1
+      rw[← MulOne (g * n)] at e1
+      rw[h] at e1
+      rw[← mul_left_inv g] at e1
+      rw[← mul_assoc] at e1
+      rw[← MemRightCoset] at e1
+      exact e1
+    done
 
   theorem NormalIffEqMulCosets: H.Normal ↔ ∀ g : G, g LCoset* H = H RCoset* g := by
     constructor
@@ -879,9 +905,6 @@ section cosetsMul
     · intro h2
       exact NormalofEqCosets H h2
       done
-
-
-
 
   --Langrange's Theorem corollorys
 
@@ -899,6 +922,10 @@ section quotientgroupmul
 
   def QuotientGroup (G) [Group G] (H : Subgroup G) [H.Normal] :=
     G⧸H
+
+  theorem QuotientGroupSetofLeftCosets (g : G) [H.Normal]: G⧸H = {∀ g, g LCoset* H} :=
+  sorry
+  done
 
   end QuotientGroupMul
 
@@ -2204,6 +2231,7 @@ theorem zmod_unit_val_coprime' {n : ℕ} (x : (ZMod n)ˣ) : Nat.Coprime (x : ZMo
     rw [← Int.isUnit_iff]
     apply Units.isUnit
   --the successive case is currently taken from mathlib, while we try to understand it in order to prove it for ourselves.
+  --WE have not used this theorem further on.
   apply Nat.coprime_of_mul_modEq_one ((x⁻¹ : Units (ZMod (n + 1))) : ZMod (n + 1)).val
   have := Units.ext_iff.1 (mul_right_inv x)
   rw [Units.val_one] at this
@@ -2240,6 +2268,15 @@ theorem zmod_unit_val_coprime {n : ℕ} (y : ZMod n) (h : IsUnit y) : Nat.Coprim
 def zmod_unit_of_coprime {n : ℕ} (x : ZMod n) (h : Nat.Coprime x.val n) : (Units (ZMod n)) :=
   ⟨x, my_zmod_inv n x, zmod_mul_inv_eq_one x h, by rw [mul_comm, zmod_mul_inv_eq_one x h]⟩
 
+def nat_to_zmod_unit_of_coprime {n : ℕ} (x : ℕ) (h : Nat.Coprime x n) : (Units (ZMod n)) :=
+  have h1 : Nat.Coprime (x : ZMod n).val n := by
+    rw [ZMod.val_nat_cast]
+    unfold Nat.Coprime
+    rw [← Nat.gcd_rec, Nat.gcd_comm]
+    rw [← Nat.coprime_iff_gcd_eq_one]
+    exact h
+  zmod_unit_of_coprime (x : ZMod n) h1
+
 theorem coe_zmod_unit_of_coprime {n : ℕ} (x : ZMod n) (h : Nat.Coprime x.val n) : (zmod_unit_of_coprime x h : ZMod n) = x := by
   rfl; done
 
@@ -2248,19 +2285,73 @@ theorem coe_zmod_unit_of_coprime {n : ℕ} (x : ZMod n) (h : Nat.Coprime x.val n
 -- Probably wont need : theorem zmod_mul_inv_unit {n : ℕ} (x : ZMod n) (h : IsUnit x) : x * x⁻¹ = 1 := by
 -- theorem zmod_inv_mul_unit {n : ℕ} (x : ZMod n) (h : IsUnit x) : x⁻¹ * x = 1 := by
 
+-- Since proving it ourselves would be more of a fuss than is worth (messing with the definition of val and its sources in Fin.val), we decided to
+-- use ZMod.val_lt straight from mathlib in the isomorphism below.
 
-def my_zmod_unitsEquivCoprime {n : ℕ} [NeZero n] : (Units (ZMod n)) ≃ ((Finset.range n).filter n.Coprime) where
-  toFun x := ⟨(ZMod.val (x : ZMod n)), zmod_unit_val_coprime⟩
-  invFun x := zmod_unit_of_coprime x.1 x.2.val
-  left_inv := fun ⟨_, _, _, _⟩ => Units.ext (nat_cast_zmod_val _)
-  right_inv := fun ⟨_, _⟩ =>
-  sorry
+--02/02/2024 - Jakub & Katie
 
--- Getting the following lemmas to synthesize was a pain in of itself; type errors everywhere, in spite of my level of understanding. The main issue was
+--Katie and I worked together to complete the following theorem. Katie was responsible for `toFun` and most of `invFun`,
+--where I offered little more than reversing the order of `a` and `n` in the have statement after she was stuck on it.
+--The proof for `left_inv` is simple and near-identical to mathlib's version of the same thing but `right_inv` is where
+--we came into our own. The sequential `have` statments we me trying to get closer to applying `this` directly into the
+--function using the `conv` tactic, each step making the next possible. The `simpa only` in the final `have` statement
+--was suggested by `aesop`, after I had been struggling to apply my lemmas in the correct places, but all are used and
+--required for this proof. This proof marks the end of what was essential for completing the number theory side of our
+--initial goal of proving `Fermat's little theorem`, the rest of which was completed long ago using a sorry'd out form
+--of this isomorphism laid out by Katie.
+
+def my_zmod_unitsEquivCoprime {n : ℕ} [NeZero n] : (Units (ZMod n)) ≃ {x // x ∈ (Finset.range n).filter n.Coprime} where
+  toFun x := ⟨(ZMod.val (x : ZMod n)), by
+    refine Finset.mem_filter.mpr ?_
+    constructor
+    · rw[Finset.mem_range]
+      exact ZMod.val_lt (x : ZMod n)
+    · rw [Nat.coprime_comm]
+      apply zmod_unit_val_coprime
+      apply Units.isUnit⟩
+  invFun x :=
+    let ⟨a,b⟩ := x
+    have : a.Coprime n := by
+      simp_all only[Finset.mem_filter]
+      let ⟨_,d⟩ := b
+      rw [Nat.coprime_comm]
+      exact d
+    nat_to_zmod_unit_of_coprime a this
+  left_inv := fun ⟨_, _, _, _⟩ => by
+    apply Units.ext (ZMod.nat_cast_zmod_val _)
+    done
+  right_inv := fun ⟨a, b⟩ => by
+    simp_all only [Finset.mem_filter]
+    have h : a.Coprime n := by
+      simp_all only[Finset.mem_filter]
+      let ⟨_,d⟩ := b
+      rw [Nat.coprime_comm]
+      exact d
+    have h1 : a < n := by
+      simp_all only[Finset.mem_filter]
+      let ⟨c,_⟩ := b
+      rw [Finset.mem_range] at c
+      exact c
+    have h2 : (a : ZMod n).val = a := by
+      exact ZMod.val_cast_of_lt h1
+    have h3 : nat_to_zmod_unit_of_coprime a h = zmod_unit_of_coprime a _ := by
+      unfold nat_to_zmod_unit_of_coprime
+      rfl
+    have : ZMod.val (nat_to_zmod_unit_of_coprime a h : ZMod n) = a := by
+      rw [h3]
+      unfold zmod_unit_of_coprime
+      simpa only
+    conv =>
+      lhs
+      congr
+      rw [this]
+    done
+
+-- Getting the following lemmas to synthesize was a pain in oaf itself; type errors everywhere, in spite of my level of understanding. The main issue was
 -- zmod_units_equiv_card, which did not allow me to apply/rw Fintype.card_congr no matter what I tried, or what extra lemmas I created. Eventually, I found that
 -- using refine somehow made it successful. Now the main issue is finishing constructing the isomorphism above.
 
-lemma totient_subtype {n x : ℕ} : Finset.card ((Finset.range n).filter n.Coprime) = Fintype.card { x // x ∈ (Finset.range n).filter n.Coprime} := by
+lemma totient_subtype {n : ℕ} : Finset.card ((Finset.range n).filter n.Coprime) = Fintype.card { x // x ∈ (Finset.range n).filter n.Coprime} := by
   rw[Fintype.subtype_card]
   exact fun x ↦ Iff.rfl
   done
@@ -2274,7 +2365,6 @@ theorem totient_eq_zmod_units_card (n : ℕ) [NeZero n] [inst : Fintype (Units (
   unfold my_totient
   rw[totient_subtype]
   rw[zmod_units_equiv_card]
-  exact n
   done
 
 --25/01/24 - Jakub
