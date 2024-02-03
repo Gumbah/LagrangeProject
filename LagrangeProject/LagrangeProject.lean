@@ -2319,7 +2319,7 @@ theorem zmod_unit_val_coprime {n : ℕ} (y : ZMod n) (h : IsUnit y) : Nat.Coprim
     exact h
 -- Katie
   · rw[zmod_mul_inv_eq_one_iff_coprime_n]
-    apply zmod_inv_mul_eq_one_imp_unit y h
+    · exact zmod_inv_mul_eq_one_imp_unit y h
     rw[Nat.succ_eq_add_one]
     linarith
   done
