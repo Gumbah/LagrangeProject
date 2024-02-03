@@ -2343,7 +2343,7 @@ def my_zmod_unitsEquivCoprime {n : ℕ} [NeZero n] : (Units (ZMod n)) ≃ {x // 
       rw [this]
     done
 
--- Getting the following lemmas to synthesize was a pain in oaf itself; type errors everywhere, in spite of my level of understanding. The main issue was
+-- Getting the following lemmas to synthesise was a pain in of itself; type errors everywhere, in spite of my level of understanding. The main issue was
 -- zmod_units_equiv_card, which did not allow me to apply/rw Fintype.card_congr no matter what I tried, or what extra lemmas I created. Eventually, I found that
 -- using refine somehow made it successful. Now the main issue is finishing constructing the isomorphism above.
 
