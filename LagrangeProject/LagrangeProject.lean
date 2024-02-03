@@ -848,7 +848,12 @@ section cosetsMul
 
   -- ROSE MOVED STUFF
 
-  lemma LeftCosetCardEqSubgroupCard [Fintype G] [Fintype H] (g : G) :
+  --variable [H.Normal] [Fintype G] [Fintype H]
+
+  --#check QuotientGroup G H
+  --#check Fintype.card (QuotientGroup G H)
+
+  lemma LeftCosetCardEqSubgroupCard [Fintype G] [Fintype H] (g : G) [DecidablePred fun a => a ∈ H] :
   Fintype.card H = Fintype.card (g LCoset* H) := by
     sorry
     done
@@ -902,17 +907,22 @@ section cosetsMul
 
   #check IndexedPartition.mk
 
-  instance : IndexedPartition SetOfLeftCosetsMul where
+  instance : IndexedPartition c where
 
 
 
   lemma LeftCosetsPartitionGroup  : (⨆ g ∈ ↑H, g LCoset* H) = G := by
-    simp only [mul_right_inj, mul_left_inj, iSup_eq_iUnion]
+    sorry
     done
 
   theorem LagrangeMul [Fintype G] [Fintype H] :
   Fintype.card H ∣ Fintype.card G := by
     rw [@dvd_iff_exists_eq_mul_left]
+
+    rw [← @Subgroup.index_bot_eq_card]
+
+    --rw [← @iSup_Prop_eq]
+    --rw [← @iSup_range']
 
     done
 
@@ -921,8 +931,25 @@ section cosetsMul
 
   theorem PowOfCardEqOne [Fintype G] (g : G) :
   g ^ (Fintype.card G) = 1 := by
-
+    let o : ℕ := orderOf g
+    let K : Subgroup G := Subgroup.zpowers g
+    have h1 : Fintype.card K = o := by
+      exact orderOf_eq_card_zpowers.symm
+    have h2 : g ^ (Fintype.card K) = 1 := by
+      rw[h1]
+      exact pow_orderOf_eq_one g
+    have h3 : ∃(c : ℕ), Fintype.card G = c*(Fintype.card K) :=by
+      rw[← dvd_iff_exists_eq_mul_left]
+      exact LagrangeMul K
+    cases h3 with
+    | intro w h4 =>
+      rw[h4]
+      rw[mul_comm]
+      rw[pow_mul]
+      rw[h2]
+      exact one_pow w
     done
+
 
 end CosetsMul
 
