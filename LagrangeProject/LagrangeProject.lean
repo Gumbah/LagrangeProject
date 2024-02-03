@@ -2306,36 +2306,28 @@ lemma nat_gcd_zero_eq_one {n : ℕ} (y : ZMod n) (h : n = 0) : (y = 1 ∨ y = -1
 --I will be looking more into the `ZMod.Basic.lean` file in order to better understand this strange property. Hopefully
 --a better understanding of mathlib will be beneficial in proving our main goal of ZMod
 
-theorem zmod_unit_val_coprime' {n : ℕ} (x : (ZMod n)ˣ) : Nat.Coprime (x : ZMod n).val n := by
-  cases' n with n
-  · unfold Nat.Coprime
-    rw[← nat_gcd_zero_eq_one]
-    · rfl
-    rw [← Int.isUnit_iff]
-    apply Units.isUnit
-  --the successive case is currently taken from mathlib, while we try to understand it in order to prove it for ourselves.
-  --WE have not used this theorem further on.
-  apply Nat.coprime_of_mul_modEq_one ((x⁻¹ : Units (ZMod (n + 1))) : ZMod (n + 1)).val
-  have := Units.ext_iff.1 (mul_right_inv x)
-  rw [Units.val_one] at this
-  rw [← ZMod.eq_iff_modEq_nat, Nat.cast_one, ← this]; clear this
-  rw [← ZMod.nat_cast_zmod_val ((x * x⁻¹ : Units (ZMod (n + 1))) : ZMod (n + 1))]
-  rw [Units.val_mul, ZMod.val_mul, ZMod.nat_cast_mod]
-  done
+--adapting a mathlib theorem to work with our own Mod
+lemma coprime_of_mul_Mod_eq_one (b : ℕ) {a n : ℕ} (h : a * b ≡ 1 [mod n]) : a.Coprime n := by
+  conv at h =>
+    rw [Mod_eq]
+    rw [← Nat.ModEq]
+  apply Nat.coprime_of_mul_modEq_one b
+  exact h
 
-theorem zmod_unit_val_coprime {n : ℕ} (y : ZMod n) (h : IsUnit y) : Nat.Coprime (y : ZMod n).val n := by
+theorem zmod_unit_val_coprime {n : ℕ} (y : Units (ZMod n)) : Nat.Coprime (y : ZMod n).val n := by
 --Jakub
   cases' n with n
   · unfold Nat.Coprime
     rw[← nat_gcd_zero_eq_one]
     · rfl
     rw [← Int.isUnit_iff]
-    exact h
--- Katie
-  · rw[zmod_mul_inv_eq_one_iff_coprime_n]
-    · exact zmod_inv_mul_eq_one_imp_unit y h
-    rw[Nat.succ_eq_add_one]
-    linarith
+    apply Units.isUnit
+--Katie & Jakub - old proof had an error in that we didn't find until 03/02/24 - new one needed the above lemma to work.
+  · apply coprime_of_mul_Mod_eq_one ((y⁻¹ : Units (ZMod n.succ)) : ZMod n.succ).val
+    have : y * y⁻¹ = 1 := by apply zmod_inv_mul_eq_one_imp_unit
+    rw [Units.ext_iff, Units.val_one] at this
+    rw [← zmod_eq_iff_Mod_eq_nat]
+    norm_cast
   done
 
 --Katie
@@ -2383,8 +2375,7 @@ def my_zmod_unitsEquivCoprime {n : ℕ} [NeZero n] : (Units (ZMod n)) ≃ {x // 
     · rw[Finset.mem_range]
       exact ZMod.val_lt (x : ZMod n)
     · rw [Nat.coprime_comm]
-      apply zmod_unit_val_coprime
-      apply Units.isUnit⟩
+      apply zmod_unit_val_coprime⟩
 --Katie & Jakub
   invFun x :=
     let ⟨a,b⟩ := x
