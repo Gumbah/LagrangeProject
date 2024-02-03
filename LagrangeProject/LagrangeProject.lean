@@ -461,6 +461,13 @@ section cosetsMul
 
   variable [Group G] (H : Subgroup G)
 
+  --(Rose) To prove Lagrange's Thoerem, Cosets must be used, and so the bulk of my work will be done here
+  --I first defined the left and right cosets with the group G and subgroup H in the defintion
+  --but later moved them out to the general namespace, as i wanted to use the variables for the proofs of lemmas
+  --and theorems with out initalising them everytime. This definition is near identical to the definition in MathLib
+  --as it is so fundimental I was unsure on how to it in my own way. The main difference
+  --to Mathlib is using a Set G and subset H instead of group and subgroup, this was mainly as it will be
+  --easier to unsure what is being referenced in the project are groups and not just sets
 
   def LeftCosetMul (g : G) (H : Set G) : Set G :=
     Set.image (fun h => g * h) H
@@ -468,15 +475,32 @@ section cosetsMul
   def RightCosetMul (H : Set G) (g : G) : Set G :=
     Set.image (fun h => h * g) H
 
+  --(Rose) Here I define notation for cosets, as it was proving very annoying to use the coset definitons
+  --in practice as "LeftCosetMul g H" was not a very readable goal or hypothesis especially when getting even
+  --slightly more complicated, so I looked around the lean documentation and found the user defined notation
+  --after some tinkering to get it to work, i eventally decided upon the given notation. This was because it was
+  --both readable, and although long, gave a distict differentablity to just using "*" so it was very clear
+  --that it was a Coset by my definition and not any other operation or object.
+
   notation:70 i:70 "LCoset*" H:70 => LeftCosetMul i H
   notation:70 H:70 "RCoset*" i:70 => RightCosetMul H i
 
+  --(Rose) I originally was also going to define a equivilence relation between two cosets just by the elment it
+  -- is being multiplied by, however this proved to be quite difficult notationally and also kind of useless as just
+  --using = between 2 cosets worked completly fine and so I abandoned it.
 
+  /-
   def LeftCosetEqMul (g h : G):=
     g LCoset* H = h LCoset* H
 
   def RightCosetEqMul (g h : G):=
     H RCoset* g = H RCoset* h
+
+  set_option quotPrecheck false
+  notation:50 i:50 "LC=" j:50 => LeftCosetEqMul (i LCoset* H) (j LCoset* H)
+  notation:50 i:50 "RC=" j:50 => RightCosetEqMul (H RCoset* i) (H LCoset* j)
+  set_option quotPrecheck true
+  -/
 
   def NormEquiv[Group G] (H: Set G) (a b : G):= a * b⁻¹ ∈ H
 
@@ -493,16 +517,12 @@ section cosetsMul
     G⧸H
   -/
 
-  /-!
-  set_option quotPrecheck false
-  notation:50 i:50 "LC=" j:50 => LeftCosetEqMul (i LCoset* H) (j LCoset* H)
-  notation:50 i:50 "RC=" j:50 => RightCosetEqMul (H RCoset* i) (H LCoset* j)
-  set_option quotPrecheck true
-  -/
-
-
   open groupsMul
   open Set Function
+
+  --(Rose) This lemma I initially did not write as I just forgot about it, however while proving later
+  --lemmas, I found it was an obvious fact I had left out and was very useful at the end of proofs, and so came
+  --back to write it here
 
   lemma ElemInOwnLeftCosetMul (i : G) : i ∈ i LCoset* H := by
     simp only [LeftCosetMul, image_mul_left, mem_preimage]
@@ -515,6 +535,10 @@ section cosetsMul
     rw[MulInv]
     exact Subgroup.one_mem H
     done
+
+  --(Rose) This is the first lemma I proved about cosets. I initally was using refines which ended
+  --up splitting into cases of elements being in sets from iff statments. This was a very poor method and I eventually realised
+  --I could just simply use the basic definitions and came to the much shorter proof I have here.
 
   lemma AssocLeftCosetMul (a b : G) :
   a LCoset* (b LCoset* H) = (a*b) LCoset* H := by
@@ -535,6 +559,10 @@ section cosetsMul
     exact fun a_1 a_2 ↦ mul_assoc a_1 a b
     done
 
+  --(Rose) This again was another lemma similar to ElemInOwnCoset where I realised
+  --I forgot it but ends up being very useful. The proof is trivial but having the statement
+  --as a lemma makes it much easier to use in longer proofs
+
   lemma LeftCosetElemImpEqMul (a b : G) (h : a = b):
   a LCoset* H = b LCoset* H := by
     rw [h]
@@ -545,6 +573,7 @@ section cosetsMul
     rw[h]
     done
 
+  --(Rose) Next was a very simply lemma to just build up tools for proving harder lemmas.
   lemma LeftCosetClosureMul (g i : G) :
   g ∈ i LCoset* H ↔ i⁻¹ * g ∈ H := by
     constructor
@@ -604,6 +633,9 @@ section cosetsMul
       exact h2
     done
 
+  --(Rose) This lemma was created after some futile attempts to prove LeftCosetEqNotDisjointMul, and I realised
+  --it was a much needed step to prove this first. The ← direction was extremly trivial as it was just using a
+  --previous lemma, however the → direction
   lemma LeftCosetEqIffContained (i j : G) :
   j ∈ i LCoset* H ↔ i LCoset* H = j LCoset* H := by
     constructor
@@ -744,8 +776,7 @@ section cosetsMul
     exact h2
   done
 
-
-  -- if h ∈ iH and jH then iH = jH
+  --(Rose)
   lemma LeftCosetEqNotDisjointMul (g i j : G) :
   g ∈ (i LCoset* H) ∧ g ∈ (j LCoset* H) → i LCoset* H = j LCoset* H := by
     intro h
@@ -778,6 +809,7 @@ section cosetsMul
     exact h2
     done
 
+  --(Rose)
   lemma LeftCosetDisjointMul (g i j : G)
   (h : g ∈ (i LCoset* H) ∧ ¬(g ∈ (j LCoset* H))) :
   (i LCoset* H) ∩ (j LCoset* H) = {} := by
@@ -867,13 +899,24 @@ section cosetsMul
 
     done
 
-  -/
+  --(Rose)(Oh god)
 
-  -- ROSE MOVED STUFF
+  --variable [H.Normal] [Fintype G] [Fintype H]
 
-  lemma LeftCosetCardEqSubgroupCard [Fintype G] [Fintype H] (g : G) :
+  --#check QuotientGroup G H
+  --#check Fintype.card (QuotientGroup G H)
+
+
+  --(Rose)
+  lemma LeftCosetCardEqSubgroupCard [Fintype G] [Fintype H] (g : G) [DecidablePred fun a => a ∈ g LCoset* H]
+  [DecidablePred fun b => b ∈ H]:
   Fintype.card H = Fintype.card (g LCoset* H) := by
-    sorry
+    refine (card_image_of_inj_on ?H).symm
+    intro x
+    intro h1
+    intro y
+    intro h2
+    exact LeftCancelMul g x y
     done
 
 
@@ -925,27 +968,51 @@ section cosetsMul
 
   #check IndexedPartition.mk
 
-  instance : IndexedPartition SetOfLeftCosetsMul where
+  instance : IndexedPartition c where
 
 
 
   lemma LeftCosetsPartitionGroup  : (⨆ g ∈ ↑H, g LCoset* H) = G := by
-    simp only [mul_right_inj, mul_left_inj, iSup_eq_iUnion]
+    sorry
     done
 
   theorem LagrangeMul [Fintype G] [Fintype H] :
   Fintype.card H ∣ Fintype.card G := by
-    rw [@dvd_iff_exists_eq_mul_left]
+    rw [dvd_iff_exists_eq_mul_left]
+
+
+    --rw [← @iSup_Prop_eq]
+    --rw [← @iSup_range']
 
     done
 
   def indexMul [Fintype G] [Fintype H] : ℕ :=
     Fintype.card G / Fintype.card H
 
+
+  --(Rose) This is the most important corollory of Lagrange to prove as it is the one used by the number theory
+  --side of the project.
   theorem PowOfCardEqOne [Fintype G] (g : G) :
   g ^ (Fintype.card G) = 1 := by
-
+    let o : ℕ := orderOf g
+    let K : Subgroup G := Subgroup.zpowers g
+    have h1 : Fintype.card K = o := by
+      exact orderOf_eq_card_zpowers.symm
+    have h2 : g ^ (Fintype.card K) = 1 := by
+      rw[h1]
+      exact pow_orderOf_eq_one g
+    have h3 : ∃(c : ℕ), Fintype.card G = c*(Fintype.card K) :=by
+      rw[← dvd_iff_exists_eq_mul_left]
+      exact LagrangeMul K
+    cases h3 with
+    | intro w h4 =>
+      rw[h4]
+      rw[mul_comm]
+      rw[pow_mul]
+      rw[h2]
+      exact one_pow w
     done
+
 
 end CosetsMul
 
