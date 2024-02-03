@@ -1028,6 +1028,7 @@ def div_alg (x y : ℕ) : (ℕ × ℕ) :=
 --to extend the Euclidean algorithm to give us our coeffs
 --for Bézout's lemma
 
+--Jakub
 def div_lists (x y : ℕ) : (List ℤ × List ℤ) := Id.run do
   let mut (Q : List ℤ) := [1, 1]
   let mut (R : List ℤ) := [(x : ℤ), (y : ℤ)]
@@ -1055,6 +1056,7 @@ def div_lists (x y : ℕ) : (List ℤ × List ℤ) := Id.run do
 --until we reach r_0 and r_1 (which are x, y) giving us an
 --equation of the form r_n = ax+by for some a,b ∈ ℤ.
 
+--Jakub
 def bezout_coeffs_old (x y : ℕ) : (ℤ × ℤ) := Id.run do
   let (D : List ℤ) := ((div_lists x y).1).reverse
   let mut (a : ℤ) := (1 : ℤ)
@@ -1091,6 +1093,7 @@ def bezout_coeffs_old (x y : ℕ) : (ℤ × ℤ) := Id.run do
 --I am most familiar with. With this new definition I hope I will be able
 --to finally prove Bézout's lemma using induction.
 
+--Jakub
 def gcd_bezout : ℕ → ℕ → (ℕ × ℤ × ℤ)
 | 0, y => (y, 0, 1)
 | (x + 1), y =>
@@ -1123,35 +1126,42 @@ def gcd_bezout : ℕ → ℕ → (ℕ × ℤ × ℤ)
 --is difficult to understand what each part is actually doing, I don't think that this gives much
 --insight into my own proving of this theorem.
 
+--Jakub
 def bez_a (x y : ℕ): ℤ := (gcd_bezout x y).2.1
 def bez_b (x y : ℕ): ℤ := (gcd_bezout x y).2.2
 def my_gcd (x y : ℕ) : ℕ := (gcd_bezout x y).1
 
+--Jakub
 @[simp] lemma gcd_bez_expand (x y : ℕ) : gcd_bezout x y = (my_gcd x y, bez_a x y, bez_b x y) := by
   unfold my_gcd bez_a bez_b
   rfl
   done
 
+--Jakub
 @[simp] lemma gcd_bez_zero_left {y : ℕ} : gcd_bezout Nat.zero y = (y, 0, 1) := by
   unfold gcd_bezout
   rfl
   done
 
+--Jakub
 @[simp] lemma bez_a_zero_left {y : ℕ} : bez_a Nat.zero y = 0 := by
   unfold bez_a
   simp? says simp only [Nat.zero_eq, gcd_bez_zero_left]
   done
 
+--Jakub
 @[simp] lemma bez_b_zero_left {y : ℕ} : bez_b Nat.zero y = 1 := by
   unfold bez_b
   simp? says simp only [Nat.zero_eq, gcd_bez_zero_left]
   done
 
+--Jakub
 @[simp] lemma my_gcd_zero_left {y : ℕ} : my_gcd Nat.zero y = y := by
   unfold my_gcd
   simp? says simp only [Nat.zero_eq, gcd_bez_zero_left]
   done
 
+--Jakub
 @[simp] lemma bez_a_zero_right {x : ℕ} (h : x ≠ 0) : bez_a x Nat.zero = 1 := by
   unfold bez_a gcd_bezout
   induction x with
@@ -1160,6 +1170,7 @@ def my_gcd (x y : ℕ) : ℕ := (gcd_bezout x y).1
     EuclideanDomain.zero_div, mul_zero, sub_zero]
   done
 
+--Jakub
 @[simp] lemma bez_b_zero_right {x : ℕ} (h : x ≠ 0) : bez_b x Nat.zero = 0 := by
   unfold bez_b gcd_bezout
   induction x with
@@ -1179,6 +1190,7 @@ def my_gcd (x y : ℕ) : ℕ := (gcd_bezout x y).1
 --`(y&(Nat.succ x)), Nat.succ x` instead of `x, y`. I also see that I may have to show that `x < y` without
 --loss of generality using the symmetry of the `my_gcd` and `Nat.gcd` functions.
 
+--Jakub
 @[simp] lemma my_gcd_self {x : ℕ} : my_gcd x x = x := by
   induction x with
   | zero => apply my_gcd_zero_left
@@ -1187,11 +1199,13 @@ def my_gcd (x y : ℕ) : ℕ := (gcd_bezout x y).1
     simp only [Nat.mod_self, gcd_bez_expand, my_gcd_zero_left, bez_a_zero_left, bez_b_zero_left]
   done
 
+--Jakub
 @[simp] lemma my_gcd_succ (x y : ℕ) : my_gcd (Nat.succ x) y = my_gcd (y%(Nat.succ x)) (Nat.succ x) := by
   unfold my_gcd
   rfl
   done
 
+--Jakub
 @[simp] lemma my_gcd_zero_right {x : ℕ} : my_gcd x Nat.zero = x := by
   unfold my_gcd gcd_bezout
   induction x with
@@ -1199,6 +1213,7 @@ def my_gcd (x y : ℕ) : ℕ := (gcd_bezout x y).1
   | succ x => simp? says simp only [Nat.zero_eq, Nat.zero_mod, gcd_bez_zero_left]
   done
 
+--Jakub
 @[simp] lemma gcd_bez_zero_right {x : ℕ} (h : x ≠ 0) : gcd_bezout x Nat.zero = (x, 1, 0) := by
   rw[gcd_bez_expand x Nat.zero]
   induction x with
@@ -1216,6 +1231,7 @@ def my_gcd (x y : ℕ) : ℕ := (gcd_bezout x y).1
 --in this proof, so I hope that it will now be feasible for me. I think it will also be useful to prove
 --some smaller lemmas like `my_gcd_succ` and `my_gcd_rec` for the `bez_a` and `bez_b` functions.
 
+--Jakub
 @[simp] theorem my_gcd_rec (x y : Nat) : my_gcd x y = my_gcd (y % x) x :=
   match x with
   | 0 => by
@@ -1223,12 +1239,14 @@ def my_gcd (x y : ℕ) : ℕ := (gcd_bezout x y).1
     simp only [my_gcd_zero_left, Nat.mod_zero, my_gcd_zero_right]
   | x + 1 => by exact (my_gcd_succ x y).symm
 
+--Jakub
 @[simp] theorem dvd_my_gcd : k ∣ x → k ∣ y → k ∣ my_gcd x y := by
   induction x, y using Nat.gcd.induction with intro kx ky
   | H0 y => rw [my_gcd_zero_left]; exact ky
   | H1 y x _ IH => rw [my_gcd_rec]; exact IH ((Nat.dvd_mod_iff kx).2 ky) kx
   done
 
+--Jakub
 theorem my_gcd_eq_gcd (x y : ℕ) : Nat.gcd x y = my_gcd x y := by
   induction x, y using Nat.gcd.induction with
   | H0 y =>
@@ -1238,22 +1256,26 @@ theorem my_gcd_eq_gcd (x y : ℕ) : Nat.gcd x y = my_gcd x y := by
     exact ih
   done
 
+--Jakub
 @[simp] lemma bez_a_succ (x y : ℕ) : bez_a (Nat.succ x) y = bez_b (y%(Nat.succ x)) (Nat.succ x) - y/(Nat.succ x) * bez_a (y%(Nat.succ x)) (Nat.succ x) := by
   unfold bez_a bez_b
   rfl
   done
 
+--Jakub
 @[simp] lemma bez_b_succ (x y : ℕ) : bez_b (Nat.succ x) y = bez_a (y%(Nat.succ x)) (Nat.succ x) := by
   unfold bez_a bez_b
   rfl
   done
 
+--Jakub
 @[simp] lemma bez_a_rec (x y : ℕ) (h : 0 < x) : bez_a x y = bez_b (y%x) x - y/x * bez_a (y%x) x := by
   match x with
   | 0 => contradiction
   | x + 1 => exact bez_a_succ x y
   done
 
+--Jakub
 @[simp] lemma bez_b_rec (x y : ℕ) (h : 0 < x): bez_b x y = bez_a (y%x) x := by
   match x with
   | 0 => contradiction
@@ -1266,12 +1288,14 @@ theorem my_gcd_eq_gcd (x y : ℕ) : Nat.gcd x y = my_gcd x y := by
 --from mathlib, I have proved the rest of `bez_rec` now excluding this, which was previously entirely
 --`sorry`-d out and is necessary for my proof of Bézout's lemma
 #check Int.ediv_add_emod
+
+--Jakub
 @[simp] lemma my_ediv_add_emod (x y : ℤ) : y-x*(y/x) = (y%x) := by
   nth_rewrite 1 [← Int.ediv_add_emod y x]
   simp only [add_sub_cancel']
   done
 
---Remains to prove this !!! I will continue work on this part later.
+--Jakub
 @[simp] lemma bez_rec (x y : ℕ) (h : 0 < x) : bez_a (y%x) x * (y%x) + bez_b (y%x) x * x = bez_a x y * x + bez_b x y * y := by
   rw [bez_a_rec x y, bez_b_rec x y]
   rw [mul_sub_right_distrib]
@@ -1288,6 +1312,7 @@ theorem my_gcd_eq_gcd (x y : ℕ) : Nat.gcd x y = my_gcd x y := by
   exact h
   done
 
+--Jakub
 --Statement of Bézout's lemma using `my_gcd`
 theorem bez_a_left_mul_bez_b_right_eq_my_gcd (x y : ℕ) : (bez_a x y)*x+(bez_b x y)*y=(my_gcd x y) := by
   induction x, y using Nat.gcd.induction with
@@ -1300,6 +1325,7 @@ theorem bez_a_left_mul_bez_b_right_eq_my_gcd (x y : ℕ) : (bez_a x y)*x+(bez_b 
     exact h
     done
 
+--Jakub
 --Statement of Bézout's lemma using `Nat.gcd`
 theorem bezout (x y : ℕ) : (bez_a x y)*x+(bez_b x y)*y=(Nat.gcd x y) := by
   rw [my_gcd_eq_gcd]
@@ -1324,36 +1350,43 @@ theorem bezout (x y : ℕ) : (bez_a x y)*x+(bez_b x y)*y=(Nat.gcd x y) := by
 --The following two lines of LEAN code are almost identical to mathlib, but I will prove the basic lemmas myself.
 --Note the use of different syntax to mathlib to avoid accidentally using their proofs.
 
+--Jakub
 def Mod_eq (n a b : ℕ) := a%n = b%n
 notation:50 a "≡" b " [mod " n "]" => Mod_eq n a b
 
 --It turned out that most of the lemmas follow trivially from the properties of `=`, though I had to do a fair
 --amount of adjusting the statements slightly to get them in the same form to simply exact these properties.
 
+--Jakub
 @[simp] lemma Mod_eq_rfl {n a: ℕ} : a ≡ a [mod n] := by
   rfl
   done
 
+--Jakub
 @[simp] lemma Mod_eq_symm {n a b: ℕ} : a ≡ b [mod n] → b ≡ a [mod n] := by
   exact Eq.symm
   done
 
+--Jakub
 @[simp] lemma Mod_eq_trans {n a b c : ℕ} : a ≡ b [mod n] → b ≡ c [mod n] → a ≡ c [mod n] := by
   exact Eq.trans
   done
 
+--Jakub
 @[simp] lemma Mod_eq_self {n : ℕ} : n ≡ 0 [mod n] := by
   rw [Mod_eq]
   rw [Nat.zero_mod]
   rw [Nat.mod_self]
   done
 
+--Jakub
 @[simp] lemma Mod_eq_zero_iff_dvd {n a : ℕ} : a ≡ 0 [mod n] ↔ n ∣ a := by
   rw [Mod_eq]
   rw [Nat.zero_mod]
   rw [Nat.dvd_iff_mod_eq_zero]
   done
 
+--Jakub
 @[simp] lemma Mod_eq_add_mul (n a b: ℕ) : a + b*n ≡ a [mod n] := by
   rw [Mod_eq]
   rw [Nat.add_mod]
@@ -1408,6 +1441,7 @@ lemma int_to_nat_mod_nat (x : ℤ) (y : ℕ) (h : 0 ≤ x): (Int.toNat x) % y = 
 --number, I was required to use the `Int.toNat` function to cast them back into the naturals, which made what should
 --have been simple statements become more than trivial to prove, which is why I had to write the two lemmas above.
 
+--Jakub
 @[simp] lemma my_mod_mod_of_lcm (x m n : ℕ) : (x % (Nat.lcm m n)) % m = x % m := by
   have h : m ∣ (Nat.lcm m n) := by
     apply Nat.dvd_lcm_left
@@ -1415,6 +1449,7 @@ lemma int_to_nat_mod_nat (x : ℤ) (y : ℕ) (h : 0 ≤ x): (Int.toNat x) % y = 
   exact h
   done
 
+--Jakub
 --very useful simple statement.
 @[simp] theorem bez_of_coprime (m n : ℕ) (h : Nat.Coprime m n) : bez_a m n * m + bez_b m n * n = 1 := by
   rw [bezout]
@@ -1423,6 +1458,7 @@ lemma int_to_nat_mod_nat (x : ℤ) (y : ℕ) (h : 0 ≤ x): (Int.toNat x) % y = 
   exact h
   done
 
+--Jakub
 --slightly simpler statements of `bez_a_mod` and `bez_b_mod`, useful for the full proofs.
 lemma bez_a_mod_aux (m n : ℕ) (h : Nat.Coprime m n): ((bez_a m n % n) * m) % n = 1 % n := by
   rw [← bez_of_coprime m n]
@@ -1433,6 +1469,7 @@ lemma bez_a_mod_aux (m n : ℕ) (h : Nat.Coprime m n): ((bez_a m n % n) * m) % n
   exact h
   done
 
+--Jakub
 lemma bez_b_mod_aux (m n : ℕ) (h : Nat.Coprime m n): ((bez_b m n % m) * n) % m = 1 % m := by
   rw [← bez_of_coprime m n]
   · rw [Int.mul_emod]
@@ -1443,6 +1480,7 @@ lemma bez_b_mod_aux (m n : ℕ) (h : Nat.Coprime m n): ((bez_b m n % m) * n) % m
   exact h
   done
 
+--Jakub
 theorem bez_a_mod (m n : ℕ) (h : Nat.Coprime m n) (hn : ¬n=0) : (Int.toNat (bez_a m n % n)) * m ≡ 1 [mod n] := by
   rw [Mod_eq]
   have h1 : 0 ≤ bez_a m n % n := by
@@ -1467,6 +1505,7 @@ theorem bez_a_mod (m n : ℕ) (h : Nat.Coprime m n) (hn : ¬n=0) : (Int.toNat (b
   exact h1
   done
 
+--Jakub
 theorem bez_b_mod (m n : ℕ) (h : Nat.Coprime m n) (hm : ¬m=0) : (Int.toNat (bez_b m n % m)) * n ≡ 1 [mod m] := by
   rw [Mod_eq]
   have h1 : 0 ≤ bez_b m n % m := by
@@ -1491,6 +1530,7 @@ theorem bez_b_mod (m n : ℕ) (h : Nat.Coprime m n) (hm : ¬m=0) : (Int.toNat (b
   exact h1
   done
 
+--Jakub
 def classical_crt (m n a b : ℕ) (h : Nat.Coprime m n) : {x // x ≡ a [mod m] ∧ x ≡ b [mod n]} :=
   if hm : m = 0 then ⟨a, by
     constructor
@@ -1712,6 +1752,7 @@ theorem euclid_l1_coprime {p m n : ℕ}(h: Nat.Prime p)(h_n : p < n)(h_m : p < m
 --that she proved before. It also turned out that some of the assumptions she was working with were not required for
 --my proof, so they have been removed from the statement of Euclid's theorem, in order for it to apply more generally.
 
+--Jakub
 theorem euclid_left_coprime {p m n : ℕ}(h: Nat.Prime p)(h1 : p ∣ m*n)(h2 : ¬(p ∣ m)) : (p ∣ n):= by
   rw [Nat.dvd_mul] at h1
   let ⟨x, y, h'⟩ := h1
@@ -1814,6 +1855,7 @@ theorem my_tot_mul (m n : ℕ) : (my_totient (m))*(my_totient (n)) = (my_totient
 -- To prove my_totient(p)=p-1, we will need specfific results about the Finset.range intersected with coprimes of p;
 -- specifically that 0 is the only element to be removed from the filter when p is prime.
 
+--Katie & Jakub
 lemma dvd_less_than_nat (m n : ℕ) (h : m ∣ n) (h_n : n < m) : n = 0 := by
   rw[dvd_def] at h
   let ⟨a,b⟩ := h
@@ -1931,6 +1973,7 @@ theorem my_tot_prime (p : ℕ) (h : Nat.Prime p): (my_totient (p)) = (p-1) := by
 #check CosetsMul.PowOfCardEqOne
 --which is vital to the completion of Euler's Totient Theorem.
 
+--Jakub
 --This lemma is a modified version of one from ZMod.Basic to work with our definition of `mod`
 lemma zmod_eq_iff_Mod_eq_nat (n : ℕ) {a b : ℕ} : (a : ZMod n) = b ↔ a ≡ b [mod n] := by
   cases n
@@ -2026,6 +2069,7 @@ theorem my_mul_zmod_inv_eq_gcd {n : ℕ} (a : ZMod n) : a * (my_zmod_inv n a) = 
 --I have also unsorry'd `zmod_inv_eq_one` which followed as a corollary from the above theorem, and modified
 --`zmod_unit_of_coprime` so that it now causes no errors, and works with our new inverse definition.
 
+--Jakub
 theorem zmod_mul_inv_eq_one {n : ℕ} (x : ZMod n) (h : Nat.Coprime x.val n) : x * (my_zmod_inv n x) = 1 := by
   rw [Nat.coprime_iff_gcd_eq_one] at h
   rw [← Nat.cast_one]
@@ -2035,6 +2079,7 @@ theorem zmod_mul_inv_eq_one {n : ℕ} (x : ZMod n) (h : Nat.Coprime x.val n) : x
 
 lemma zmod_zero_eq_z : ZMod Nat.zero = ℤ := by rfl; done
 
+--Jakub
 lemma gcd_of_val_lt_non_zero (n : ℕ) (x : ZMod n) (h : 0 < x.val) (hn : 0 < n) : Nat.gcd x.val n < n := by
   have h1 : Nat.gcd x.val n ≤ x.val := by
     apply Nat.gcd_le_left
@@ -2051,6 +2096,7 @@ lemma gcd_of_val_lt_non_zero (n : ℕ) (x : ZMod n) (h : 0 < x.val) (hn : 0 < n)
   exact this
   done
 
+--Jakub
 lemma my_cases_2_aaa (n : ℕ) (h : 0 < n): n=1 ∨ 1<n := by
   have : n ≤ 1 ∨ 1 < n := by
     rw [← Nat.not_le]
@@ -2080,6 +2126,7 @@ lemma my_cases_2_aaa (n : ℕ) (h : 0 < n): n=1 ∨ 1<n := by
 --Overall I'm sure it's an extremely inefficient proof but a very informative one, perhaps the most instructive I
 --have completed so far
 
+--Jakub
 lemma zmod_mul_inv_eq_one_iff_coprime_n {n : ℕ} (x : ZMod n) (h : 0 < n) : (Nat.Coprime x.val n) ↔  x * (my_zmod_inv n x) = 1 := by
   constructor
   · intro h1
@@ -2146,8 +2193,7 @@ lemma zmod_mul_inv_eq_one_iff_coprime_n {n : ℕ} (x : ZMod n) (h : 0 < n) : (Na
         exact H
   done
 
---29/01/24 - Jakub
-
+-- Katie
 instance (n : ℕ) : Inv (ZMod n) :=
   ⟨my_zmod_inv n⟩
 
@@ -2170,6 +2216,7 @@ theorem coe_zmod_inv_unit {n : ℕ} (y : (ZMod n)ˣ) : my_zmod_inv n (y : ZMod n
 --`totient_eq_zmod_units_card`, which is currently reduced to `my_zmod_unitsEquivCoprime`. I believe we are close and
 --are capable of completing our initial goal on schedule, provided the group theory side also finish `Lagrange`.
 
+--Jakub
 theorem my_zmod_inv_eq_zmod_inv {n : ℕ} (y : ZMod n) : my_zmod_inv n y = (y : ZMod n)⁻¹ := by
   rfl
 /- Old proof from before we declared our own instance inverse
@@ -2187,10 +2234,12 @@ theorem my_zmod_inv_eq_zmod_inv {n : ℕ} (y : ZMod n) : my_zmod_inv n y = (y : 
 -/
   done
 
+--Katie
 lemma zmod_inv_mul_eq_one_imp_unit {n : ℕ} (y : Units (ZMod n)) : y * y⁻¹ = 1 := by
   rw[inv_coe_unit]
   rw[Units.mul_inv]
 
+--Katie
 theorem coe_zmod_mul_inv_eq_one {n : ℕ} (x : ℕ) (h : Nat.Coprime x n) : (x : ZMod n) * (my_zmod_inv n x) = 1 := by
   rw [Nat.coprime_iff_gcd_eq_one] at h
   rw [← Nat.cast_one]
@@ -2200,12 +2249,15 @@ theorem coe_zmod_mul_inv_eq_one {n : ℕ} (x : ℕ) (h : Nat.Coprime x n) : (x :
   rw [← Nat.gcd_rec, Nat.gcd_comm]
   done
 
+--Katie
 def my_unit_of_coprime {n : ℕ} (x : ℕ) (h : Nat.Coprime x n) : (ZMod n)ˣ :=
   ⟨x, my_zmod_inv n x, coe_zmod_mul_inv_eq_one x h, by rw [mul_comm, coe_zmod_mul_inv_eq_one x h]⟩
 
+--Katie
 theorem coe_my_unit_of_coprime {n : ℕ} (x : ℕ) (h : Nat.Coprime x n) : (my_unit_of_coprime x h : ZMod n) = x := by
   rfl; done
 
+--Jakub
 lemma nat_gcd_zero_eq_one {n : ℕ} (y : ZMod n) (h : n = 0) : (y = 1 ∨ y = -1) → (Nat.gcd (ZMod.val y) (Nat.zero) = 1) := by
   intro h1
   cases' h1 with h1
@@ -2218,22 +2270,6 @@ lemma nat_gcd_zero_eq_one {n : ℕ} (y : ZMod n) (h : n = 0) : (y = 1 ∨ y = -1
   done
 
 #check Units.isUnit
-
-theorem zmod_unit_val_coprime' {n : ℕ} (x : (ZMod n)ˣ) : Nat.Coprime (x : ZMod n).val n := by
-  cases' n with n
-  · unfold Nat.Coprime
-    rw[← nat_gcd_zero_eq_one]
-    · rfl
-    rw [← Int.isUnit_iff]
-    apply Units.isUnit
-  --the successive case is currently taken from mathlib, while we try to understand it in order to prove it for ourselves.
-  --WE have not used this theorem further on.
-  apply Nat.coprime_of_mul_modEq_one ((x⁻¹ : Units (ZMod (n + 1))) : ZMod (n + 1)).val
-  have := Units.ext_iff.1 (mul_right_inv x)
-  rw [Units.val_one] at this
-  rw [← ZMod.eq_iff_modEq_nat, Nat.cast_one, ← this]; clear this
-  rw [← ZMod.nat_cast_zmod_val ((x * x⁻¹ : Units (ZMod (n + 1))) : ZMod (n + 1))]
-  rw [Units.val_mul, ZMod.val_mul, ZMod.nat_cast_mod]
 
 --27/01/24 - Jakub
 
@@ -2248,6 +2284,7 @@ theorem zmod_unit_val_coprime' {n : ℕ} (x : (ZMod n)ˣ) : Nat.Coprime (x : ZMo
 --a better understanding of mathlib will be beneficial in proving our main goal of ZMod
 
 theorem zmod_unit_val_coprime {n : ℕ} (y : ZMod n) (h : IsUnit y) : Nat.Coprime (y : ZMod n).val n := by
+--Jakub
   cases' n with n
   · unfold Nat.Coprime
     rw[← nat_gcd_zero_eq_one]
@@ -2261,9 +2298,11 @@ theorem zmod_unit_val_coprime {n : ℕ} (y : ZMod n) (h : IsUnit y) : Nat.Coprim
     linarith
   done
 
+--Katie
 def zmod_unit_of_coprime {n : ℕ} (x : ZMod n) (h : Nat.Coprime x.val n) : (Units (ZMod n)) :=
   ⟨x, my_zmod_inv n x, zmod_mul_inv_eq_one x h, by rw [mul_comm, zmod_mul_inv_eq_one x h]⟩
 
+--Jakub - Just going off Katie's above definition with a simple nat casting, LEAN a pain about types and needs this `have`
 def nat_to_zmod_unit_of_coprime {n : ℕ} (x : ℕ) (h : Nat.Coprime x n) : (Units (ZMod n)) :=
   have h1 : Nat.Coprime (x : ZMod n).val n := by
     rw [ZMod.val_nat_cast]
@@ -2297,6 +2336,7 @@ theorem coe_zmod_unit_of_coprime {n : ℕ} (x : ZMod n) (h : Nat.Coprime x.val n
 --of this isomorphism laid out by Katie.
 
 def my_zmod_unitsEquivCoprime {n : ℕ} [NeZero n] : (Units (ZMod n)) ≃ {x // x ∈ (Finset.range n).filter n.Coprime} where
+--Katie
   toFun x := ⟨(ZMod.val (x : ZMod n)), by
     refine Finset.mem_filter.mpr ?_
     constructor
@@ -2305,6 +2345,7 @@ def my_zmod_unitsEquivCoprime {n : ℕ} [NeZero n] : (Units (ZMod n)) ≃ {x // 
     · rw [Nat.coprime_comm]
       apply zmod_unit_val_coprime
       apply Units.isUnit⟩
+--Katie & Jakub
   invFun x :=
     let ⟨a,b⟩ := x
     have : a.Coprime n := by
@@ -2316,6 +2357,7 @@ def my_zmod_unitsEquivCoprime {n : ℕ} [NeZero n] : (Units (ZMod n)) ≃ {x // 
   left_inv := fun ⟨_, _, _, _⟩ => by
     apply Units.ext (ZMod.nat_cast_zmod_val _)
     done
+--Jakub
   right_inv := fun ⟨a, b⟩ => by
     simp_all only [Finset.mem_filter]
     have h : a.Coprime n := by
@@ -2347,16 +2389,19 @@ def my_zmod_unitsEquivCoprime {n : ℕ} [NeZero n] : (Units (ZMod n)) ≃ {x // 
 -- zmod_units_equiv_card, which did not allow me to apply/rw Fintype.card_congr no matter what I tried, or what extra lemmas I created. Eventually, I found that
 -- using refine somehow made it successful. Now the main issue is finishing constructing the isomorphism above.
 
+--Katie
 lemma totient_subtype {n : ℕ} : Finset.card ((Finset.range n).filter n.Coprime) = Fintype.card { x // x ∈ (Finset.range n).filter n.Coprime} := by
   rw[Fintype.subtype_card]
   exact fun x ↦ Iff.rfl
   done
 
+--Katie
 theorem zmod_units_equiv_card (n : ℕ) [NeZero n] [inst : Fintype (Units (ZMod n))] [inst : Fintype ({x // x ∈ (Finset.range n).filter n.Coprime}) ] : Fintype.card (Units ((ZMod n))) = Fintype.card { x // x ∈ (Finset.range n).filter n.Coprime } := by
   refine Fintype.card_congr ?f
   exact my_zmod_unitsEquivCoprime
   done
 
+--Katie
 theorem totient_eq_zmod_units_card (n : ℕ) [NeZero n] [inst : Fintype (Units (ZMod n))]: my_totient (n) = Fintype.card (Units (ZMod n)) := by
   unfold my_totient
   rw[totient_subtype]
@@ -2369,10 +2414,12 @@ theorem totient_eq_zmod_units_card (n : ℕ) [NeZero n] [inst : Fintype (Units (
 --earlier in the document, both on the Number theory and Group theory sides. As of writing, all that remains is to
 --prove `totient_eq_zmod_units_card` and `CosetsMul.PowOfCardEqOne`
 
+--Katie
 theorem euler_totient (a m : ℕ) (ha : m.Coprime a) : a^(my_totient (m)) ≡ 1 [mod m] := by
   rw [← zmod_eq_iff_Mod_eq_nat]
   rw [Nat.coprime_comm] at ha
   let a' : Units (ZMod m) := ZMod.unitOfCoprime a ha
+--Jakub
   cases' m with m
   · rw [my_tot_zero]
     rw [pow_zero]
@@ -2395,6 +2442,7 @@ theorem euler_totient (a m : ℕ) (ha : m.Coprime a) : a^(my_totient (m)) ≡ 1 
 --separate proofs while working toward the same goal. As of writing it remains to prove `euler_totient`, for which we
 --will be needing many results regarding `ZMod`.
 
+--Jakub
 theorem little_fermat_1 (a p : ℕ) (h : Nat.Prime p) (h1 : ¬ p ∣ a) : a ^ (p-1) ≡ 1 [mod p] := by
   rw [← my_tot_prime]
   have ha : p.Coprime a := by
@@ -2406,6 +2454,7 @@ theorem little_fermat_1 (a p : ℕ) (h : Nat.Prime p) (h1 : ¬ p ∣ a) : a ^ (p
   exact h
   done
 
+--Jakub
 theorem little_fermat_2 (a p : ℕ) (h : Nat.Prime p) (h1 : p ∣ a ∨ ¬(p ∣ a)): a^p ≡ a [mod p] := by
   have : p = 1 + (p-1) := by
     rw [← Nat.add_sub_assoc]
@@ -2438,6 +2487,7 @@ theorem little_fermat_2 (a p : ℕ) (h : Nat.Prime p) (h1 : p ∣ a ∨ ¬(p ∣
     rw [Nat.mul_mod, hh, ← Nat.mul_mod, mul_one]
   done
 
+--Katie
 --def my_mod_order (a m : ℕ) (h : Nat.Coprime a m) :
 
 --theorem my_mod_order_dvd (m k : ℕ) (a : m.Coprime) : (a)^(k) ≡ 1 [mod m] ↔ (my_mod_order (m) (a)) ∣ k := by
