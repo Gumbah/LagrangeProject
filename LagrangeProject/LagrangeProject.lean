@@ -478,6 +478,14 @@ section cosetsMul
   def RightCosetEqMul (g h : G):=
     H RCoset* g = H RCoset* h
 
+  def NormEquiv[Group G] (H: Set G) (a b : G):= a * b⁻¹ ∈ H
+
+  variable (c : Set (Set G)) (c := ∀(p : G), p LCoset* H)
+
+  def QuotientGroup (G) [Group G] (H : Subgroup G) [H.Normal] :=
+    G⧸H
+
+
   /-!
   set_option quotPrecheck false
   notation:50 i:50 "LC=" j:50 => LeftCosetEqMul (i LCoset* H) (j LCoset* H)
@@ -669,6 +677,66 @@ section cosetsMul
       exact ElemInOwnRightCosetMul H j
     done
 
+  theorem MemLeftCoset (g : G): x ∈ H ↔ g * x ∈ g LCoset* H := by
+  constructor
+  · intro h1
+    have e: x LCoset* H = H := by
+        have e1: H = (1 : G) LCoset* H := by
+          rw[LeftCosetOne]
+        have e2: x ∈ H ↔ x ∈ (1 : G) LCoset* H := by
+          constructor
+          · intro h1h1
+            rw[← e1]
+            exact h1h1
+          · intro h1h2
+            rw[← e1] at h1h2
+            exact h1h2
+        rw[e2] at h1
+        rw[LeftCosetEqIffContained] at h1
+        rw[← h1]
+        nth_rewrite 2 [e1]
+        rfl
+    rw[LeftCosetEqIffContained]
+    rw[← AssocLeftCosetMul]
+    rw[e]
+  · intro h2
+    rw[LeftCosetClosureMul] at h2
+    rw[← mul_assoc] at h2
+    rw[mul_left_inv] at h2
+    rw[one_mul] at h2
+    exact h2
+  done
+
+  theorem MemRightCoset (g : G): x ∈ H ↔ x * g ∈ H RCoset* g := by
+  constructor
+  · intro h1
+    have e: H RCoset* x = H := by
+        have e1: H = H RCoset* (1 : G) := by
+          rw[RightCosetOne]
+        have e2: x ∈ H ↔ x ∈ H RCoset* (1 : G) := by
+          constructor
+          · intro h1h1
+            rw[← e1]
+            exact h1h1
+          · intro h1h2
+            rw[← e1] at h1h2
+            exact h1h2
+        rw[e2] at h1
+        rw[RightCosetEqIffContained] at h1
+        rw[← h1]
+        nth_rewrite 2 [e1]
+        rfl
+    rw[RightCosetEqIffContained]
+    rw[← AssocRightCosetMul]
+    rw[e]
+  · intro h2
+    rw[RightCosetClosureMul] at h2
+    rw[mul_assoc] at h2
+    rw[MulInv] at h2
+    rw[MulOne] at h2
+    exact h2
+  done
+
 
   -- if h ∈ iH and jH then iH = jH
   lemma LeftCosetEqNotDisjointMul (g i j : G) :
@@ -739,9 +807,50 @@ section cosetsMul
       exact h1
     done
 
+
+
+  --we've done most of the immediately relevant stuff for cosets
+  --but to define quotient groups we need to show a fact about them and normal subgroups
+
+  theorem CosetsOfNormEq (N : H.Normal) (g : G) : g LCoset* H = H RCoset* g :=
+    Set.ext fun a => by --turns = statement into iff
+    rw[LeftCosetClosureMul]
+    rw[RightCosetClosureMul]
+    rw[N.mem_comm_iff] -- statement saying that we have commutativity here due to being normal
+
+
+  theorem NormalofEqCosets (h : ∀ g : G, g LCoset* H = H RCoset* g) : H.Normal := by
+    constructor
+    · intro n h1 g
+      have e1: g * n  ∈ g LCoset* H := by
+        rw[← MemLeftCoset]
+        exact h1
+      rw[← MulOne (g * n)] at e1
+      rw[h] at e1
+      rw[← mul_left_inv g] at e1
+      rw[← mul_assoc] at e1
+      rw[← MemRightCoset] at e1
+      exact e1
+    done
+
+  theorem NormalIffEqMulCosets: H.Normal ↔ ∀ g : G, g LCoset* H = H RCoset* g := by
+    constructor
+    · intro h1
+      exact fun g ↦ CosetsOfNormEq H h1 g
+    · intro h2
+      exact NormalofEqCosets H h2
+      done
+
+  theorem QuotientGroupSetofLeftCosets (g : G) (c : Set (Set G)) [H.Normal]
+  : QuotientGroup G H = c := by
+    sorry
+    done
+
+  -- ROSE MOVED STUFF
+
   lemma LeftCosetCardEqSubgroupCard [Fintype G] [Fintype H] (g : G) :
   Fintype.card H = Fintype.card (g LCoset* H) := by
-
+    sorry
     done
 
 
@@ -773,7 +882,7 @@ section cosetsMul
 
     done
   class SetOfLeftCosetsMul ()
-  
+
   lemma LeftCosetFinTypeMul [Fintype G] [Fintype H] (g : G) :
   (g LCoset* H).Finite := by
     exact toFinite (g LCoset*↑H)
@@ -815,122 +924,9 @@ section cosetsMul
 
     done
 
-  --we've done most of the immediately relevant stuff for cosets
-  --but to define quotient groups we need to show a fact about them and normal subgroups
-
-  theorem CosetsOfNormEq (N : H.Normal) (g : G) : g LCoset* H = H RCoset* g :=
-    Set.ext fun a => by --turns = statement into iff
-    rw[LeftCosetClosureMul]
-    rw[RightCosetClosureMul]
-    rw[N.mem_comm_iff] -- statement saying that we have commutativity here due to being normal
-
-  theorem MemLeftCoset {x : G} (g : G): x ∈ H ↔ g * x ∈ g LCoset* H := by
-  constructor
-  · intro h1
-    have e: x LCoset* H = H := by
-        have e1: H = (1 : G) LCoset* H := by
-          rw[LeftCosetOne]
-        have e2: x ∈ H ↔ x ∈ (1 : G) LCoset* H := by
-          constructor
-          · intro h1h1
-            rw[← e1]
-            exact h1h1
-          · intro h1h2
-            rw[← e1] at h1h2
-            exact h1h2
-        rw[e2] at h1
-        rw[LeftCosetEqIffContained] at h1
-        rw[← h1]
-        nth_rewrite 2 [e1]
-        rfl
-    rw[LeftCosetEqIffContained]
-    rw[← AssocLeftCosetMul]
-    rw[e]
-  · intro h2
-    rw[LeftCosetClosureMul] at h2
-    rw[← mul_assoc] at h2
-    rw[mul_left_inv] at h2
-    rw[one_mul] at h2
-    exact h2
-  done
-
-  theorem MemRightCoset {x : G} (g : G): x ∈ H ↔ x * g ∈ H RCoset* g := by
-  constructor
-  · intro h1
-    have e: H RCoset* x = H := by
-        have e1: H = H RCoset* (1 : G) := by
-          rw[RightCosetOne]
-        have e2: x ∈ H ↔ x ∈ H RCoset* (1 : G) := by
-          constructor
-          · intro h1h1
-            rw[← e1]
-            exact h1h1
-          · intro h1h2
-            rw[← e1] at h1h2
-            exact h1h2
-        rw[e2] at h1
-        rw[RightCosetEqIffContained] at h1
-        rw[← h1]
-        nth_rewrite 2 [e1]
-        rfl
-    rw[RightCosetEqIffContained]
-    rw[← AssocRightCosetMul]
-    rw[e]
-  · intro h2
-    rw[RightCosetClosureMul] at h2
-    rw[mul_assoc] at h2
-    rw[MulInv] at h2
-    rw[MulOne] at h2
-    exact h2
-  done
-
-  theorem NormalofEqCosets (g : G) (n : H) (h : ∀ g : G, g LCoset* H = H RCoset* g) : H.Normal := by
-    constructor
-    · intro n h1 g
-      have e1: g * n  ∈ g LCoset* H := by
-        rw[← MemLeftCoset]
-        exact h1
-      rw[← MulOne (g * n)] at e1
-      rw[h] at e1
-      rw[← mul_left_inv g] at e1
-      rw[← mul_assoc] at e1
-      rw[← MemRightCoset] at e1
-      exact e1
-    done
-
-  theorem NormalIffEqMulCosets: H.Normal ↔ ∀ g : G, g LCoset* H = H RCoset* g := by
-    constructor
-    · intro h1
-      exact fun g ↦ CosetsOfNormEq H h1 g
-    · intro h2
-      exact NormalofEqCosets H h2
-      done
-
-  --Langrange's Theorem corollorys
-
 end CosetsMul
 
 end cosetsMul
-
-section quotientgroupmul
-
-  variable {G : Type*} [Group G] (H : Subgroup G)
-
-  def NormEquiv[Group G] (H: Set G) (a b : G):= a * b⁻¹ ∈ H
-
-  namespace QuotientGroupMul
-
-  def QuotientGroup (G) [Group G] (H : Subgroup G) [H.Normal] :=
-    G⧸H
-
-  theorem QuotientGroupSetofLeftCosets (g : G) [H.Normal]: G⧸H = {∀ g, g LCoset* H} :=
-  sorry
-  done
-
-  end QuotientGroupMul
-
-end quotientgroupmul
-
 /-
 section cosetsAdd
 
