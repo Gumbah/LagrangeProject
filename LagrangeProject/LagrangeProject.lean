@@ -2208,7 +2208,7 @@ instance (n : ℕ) : Inv (ZMod n) :=
 
 #eval (15 : ZMod 10).inv
 
-theorem inv_coe_unit {n : ℕ} (u : (ZMod n)ˣ) : (u : ZMod n)⁻¹ = (u⁻¹ : (ZMod n)ˣ) := by
+theorem inv_coe_unit {n : ℕ} (u : (ZMod n)ˣ) : (u : ZMod n)⁻¹ = (u⁻¹ : (ZMod n)ˣ) := by sorry
 
 theorem coe_zmod_inv_unit {n : ℕ} (y : (ZMod n)ˣ) : my_zmod_inv n (y : ZMod n) = ((my_zmod_inv n (y : ZMod n)) : (ZMod n)ˣ) := by
   sorry
@@ -2245,8 +2245,8 @@ theorem my_zmod_inv_eq_zmod_inv {n : ℕ} (y : ZMod n) : my_zmod_inv n y = (y : 
 
 --Katie
 lemma zmod_inv_mul_eq_one_imp_unit {n : ℕ} (y : Units (ZMod n)) : y * y⁻¹ = 1 := by
-  rw[inv_coe_unit]
-  rw[Units.mul_inv]
+  rw [mul_right_inv]
+  done
 
 --Katie
 theorem coe_zmod_mul_inv_eq_one {n : ℕ} (x : ℕ) (h : Nat.Coprime x n) : (x : ZMod n) * (my_zmod_inv n x) = 1 := by
@@ -2292,6 +2292,23 @@ lemma nat_gcd_zero_eq_one {n : ℕ} (y : ZMod n) (h : n = 0) : (y = 1 ∨ y = -1
 --I will be looking more into the `ZMod.Basic.lean` file in order to better understand this strange property. Hopefully
 --a better understanding of mathlib will be beneficial in proving our main goal of ZMod
 
+theorem zmod_unit_val_coprime' {n : ℕ} (x : (ZMod n)ˣ) : Nat.Coprime (x : ZMod n).val n := by
+  cases' n with n
+  · unfold Nat.Coprime
+    rw[← nat_gcd_zero_eq_one]
+    · rfl
+    rw [← Int.isUnit_iff]
+    apply Units.isUnit
+  --the successive case is currently taken from mathlib, while we try to understand it in order to prove it for ourselves.
+  --WE have not used this theorem further on.
+  apply Nat.coprime_of_mul_modEq_one ((x⁻¹ : Units (ZMod (n + 1))) : ZMod (n + 1)).val
+  have := Units.ext_iff.1 (mul_right_inv x)
+  rw [Units.val_one] at this
+  rw [← ZMod.eq_iff_modEq_nat, Nat.cast_one, ← this]; clear this
+  rw [← ZMod.nat_cast_zmod_val ((x * x⁻¹ : Units (ZMod (n + 1))) : ZMod (n + 1))]
+  rw [Units.val_mul, ZMod.val_mul, ZMod.nat_cast_mod]
+  done
+
 theorem zmod_unit_val_coprime {n : ℕ} (y : ZMod n) (h : IsUnit y) : Nat.Coprime (y : ZMod n).val n := by
 --Jakub
   cases' n with n
@@ -2302,7 +2319,7 @@ theorem zmod_unit_val_coprime {n : ℕ} (y : ZMod n) (h : IsUnit y) : Nat.Coprim
     exact h
 -- Katie
   · rw[zmod_mul_inv_eq_one_iff_coprime_n]
-    exact zmod_inv_mul_eq_one_imp_unit y h
+    apply zmod_inv_mul_eq_one_imp_unit y h
     rw[Nat.succ_eq_add_one]
     linarith
   done
