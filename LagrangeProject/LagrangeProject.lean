@@ -480,8 +480,13 @@ section cosetsMul
 
   def NormEquiv[Group G] (H: Set G) (a b : G):= a * b⁻¹ ∈ H
 
-  def QuotientGroup (g : G) [Group G] (H : Subgroup G) [H.Normal] :=
-    Set (g LCoset* H)
+  def LeftQuotientGroup(G) [Group G] (H : Subgroup G) [H.Normal] :=
+    Set (∀(g:G), g LCoset* H)
+
+  #check LeftQuotientGroup
+
+  def RightQuotientGroup(G) [Group G] (H : Subgroup G) [H.Normal] :=
+    Set (∀(g:G), H RCoset* g)
 
   /-
   def QuotientGroup (G) [Group G] (H : Subgroup G) [H.Normal] :=
@@ -842,6 +847,15 @@ section cosetsMul
     · intro h2
       exact NormalofEqCosets H h2
       done
+
+  theorem LeftEqRightQuotientGroup [H.Normal]: RightQuotientGroup G H = LeftQuotientGroup G H := by
+    unfold RightQuotientGroup
+    unfold LeftQuotientGroup
+    have e1: H.Normal → ∀ g : G, g LCoset* H = H RCoset* g := by
+      rw[NormalIffEqMulCosets]
+
+
+
 
   /-
   variable (c : Set (Set G)) (c := ∀(p : G), p LCoset* H)
