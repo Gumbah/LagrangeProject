@@ -2713,3 +2713,110 @@ lemma zmodp_units_generated {p : Nat.Primes} : ∃ (g : (Units (ZMod p))), ∀ (
 theorem wilson {hp : Nat.Prime p} (h : Odd p) : ((p-1) : ℕ).factorial = (-1 : ZMod n) := by
   rw[← Finset.prod_Ico_id_eq_factorial]
   rw[← zmodp_units_elts]
+
+--04/02/24 - Jakub
+
+--Proved `sum_nat` for Katie to use to prove Wilson's theorem, too close to the deadline now to make this proof more concise,
+--so this will have to do. We are not sure if there will be time to get the the point even of applying this theorem. It would
+--be nice if it got used but it was fun to prove anyway, interesting to learn about even and odd numbers and trying to get
+--around the painful object that is division in the naturals.
+
+--Jakub
+theorem sum_nat {n : ℕ} : ∑ k in Finset.range (n+1), k = n * (n+1) / 2 := by
+  induction n with
+  | zero =>
+    rw [Nat.zero_mul]
+    rw [Nat.zero_div]
+    rfl
+  | succ n ih =>
+    rw [← Nat.succ_eq_add_one]
+    rw [Finset.sum_range_succ]
+    rw [ih]
+    have : Even n ∨ Odd n := by apply Nat.even_or_odd
+    have h : Even (n*(n+1)) := by
+      cases this with
+      | inl hn =>
+        have : Even (n*(n+1)) := by
+          rw [Nat.even_mul]
+          exact Or.inl hn
+        exact this
+      | inr hn =>
+        rw [Nat.odd_iff_not_even] at hn
+        have hn' : Even (n+1) := by
+          rw [Nat.even_add_one]
+          exact hn
+        have : Even (n*(n+1)) := by
+          rw [Nat.even_mul]
+          exact Or.inr hn'
+        exact this
+    rw [Nat.succ_eq_add_one, Nat.succ_eq_add_one]
+    cases this with
+    | inl hn =>
+      have h' : n*(n+1)/2 = n/2 * (n+1) := by
+        have : 2*(n/2) = n := by
+          apply Nat.two_mul_div_two_of_even; exact hn
+        nth_rewrite 1 [← this]
+        rw [mul_assoc]
+        rw [Nat.mul_div_right]
+        apply Nat.zero_lt_two
+      have h'' : (n+1)*(n+1+1)/2 = (n+1)*((n+1+1)/2) := by
+        have : Even (n+1+1) := by
+          rw [Nat.even_add_one, Nat.even_add_one, not_not]
+          exact hn
+        have : 2*((n+1+1)/2) = (n+1+1) := by
+          apply Nat.two_mul_div_two_of_even; exact this
+        rw [mul_comm]
+        nth_rewrite 1 [← this]
+        rw [mul_assoc]
+        rw [Nat.mul_div_right]
+        rw [mul_comm]
+        apply Nat.zero_lt_two
+      rw [h']
+      rw [h'']
+      rw [← Nat.succ_mul]
+      rw [Nat.succ_eq_add_one]
+      have : (n/2 + 1) = ((n+1+1)/2) := by
+        have : n+ 1+1 = n+ 2 := by rfl
+        rw [this]
+        rw [Nat.add_div_right]
+        apply Nat.zero_lt_two
+      rw [this]
+      rw [mul_comm]
+    | inr hn =>
+      rw [Nat.odd_iff_not_even] at hn
+      have hn' : Even (n+1) := by
+          rw [Nat.even_add_one]
+          exact hn
+      have h' : n*(n+1)/2 = n * ((n+1)/2) := by
+        have : 2*((n+1)/2) = (n+1) := by
+          apply Nat.two_mul_div_two_of_even; exact hn'
+        rw [mul_comm]
+        nth_rewrite 1 [← this]
+        rw [mul_assoc]
+        rw [Nat.mul_div_right]
+        rw [mul_comm]
+        apply Nat.zero_lt_two
+      have h'' : 2*((n+1)/2) = (n+1) := by
+          apply Nat.two_mul_div_two_of_even; exact hn'
+      have h''' : (n+1)*(n+1+1)/2 = ((n+1)/2)*(n+1+1) := by
+        nth_rewrite 1 [← h'']
+        rw [mul_assoc]
+        rw [Nat.mul_div_right]
+        apply Nat.zero_lt_two
+      rw [h']
+      rw [h''']
+      rw [← add_assoc]
+      rw [mul_comm]
+      have : n+ 1+1 = (n+1).succ := by rfl
+      rw [this]
+      rw [Nat.mul_succ]
+      have : n+1 = n.succ := by rfl
+      nth_rewrite 3 [this]
+      rw [Nat.mul_succ]
+      conv =>
+        rhs
+        rw [add_assoc]
+      rw [← Nat.two_mul]
+      rw [h'']
+      rw [add_assoc]
+  done
