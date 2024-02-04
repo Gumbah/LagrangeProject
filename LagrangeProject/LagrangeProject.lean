@@ -2787,22 +2787,6 @@ theorem sum_nat {n : ℕ} : ∑ k in Finset.range (n+1), k = n * (n+1) / 2 := by
     rw [Finset.sum_range_succ]
     rw [ih]
     have : Even n ∨ Odd n := by apply Nat.even_or_odd
-    have h : Even (n*(n+1)) := by
-      cases this with
-      | inl hn =>
-        have : Even (n*(n+1)) := by
-          rw [Nat.even_mul]
-          exact Or.inl hn
-        exact this
-      | inr hn =>
-        rw [Nat.odd_iff_not_even] at hn
-        have hn' : Even (n+1) := by
-          rw [Nat.even_add_one]
-          exact hn
-        have : Even (n*(n+1)) := by
-          rw [Nat.even_mul]
-          exact Or.inr hn'
-        exact this
     rw [Nat.succ_eq_add_one, Nat.succ_eq_add_one]
     cases this with
     | inl hn =>
