@@ -38,6 +38,8 @@ import Mathlib.Data.ZMod.Basic
 --mul_assoc
 --which are used to define the Group.ofLeftAxioms in Mathlib
 
+--(Rose) I have written out and formatted all the basic lemmas
+
 section group
 
 namespace groupsMul
@@ -909,11 +911,42 @@ section cosetsMul
 
   --#check QuotientGroup G H
   --#check Fintype.card (QuotientGroup G H)
+  -/
 
+  --(Rose) From here we are at the final strech to proving Lagrange's Theorem. The 2 methods we will try are proving it
+  --via the quotient groups as defined about or by using the fact that cosets partition the group
+
+  --(Rose) For the partition method we will start to use Fintypes as the statement of Langrange's Theorem only
+  --makes sense for finite groups. Here we quickly show a coset is finite when the group and subgroup are fintypes
+  lemma LeftCosetFinTypeMul [Fintype G] [Fintype H] (g : G) :
+  (g LCoset* H).Finite := by
+    exact toFinite (g LCoset*↑H)
+    done
+
+  --(Rose) Next we need to define a set of cosets that we can use to prove partitons.
+  --This in particular gave me a lot of trouble for a while as
+  def SetOfLeftCosets (H : Set G) : Set (Set G) :=
+    Set.image (fun g => g LCoset* H) H
+
+  lemma LeftCosetInSetOfCosets (g : G) : g LCoset* H ∈ SetOfLeftCosets H := by
+    unfold SetOfLeftCosets
+
+    done
+
+  lemma LeftCosetsPartitionMul (H : Set G) (c := SetOfLeftCosets H) : Setoid.IsPartition c := by
+    unfold Setoid.IsPartition
+    constructor
+    · let e1 : Set G := 1 LCoset* H
+      have he : e1 ∈ c := by
+        rw[SetOfLeftCosets] at c
+        simp only [mul_right_inj, mul_left_inj, mul_one, self_eq_mul_right, one_mul,
+          self_eq_mul_left]
+
+    done
 
   --(Rose)
   lemma LeftCosetCardEqSubgroupCard [Fintype G] [Fintype H] (g : G) [DecidablePred fun a => a ∈ g LCoset* H]
-  [DecidablePred fun b => b ∈ H]:
+  [DecidablePred fun b => b ∈ ((fun h => g * h) '' H)]:
   Fintype.card H = Fintype.card (g LCoset* H) := by
     refine (card_image_of_inj_on ?H).symm
     intro x
@@ -951,17 +984,10 @@ section cosetsMul
     cases
 
     done
+
+  --(Rose)Here is one of the main ways I tried and failed to
+  /-
   class SetOfLeftCosetsMul ()
-
-  lemma LeftCosetFinTypeMul [Fintype G] [Fintype H] (g : G) :
-  (g LCoset* H).Finite := by
-    exact toFinite (g LCoset*↑H)
-    done
-
-  lemma CardLeftCosetEqCardSubgroupMul [Fintype H] [Fintype G] (g : G) :
-  Fintype.card H = Fintype.card (toFinite (g LCoset* H)) := by
-    sorry
-    done
 
   variable {ι : Type*} (s : ι → G) (e : G)
 
@@ -974,25 +1000,30 @@ section cosetsMul
 
   instance : IndexedPartition c where
 
-
+  -/
 
   lemma LeftCosetsPartitionGroup  : (⨆ g ∈ ↑H, g LCoset* H) = G := by
     sorry
     done
 
-  theorem LagrangeMul [Fintype G] [Fintype H] :
+  #check SetOfLeftCosets
+
+  def indexMul [Fintype G] [Fintype H] : ℕ :=
+    Fintype.card G / Fintype.card H
+
+
+  theorem LagrangeMul [Fintype G] [Fintype H] (g : G) :
   Fintype.card H ∣ Fintype.card G := by
     rw [dvd_iff_exists_eq_mul_left]
+    let p : Set (Set G) := SetOfLeftCosets H
+
+
 
 
     --rw [← @iSup_Prop_eq]
     --rw [← @iSup_range']
 
     done
-
-  def indexMul [Fintype G] [Fintype H] : ℕ :=
-    Fintype.card G / Fintype.card H
-
 
   --(Rose) This is the most important corollory of Lagrange to prove as it is the one used by the number theory
   --side of the project.
