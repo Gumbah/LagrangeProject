@@ -885,11 +885,11 @@ section cosetsMul
     unfold LeftQuotientGroup
     rw[NormalIffEqMulCosets] at h
     conv =>
-    · lhs
+      lhs
       congr
-      intro g
-      rw [h]
-      rfl
+      intro G
+      rw[h]
+      congr
     done
 
 
@@ -909,7 +909,7 @@ section cosetsMul
 
   --#check QuotientGroup G H
   --#check Fintype.card (QuotientGroup G H)
-
+  -/
 
   --(Rose)
   lemma LeftCosetCardEqSubgroupCard [Fintype G] [Fintype H] (g : G) [DecidablePred fun a => a ∈ g LCoset* H]
