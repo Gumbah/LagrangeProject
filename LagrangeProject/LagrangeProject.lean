@@ -1,3 +1,5 @@
+--Please read the README.md, as well as our code comments, for determining individual grades.
+
 --Number Theory Imports
 import Mathlib.Data.Nat.GCD.Basic
 import Mathlib.Data.Nat.Prime
