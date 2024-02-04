@@ -2736,10 +2736,25 @@ theorem isom_cyclic_finset_range_p {p : Nat.Primes} [inst: Group ({x // x ∈ (F
   apply isCyclic_of_surjective
   sorry
 
+-- I'm not sure how presumptuous it is to [inst:...] and call {x // x ∈ (Finset.range (p : ℕ)).filter (p : ℕ).Coprime} a group without even noting an operation, but I feel
+-- there are more important/interesting things to focus on with this proof. If I could go back in time, I might have been more insistent on trying to come up with a better way
+-- to equate ZMod units with a simple Finset range set that has its own group operation (if that were even possible), and include Wilson's theorem more prominently in the end goal.
+-- But alas, we will have to brush over it for now.
+
 lemma finset_range_generated {p : Nat.Primes} [inst: Group ({y // y ∈ (Finset.range (p : ℕ)).filter (p : ℕ).Coprime})] (h : IsCyclic ({x // x ∈ (Finset.range (p : ℕ)).filter (p : ℕ).Coprime})): ∃ (g : ({y // y ∈ (Finset.range (p : ℕ)).filter (p : ℕ).Coprime})), ∀ (x : {y // y ∈ (Finset.range (p : ℕ)).filter (p : ℕ).Coprime}), x ∈ Subgroup.zpowers g := by
   refine IsCyclic.exists_generator
 
-lemma aaaaaa {p : Nat.Primes} : (x ∈ Finset.filter (Nat.Coprime p) (Finset.range p)) ↔ ∃ (g : x = g^k
+lemma finset_equate_fintype {p : Nat.Primes} [inst : Fintype ({x // x ∈ (Finset.range (p : ℕ)).filter (p : ℕ).Coprime})] : Finset.univ ({y // y ∈ (Finset.range (p : ℕ)).filter (p : ℕ).Coprime}) = Finset.filter (Nat.Coprime p) (Finset.range p) := by
+  sorry
+
+lemma idk_bro_generators_or_something {p : Nat.Primes} [inst: Group ({y // y ∈ (Finset.range (p : ℕ)).filter (p : ℕ).Coprime})] (h : IsCyclic ({x // x ∈ (Finset.range (p : ℕ)).filter (p : ℕ).Coprime})) (g : ({y // y ∈ (Finset.range (p : ℕ)).filter (p : ℕ).Coprime})) (hg : ∀ (x : {y // y ∈ (Finset.range (p : ℕ)).filter (p : ℕ).Coprime}), x ∈ Subgroup.zpowers g) : Subgroup.zpowers g = {y // y ∈ (Finset.range (p : ℕ)).filter (p : ℕ).Coprime} := by
+  sorry
+
+--lemma aaaaaa {p : Nat.Primes} : (x ∈ Finset.filter (Nat.Coprime p) (Finset.range p)) ↔ ∃ (g : x = g^k
+  --sorry
+
+-- After a very long day of LEANing, I am finding it difficult to think of a way to formalise that each component of (p-1)! can be written as a power of the chosen generator element,
+-- but at the same time they are all (unordered) distinct/successive powers; i.e. (p-1)! = 1*g*g^(2)*g^(3)*...*g^(p-2) = g^(sum of integers from 1 to (p-2)).
 
 theorem wilson (hp : Nat.Prime p) (h : Odd p) : ((p-1) : ℕ).factorial = (-1 : ZMod n) := by
   rw[← Finset.prod_range_add_one_eq_factorial]
