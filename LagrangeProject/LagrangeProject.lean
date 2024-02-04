@@ -1133,8 +1133,9 @@ end CosetsAdd
 
 end cosetsAdd
 -/
---Beginning of Number Theory Side
 
+
+--Beginning of Number Theory Side :-)
 
 --Initial very naive/ not lean-optimised/ bad definition trying to make a
 --Bézout algorithm, skip to my 24/11/23 timestamp about 80 lines down to
@@ -1861,22 +1862,10 @@ def classical_crt (m n a b : ℕ) (h : Nat.Coprime m n) : {x // x ≡ a [mod m] 
 #check Int.toNat_add_nat
 #check Nat.dvd_add
 
-theorem euclid_l1_coprime {p m n : ℕ}(h: Nat.Prime p)(h1 : p ∣ m*n)(h2 : ¬(p ∣ m)) : (p ∣ n) := by
-  rw[← gcd_eq_1] at h2
-  rw[← mul_one n]
-
-  rw[Nat.gcd_eq_gcd_ab]
-
-  rw[← Int.coe_nat_gcd] at h2
-
-  rw[Int.gcd_eq_gcd_ab] at h2
-
-Int.gcd_eq_gcd_ab
-Int.coe_nat_gcd
-Int.gcd_eq_natAbs
 /-
+
 theorem euclid_l1_coprime {p m n : ℕ}(h: Nat.Prime p)(h_n : p < n)(h_m : p < m)(h_1 : p ∣ m*n)(h_2 : ¬(p ∣ m)) : (p ∣ n):= by
- -- a*p + b*m = 1
+ -- plan: a*p + b*m = 1
  -- a*p*n + b*m*n = n
  -- p ∣ a*p*n, p ∣ b*m*n => p ∣ n
   intros
@@ -1896,10 +1885,20 @@ theorem euclid_l1_coprime {p m n : ℕ}(h: Nat.Prime p)(h_n : p < n)(h_m : p < m
     rw[mul_comm]
     rw[mul_assoc]
     rw[← int_to_nat_mul]
-  -- rewrite gcd p m as its bezout identity: ∃ x,y s.t. mx + py =1
-  -- n = n(1) = n(mx + py)
+  rw[← gcd_eq_1] at h2
+  rw[← mul_one n]
+
+  rw[Nat.gcd_eq_gcd_ab]
+
+  rw[← Int.coe_nat_gcd] at h2
+
+  rw[Int.gcd_eq_gcd_ab] at h2
+
+Int.gcd_eq_gcd_ab
+Int.coe_nat_gcd
+Int.gcd_eq_natAbs
   sorry
--/
+ -/
 
 --21/01/21 - Jakub
 
@@ -1907,7 +1906,7 @@ theorem euclid_l1_coprime {p m n : ℕ}(h: Nat.Prime p)(h_n : p < n)(h_m : p < m
 --Unfortunately my idea for a proof of this did not line up with Katie's so I did not end up using the helpful lemmas
 --that she proved before. It also turned out that some of the assumptions she was working with were not required for
 --my proof, so they have been removed from the statement of Euclid's theorem, in order for it to apply more generally.
---Katie wanted me to leave in her unfinished proof (above) to complete later once we have finished our initial goal.
+--Katie wanted me to leave in her unfinished proof (above).
 
 --Jakub
 theorem euclid_left_coprime {p m n : ℕ}(h: Nat.Prime p)(h1 : p ∣ m*n)(h2 : ¬(p ∣ m)) : (p ∣ n):= by
@@ -1938,8 +1937,8 @@ theorem euclid_left_coprime {p m n : ℕ}(h: Nat.Prime p)(h1 : p ∣ m*n)(h2 : �
     contradiction
   done
 
---Now we have everything to prove Euclid's lemma: if p divides a composite number m*n, then it must divide one of m or n.
---After exploring different ways to phrase this, coming across the "or_iff_not_imp_right" lemma saved the day, and - after
+-- Katie: Now we have everything to prove Euclid's lemma: if p divides a composite number m*n, then it must divide one of m or n.
+-- After exploring different ways to phrase this, coming across the "or_iff_not_imp_right" lemma saved the day, and - after
 --learning how to apply it, which was a task in of itself - simplified the theorem so that I could simply apply the above lemma
 --for the result.
 
@@ -1968,6 +1967,10 @@ theorem gen_euclid {d m n : ℕ} (h1 : d ∣ m * n) (h2 : Nat.gcd m d = 1) : d �
   rw[← bezout_one_nat]
 -/
 
+-- Note: Looking back at this on the last day before submission, I am simutaneously content with my development since abandoning this goal (which was not used anyway, so only served as vital practise for
+--myself) and sad that so much effort went into setting it up, for it all to come to a grinding halt with nat-to-int casting. If I had any hindsight, I think I would have worked with integers more, instead of
+--trying to force everything into the naturals, nat.gcd, etc., instead of being scared of trying things that would result in more initial errors.
+
 --04/02/24 - Jakub
 --Filled out Katie's sorry'd out `gen_euclid`, her unfinished proof is commented out above.
 theorem gen_euclid {d m n : ℕ} (h1 : d ∣ m * n) (h2 : Nat.gcd m d = 1) : d ∣ n := by
@@ -1995,7 +1998,8 @@ theorem gen_euclid {d m n : ℕ} (h1 : d ∣ m * n) (h2 : Nat.gcd m d = 1) : d �
     exact hz
   done
 
--- Katie: laying out the land
+-- Katie: laying out the land: Writing out some sorryd out theorems to try and start some sort of
+-- structure, building up to our bigger results.
 
 -- 11/01/24 - Jakub filled out the sorry here
 theorem coprime_mult {a b : ℕ}(ha: (Nat.gcd a m)=1) : ((Nat.gcd b m)=1) → ((Nat.gcd (a*b) m)=1) := by
@@ -2016,8 +2020,9 @@ def fun_sum_of_divisors_1 (n : ℕ) : ℕ := ∑ d in Nat.divisors n, d
 -- module leader it became clear that, for the sum function to work, I needed to "open BigOperators" - it is a relief to
 -- see that the finite sets are not an issue as of yet.
 
-#eval fun_sum_of_divisors_1 4
+-- Note: in the end, we did not use this, but if I had allocated more time towards it, I would have used it in a proof of (Units(ZMod p)) being cyclic.
 
+#eval fun_sum_of_divisors_1 4
 
 -- We want to demonstrate the multiplicity of the totient function. I have essentially used the totient
 -- function definition from Mathlib, due to it being uncooperative when written in alternative forms
@@ -2027,10 +2032,6 @@ def my_totient (n : ℕ) : ℕ :=
   ((Finset.range n).filter n.Coprime).card
 
 #eval my_totient (7)
-
---notation:69 "φ(n")  => my_totient (n)
-
---#eval φ (7)
 
 /-
 --We were not able to prove the algebraic version of the chinese remainder theorem (see `ZMod.chineseRemainder`)
@@ -2078,7 +2079,7 @@ lemma dvd_less_than_nat (m n : ℕ) (h : m ∣ n) (h_n : n < m) : n = 0 := by
     exact absurd rfl this
   --end of Jakub work
   --I would imagine that this proof was not particularly efficient but I wanted practice using the `calc` tactic
-  --as it seems useful in mathlib for some proofs later on.
+  --as it seems useful for some proofs later on.
   done
 
 -- Katie
@@ -2391,6 +2392,9 @@ instance (n : ℕ) : Inv (ZMod n) :=
 
 #eval (15 : ZMod 10).inv
 
+-- Spending a lot of time thinking on paper as to how we are going to approach this; it seems a great challenge, but we
+-- are optimistic. In retrospect of my abandoned Euclid's lemma attempt, this will be vital to our potential success.
+
 --01/02/24 - Jakub
 
 --Attempted to prove `my_zmod_eq_zmod_inv`, my proof was affected when Katie defined our own instance of an inverse on
@@ -2423,17 +2427,17 @@ theorem my_zmod_inv_eq_zmod_inv {n : ℕ} (y : ZMod n) : my_zmod_inv n y = (y : 
 
 --Katie
 lemma zmod_inv_mul_eq_one_imp_unit {n : ℕ} (y : Units (ZMod n)) : y * y⁻¹ = 1 := by
-  rw [mul_right_inv]
+  rw[mul_right_inv]
   done
 
 --Katie
 theorem coe_zmod_mul_inv_eq_one {n : ℕ} (x : ℕ) (h : Nat.Coprime x n) : (x : ZMod n) * (my_zmod_inv n x) = 1 := by
-  rw [Nat.coprime_iff_gcd_eq_one] at h
-  rw [← Nat.cast_one]
-  rw [← h]
-  rw [my_mul_zmod_inv_eq_gcd]
-  rw [ZMod.val_nat_cast]
-  rw [← Nat.gcd_rec, Nat.gcd_comm]
+  rw[Nat.coprime_iff_gcd_eq_one] at h
+  rw[← Nat.cast_one]
+  rw[← h]
+  rw[my_mul_zmod_inv_eq_gcd]
+  rw[ZMod.val_nat_cast]
+  rw[← Nat.gcd_rec, Nat.gcd_comm]
   done
 
 --Katie
@@ -2482,7 +2486,7 @@ theorem zmod_unit_val_coprime {n : ℕ} (y : Units (ZMod n)) : Nat.Coprime (y : 
 --Jakub
   cases' n with n
   · unfold Nat.Coprime
-    rw[← nat_gcd_zero_eq_one]
+    rw [← nat_gcd_zero_eq_one]
     · rfl
     rw [← Int.isUnit_iff]
     apply Units.isUnit
@@ -2572,9 +2576,13 @@ def my_zmod_unitsEquivCoprime {n : ℕ} [NeZero n] : (Units (ZMod n)) ≃ {x // 
       rw [this]
     done
 
+-- Katie
+-- Working together for the isomorphism was really quite fun in retrospect. I'm glad it eventually compiled;
+-- I was worried this was going to be our ultimate road block.
+
 -- Getting the following lemmas to synthesize was a pain in of itself; type errors everywhere, in spite of my level of understanding. The main issue was
--- zmod_units_equiv_card, which did not allow me to apply/rw Fintype.card_congr no matter what I tried, or what extra lemmas I created. Eventually, I found that
--- using refine somehow made it successful. Now the main issue is finishing constructing the isomorphism above.
+-- `zmod_units_equiv_card`, which did not allow me to apply/rw `Fintype.card_congr` no matter what I tried, or what extra lemmas I created. Eventually, I found that
+-- using refine somehow made it successful. I completed this before we were able to successfully compile the isomorphism.
 
 --Katie
 lemma totient_subtype {n : ℕ} : Finset.card ((Finset.range n).filter n.Coprime) = Fintype.card { x // x ∈ (Finset.range n).filter n.Coprime} := by
@@ -2677,6 +2685,7 @@ theorem little_fermat_2 (a p : ℕ) (h : Nat.Prime p) (h1 : p ∣ a ∨ ¬(p ∣
 --Katie
 -- I planned for this to be a fun little extra project to have a crack at after FLT was completed, since it involved a great deal of
 -- overlap with theorems we have already proven. The order lemmas weren't necessary in the end.
+-- WARNING : I apologise for the number of comments actually outweighing the amount of code in this section, but I had a lot to say about this (mostly) independent side-project.
 
 theorem order_lemma_1 {m k : ℕ} (a : Units (ZMod m)) : (a^k = (1 : Units (ZMod m))) ↔ ((orderOf (a : Units (ZMod m))) ∣ k) := by
   constructor
@@ -2696,13 +2705,15 @@ theorem order_lemma_1 {m k : ℕ} (a : Units (ZMod m)) : (a^k = (1 : Units (ZMod
 theorem order_lemma_2 {n : ℕ} (a : Units (ZMod n)) : ((orderOf (a : Units (ZMod n))) ∣ my_totient (n)) := by
   rw[← order_lemma_1]
   rw[Units.ext_iff]
-  apply ZMod.eq_iff_modEq_nat
+  --apply zmod_eq_iff_Mod_eq_nat
   sorry
+
+
 
 def prim_roots_mod_n {n : ℕ} := {a // (orderOf (a : Units (ZMod n))) = my_totient (n)}
 
 -- Initially, I set out to utilise primitive roots to approach Wilson's theorem, but I think combining many previous lemmas
--- is preferable.
+-- is preferable. Therefore, I ditched this, including the proof of order_lemma_2, after the casting proved to be more trouble than it's worth.
 
 -- Whilst I do know the proof for showing (Units(ZModp)) is cyclic, and we have a lot of the tools for it (i.e. we have sum of divisors
 -- and totient function but not FTA), it would take up too much time for something that is not the main focus here. If we did have more
@@ -2717,24 +2728,17 @@ theorem zmodp_units_cyclic {p : Nat.Primes} [CommRing (ZMod p)] [IsDomain (ZMod 
 lemma prod_finset_range_eq : ∏ x in Finset.range (p - 1), (x + 1) = ∏ x in (Finset.range p) \ {0}, x := by
   sorry
 
-@[simp] lemma finset_range_eq_fintype : ∏ x in (Finset.range p \ {0}), x = ∏ x in {x // x ∈ Finset.range p \ {0}}, x := by
-  rfl
-
-@[simp] lemma zmodp_units_elts {p : Nat.Primes} : Units (ZMod p) = Finset.Ico 1 (p : ℕ) := by
-  sorry
-
 theorem zmodp_unitsEquivCoprime [NeZero p] : (Units (ZMod p)) ≃ {x // x ∈ (Finset.range p).filter p.Coprime}:= by
   apply my_zmod_unitsEquivCoprime
-
---theorem prime_coprime (p : ℕ) (h_p : Nat.Prime p) : ((Finset.range p).filter p.Coprime) = (Finset.range p) \ {0}
 
 -- Yet again, the bane of my existence - type classes - crops up. Hoping this work around could secure the win (i.e. instead of claiming the finset range is the same
 -- as Units(ZMod p), and therefore claim the set is cyclic with applications to rewriting each component of (p-1)! as a generated element, we can use the isomorphism
 -- constructed previously to claim the set is cyclic by its isomorphism with (Units(ZMod p)).
 
 theorem isom_cyclic_finset_range_p {p : Nat.Primes} [inst: Group ({x // x ∈ (Finset.range (p : ℕ)).filter (p : ℕ).Coprime})] [inst : Fintype ({x // x ∈ (Finset.range (p : ℕ)).filter (p : ℕ).Coprime}) ] : IsCyclic ({x // x ∈ (Finset.range (p : ℕ)).filter (p : ℕ).Coprime}) := by
-  apply isCyclic_of_surjective
+  -- would have liked to use Subgroup.isCyclic_of_surjective to have my supposed group of elements be seen as cyclic through my (surjective) isomorphism. However, this was created so recently that it is not in our Mathlib imports, and as of writing this, I don't think I have time to import. But you get the jist of what I was attempting to do, I hope. In the big picture, if this had been a failure, I would start from square one and try to avoid using finsets so explicitly, although I do like being creative with it.
   sorry
+  done
 
 -- I'm not sure how presumptuous it is to [inst:...] and call {x // x ∈ (Finset.range (p : ℕ)).filter (p : ℕ).Coprime} a group without even noting an operation, but I feel
 -- there are more important/interesting things to focus on with this proof. If I could go back in time, I might have been more insistent on trying to come up with a better way
@@ -2743,12 +2747,21 @@ theorem isom_cyclic_finset_range_p {p : Nat.Primes} [inst: Group ({x // x ∈ (F
 
 lemma finset_range_generated {p : Nat.Primes} [inst: Group ({y // y ∈ (Finset.range (p : ℕ)).filter (p : ℕ).Coprime})] (h : IsCyclic ({x // x ∈ (Finset.range (p : ℕ)).filter (p : ℕ).Coprime})): ∃ (g : ({y // y ∈ (Finset.range (p : ℕ)).filter (p : ℕ).Coprime})), ∀ (x : {y // y ∈ (Finset.range (p : ℕ)).filter (p : ℕ).Coprime}), x ∈ Subgroup.zpowers g := by
   refine IsCyclic.exists_generator
+  done
 
+/-
 lemma finset_equate_fintype {p : Nat.Primes} [inst : Fintype ({x // x ∈ (Finset.range (p : ℕ)).filter (p : ℕ).Coprime})] : Finset.univ ({y // y ∈ (Finset.range (p : ℕ)).filter (p : ℕ).Coprime}) = Finset.filter (Nat.Coprime p) (Finset.range p) := by
   sorry
+  done
 
 lemma idk_bro_generators_or_something {p : Nat.Primes} [inst: Group ({y // y ∈ (Finset.range (p : ℕ)).filter (p : ℕ).Coprime})] (h : IsCyclic ({x // x ∈ (Finset.range (p : ℕ)).filter (p : ℕ).Coprime})) (g : ({y // y ∈ (Finset.range (p : ℕ)).filter (p : ℕ).Coprime})) (hg : ∀ (x : {y // y ∈ (Finset.range (p : ℕ)).filter (p : ℕ).Coprime}), x ∈ Subgroup.zpowers g) : Subgroup.zpowers g = {y // y ∈ (Finset.range (p : ℕ)).filter (p : ℕ).Coprime} := by
   sorry
+  done
+
+theorem prod_generators {p : Nat.Primes} : (∏ x in Finset.filter (Nat.Coprime p) (Finset.range p), x) = (∏ x in Subgroup.zpowers (g : (Finset.range p) \ {0})) := by
+  sorry
+  done
+-/
 
 --lemma aaaaaa {p : Nat.Primes} : (x ∈ Finset.filter (Nat.Coprime p) (Finset.range p)) ↔ ∃ (g : x = g^k
   --sorry
@@ -2756,15 +2769,23 @@ lemma idk_bro_generators_or_something {p : Nat.Primes} [inst: Group ({y // y ∈
 -- After a very long day of LEANing, I am finding it difficult to think of a way to formalise that each component of (p-1)! can be written as a power of the chosen generator element,
 -- but at the same time they are all (unordered) distinct/successive powers; i.e. (p-1)! = 1*g*g^(2)*g^(3)*...*g^(p-2) = g^(sum of integers from 1 to (p-2)).
 
-theorem wilson (hp : Nat.Prime p) (h : Odd p) : ((p-1) : ℕ).factorial = (-1 : ZMod n) := by
+theorem wilson (hp : Nat.Prime p) (h : Odd p) : (((p-1) : ℕ).factorial : ZMod p) = (-1 : ZMod p) := by
   rw[← Finset.prod_range_add_one_eq_factorial]
   rw[prod_finset_range_eq]
   rw[← prime_coprime]
-
-
-
-  rw[← Finset.prod_Ico_id_eq_factorial]
-  rw[← zmodp_units_elts]
+  --rw[← Finset.prod_Ico_id_eq_factorial]
+  --rw[← zmodp_units_elts]
+  · sorry
+  exact hp
+  done
+-- I'm quite upset I couldn't bypass the initial roadblock (generating a product of elements from a cyclic group) of Wilson's theorem within the time limit (essentially gave myself a day), but I am confident that
+-- if I had allocated more time towards this task, I would have been able to complete it in my own unique way. It feels very rewarding to use a theorem that was built on another theorem, built on another theorem,
+-- etc.: all within our own jurisdiction! Both the number theory and group theory parts of this formalisation interest me greatly, and I am sure this result was within feasible reach. I was so
+-- optimistic about being able to manipulate the product in the goal, that Jakub helped me in proving the sum of integers formula, which can be seen below. I would have used this to say the product of all the
+-- elements of my cyclic group could have been reduced to g^(sum of integers from 1 to (p-2)), etc.. I also wish I had encountered Finset.univ sooner, since that seems like it would have been useful in my efforts
+-- in equating fintypes and finsets throughout the project. I wish there had been more lemmas about cyclic groups in Mathlib for me to build on, but I guess that's the incentive to join the community and build up
+-- the library bit-by-bit to evolve it for the next generation of new LEAN-users going forward. The most fun parts of this project was trying to go about a proof completely differently to what Mathlib had, and I
+-- feel this final result would have been an excellent demonstration of everything I have learned over the course of this project.
 
 --04/02/24 - Jakub
 
@@ -2772,6 +2793,9 @@ theorem wilson (hp : Nat.Prime p) (h : Odd p) : ((p-1) : ℕ).factorial = (-1 : 
 --so this will have to do. We are not sure if there will be time to get the the point even of applying this theorem. It would
 --be nice if it got used but it was fun to prove anyway, interesting to learn about even and odd numbers and trying to get
 --around the painful object that is division in the naturals.
+--Katie set me on this task because I had no experience working with `Fintypes` and `Finsets` and such, and having seen
+--how difficult they were to work with when Katie was trying to wrestle with them I wanted nothing to do with it, especially
+--so late in the project where I didn't think there'd have been time for me to learn to work my way around such intricate objects.
 
 --Jakub
 theorem sum_nat {n : ℕ} : ∑ k in Finset.range (n+1), k = n * (n+1) / 2 := by
