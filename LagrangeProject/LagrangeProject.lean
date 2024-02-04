@@ -885,13 +885,12 @@ section cosetsMul
     unfold LeftQuotientGroup
     rw[NormalIffEqMulCosets] at h
     conv =>
-    · lhs
+      lhs
       congr
       intro g
       rw [h]
       rfl
     done
-
 
   /-
   variable (c : Set (Set G)) (c := ∀(p : G), p LCoset* H)
@@ -2329,11 +2328,6 @@ instance (n : ℕ) : Inv (ZMod n) :=
   ⟨my_zmod_inv n⟩
 
 #eval (15 : ZMod 10).inv
-
-theorem inv_coe_unit {n : ℕ} (u : (ZMod n)ˣ) : (u : ZMod n)⁻¹ = (u⁻¹ : (ZMod n)ˣ) := by sorry
-
-theorem coe_zmod_inv_unit {n : ℕ} (y : (ZMod n)ˣ) : my_zmod_inv n (y : ZMod n) = ((my_zmod_inv n (y : ZMod n)) : (ZMod n)ˣ) := by
-  sorry
 
 --01/02/24 - Jakub
 
