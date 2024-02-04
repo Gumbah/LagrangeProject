@@ -41,7 +41,11 @@ import Mathlib.Data.ZMod.Basic
 --mul_assoc
 --which are used to define the Group.ofLeftAxioms in Mathlib
 
---(Rose) I have written out and formatted all the basic lemmas
+--(Rose) I have written out and formatted all the basic lemmas that I think we will need
+--For the rest of the project. Edward will fill in the proofs. I may end up needing to come
+--and add more depending on how things turn out. I also use a different naming convention, that
+--thought out the lemmas and theorems I write, I will try to keep consistant for the group theory side.
+--This is mainly for the convicience of making sure we are using our lemmas and not mathlibs.
 
 section group
 
@@ -173,6 +177,8 @@ end groupsMul
 --add_assoc
 --these are the equivalent of the other 3, but for additive groups
 
+--This is very similar the multipicitive group things, just being
+--careful with switching everything over
 namespace addGroups
 
   variable {G : Type} [AddGroup G]
@@ -441,18 +447,16 @@ section rings
 end rings
 
 
---Rose (Cosets)
-
---We now will define Multiplitive left and right cosets (We do both as it will
+--(Rose)We now will define Multiplitive left and right cosets (We do both as it will
 --be useful for quotient groups later). I first define the cosets as a function
 --the image of the function taking an element, h, from a Subgroup H of G and multiplying
 --it with elements from the group. This was heavily inspired from mathlib
---
 
---I then defined notation associated with taking a coset, which highly improves
+
+--(Rose)I then defined notation associated with taking a coset, which highly improves
 --readability of the code
 
---From this I wrote basic lemmas for facts about cosets and things to lead
+--(Rose)From this I wrote basic lemmas for facts about cosets and things to lead
 --up to Lagranges theroems, adding more as I went along as necessary.
 --Since we are using our own lemmas for facts about elements in a group,
 --I had to take particular care not to use the facts about Groups.Defs in my
@@ -460,7 +464,11 @@ end rings
 --involving a lot of maintanance as many previous lemmas and definitions had
 --to be slightly altered as the project progressed.
 
---Edward (Quotient groups)
+--(Rose) Unfortunatly it seems the end goal of proving Lagrange was unsuccessful as
+--it was too ambitious to do from building cosets from the ground up, however I think
+--a significant amount of progess was made towards it. We ended up using many different
+--parts of Mathlib.
+
 section cosetsMul
 
   namespace CosetsMul
@@ -606,6 +614,10 @@ section cosetsMul
       exact h
     done
 
+  --(Rose) This again was another proof that is quite trivial, and one I initally overlooked while
+  --however after realising I needed it I went back to add it. The only real complication was lean thinking
+  --1 was a natural and not an element of the group, this was solved realtivly quickly with just casting it to
+  --(1 : G).
   lemma LeftCosetOne : (1 : G) LCoset* H = H := by
     refine (ext ?h).symm
     intro x
@@ -644,7 +656,17 @@ section cosetsMul
 
   --(Rose) This lemma was created after some futile attempts to prove LeftCosetEqNotDisjointMul, and I realised
   --it was a much needed step to prove this first. The ← direction was extremly trivial as it was just using a
-  --previous lemma, however the → direction
+  --previous lemma, however the → direction caused more difficulty. The proof here involved a lot needin to define
+  --dummy variables which ended up causing a bit of headache but still very doable. I also had to be careful not to
+  --use simp as it would apply the mathlib versions of lemmas proved in the groupMul section and so I had to be careful
+  --to only use the axioms and our versions of the lemma. I also had a problem while doing this where it would not be able
+  --to find the patterns that were clearly there, however after a headache of trying to debug this I found it was due to
+  --the way the variables were defined at the beginning of both the coset and groups sections. After changing this it worked
+  --perfectly fine. Near the end of the proof I end up using InvBracketsMul which was not stated before I started proving this
+  --lemma, so I went back to the groupsMul sectoion and quickly added and proved it.
+
+  --Note: There is also a warning about β not being used in the proof however I do end up using it so I am unsure
+  --what to do about that, but since it is just a warning and everything works with the lemma I have chosen to just ignore it for now.
   lemma LeftCosetEqIffContained (i j : G) :
   j ∈ i LCoset* H ↔ i LCoset* H = j LCoset* H := by
     constructor
@@ -791,7 +813,11 @@ section cosetsMul
     exact h2
   done
 
-  --(Rose)
+  --(Rose) This lemma is showing that 2 cosets are equal if they share any of their elements
+  --This will hopefully be useful for Lagrange near the end. LeftCosetEqIffContained is the main tool
+  --used in this proof. Originally I spent alot of time trying to prove it without it, before realising it
+  --would be much easier, more effiecient, and better for formulation to split them up like this and then use
+  --the LeftCosetEqIffContained to prove this. The ended up simplifing this proof a lot.
   lemma LeftCosetEqNotDisjointMul (g i j : G) :
   g ∈ (i LCoset* H) ∧ g ∈ (j LCoset* H) → i LCoset* H = j LCoset* H := by
     intro h
@@ -824,7 +850,9 @@ section cosetsMul
     exact h2
     done
 
-  --(Rose)
+  --(Rose)Next is a similar lemma to the one before, stating that if they are not equal,
+  --they must be disjoint. This was quite a nice proof but took a bit of time just from getting
+  --used to dealing with contrapose.
   lemma LeftCosetDisjointMul (g i j : G)
   (h : g ∈ (i LCoset* H) ∧ ¬(g ∈ (j LCoset* H))) :
   (i LCoset* H) ∩ (j LCoset* H) = {} := by
@@ -917,13 +945,12 @@ section cosetsMul
       rw[CosetsOfNormEq]
 
     done
-  -/
-  --(Rose)(Oh god)
 
-  --variable [H.Normal] [Fintype G] [Fintype H]
+  variable [H.Normal] [Fintype G] [Fintype H]
 
-  --#check QuotientGroup G H
-  --#check Fintype.card (QuotientGroup G H)
+  #check QuotientGroup G H
+  #check Fintype.card (QuotientGroup G H)
+
   -/
 
   --(Rose) From here we are at the final strech to proving Lagrange's Theorem. The 2 methods we will try are proving it
@@ -936,29 +963,47 @@ section cosetsMul
     exact toFinite (g LCoset*↑H)
     done
 
+  lemma RightCosetFinTypeMul [Fintype G] [Fintype H] (g : G) :
+  (H RCoset* g).Finite := by
+    exact toFinite (H RCoset* g)
+    done
+
   --(Rose) Next we need to define a set of cosets that we can use to prove partitons.
-  --This in particular gave me a lot of trouble for a while as
+  --This in particular gave me a lot of trouble for a while as I was unsure on how to define a particular set of sets which contained
+  --all the cosets of a subgroup. I tried many things from classes to trying to just define a variable inside of lemmas which was defined as such.
+  --We also tried using the Quotient group definition we had to unify things, however in all these cases we ended up with a lot of type mismatches.
+  --Eventually I realised I could define it similarly to the way cosets are defined, where the image of set of functions is used to define the set of
+  --cosets. This is extremly similar to the way Quotient group has been defined with slight differences, so that IsPartition allows it to sythesize
+  --and eventually we would've unfied these 2 definitons so that they worked, however time simply ran out.
   def SetOfLeftCosets (H : Set G) : Set (Set G) :=
     Set.image (fun g => g LCoset* H) H
 
-  lemma LeftCosetInSetOfCosets (g : G) : g LCoset* H ∈ SetOfLeftCosets H := by
+  --(Rose) I began here, in these next 2 to try proving things about the Set of left cosets, which would show that it paritions G. Unfortunatly I did not
+  --get far enough in time as it required a lot more machinery and knowledge of lean to complete. I think given more it would've been possivle to complete
+  --and this was by far the most sucsessful method I attempted to prove this.
+  lemma LeftCosetInSetOfCosets (H : Set G) (g : G) : g LCoset* H ∈ SetOfLeftCosets H := by
     unfold SetOfLeftCosets
-
+    sorry
     done
 
   lemma LeftCosetsPartitionMul (H : Set G) (c := SetOfLeftCosets H) : Setoid.IsPartition c := by
+
     unfold Setoid.IsPartition
     constructor
     · let e1 : Set G := 1 LCoset* H
       have he : e1 ∈ c := by
-        rw[SetOfLeftCosets] at c
         simp only [mul_right_inj, mul_left_inj, mul_one, self_eq_mul_right, one_mul,
           self_eq_mul_left]
-
+        sorry
+      sorry
+    · sorry
     done
 
 
-  --(Rose)
+  --(Rose) This lemma states the size of a coset and subgroup are the same. This lemma gave me a lot of issues
+  --with fintypes, as sythesization gets weird with the way proved. I attempted to fix this using DecidablePred
+  --but it only partially worked. The proofs still throw an error however, the lemmas compile fine. This is obviously
+  --an issue, but as it compiles I will leave it for now and come back at a later date, if I have time.
   lemma LeftCosetCardEqSubgroupCard [Fintype G] [Fintype H] (g : G) [DecidablePred fun a => a ∈ g LCoset* H]
   [DecidablePred fun b => b ∈ ((fun h => g * h) '' H)]:
   Fintype.card H = Fintype.card (g LCoset* H) := by
@@ -970,11 +1015,25 @@ section cosetsMul
     exact LeftCancelMul g x y
     done
 
+  lemma RightCosetCardEqSubgroupCard [Fintype G] [Fintype H] (g : G) [DecidablePred fun a => a ∈ H RCoset* g]
+  [DecidablePred fun b => b ∈ ((fun h => h * g) '' H)]:
+  Fintype.card H = Fintype.card (H RCoset* g) := by
+    refine (card_image_of_inj_on ?H).symm
+    intro x
+    intro h1
+    intro y
+    intro h2
+    exact RightCancelMul g x y
+    done
 
+
+  --(Rose) Here is a skeleton of one of the methods I attempted to do, to prove the previous face
+  --Here I instead tried to defie a bijection between the coset and subgroup, but this proved to just be a
+  --needlessly complicated thing to do for what we needed so I abandoned it, however the knowledge I learned
+  --for the attempt helped with prooving the previous lemma.
+  /-
   lemma LeftCosetBijectionMul (g : G) : g LCoset* H ≃ H := by
     rw[LeftCosetMul]
-
-
 
     refine (BijOn.equiv ?f ?h).symm
     · exact fun a ↦ g
@@ -998,8 +1057,13 @@ section cosetsMul
     cases
 
     done
+  -/
 
-  --(Rose)Here is one of the main ways I tried and failed to
+  --(Rose)Here is whats left over of one of the main ways I tried and failed to do partiting.
+  --What I attempted to do was create a class or structure that would define a set of cosets, and
+  --then use an instance of an indexed partition to prove they partitioned the group
+  --This did not work very well and so I moved on, however failier also imformed future attempts to do
+  --this after finding IsPartition might easier to work with.
   /-
   class SetOfLeftCosetsMul ()
 
@@ -1016,31 +1080,45 @@ section cosetsMul
 
   -/
 
+
+  --(Rose) This was the first and very naive way that I tried to do paritioning
+  --where I just used a disjoint union. I very quickly found I do not have enough
+  --proficiency with lean nor the lemmas proved to be able to do this, so I opted to
+  --try and find a simpler way using some Mathlib stuff.
+  /-
   lemma LeftCosetsPartitionGroup  : (⨆ g ∈ ↑H, g LCoset* H) = G := by
     sorry
     done
 
   #check SetOfLeftCosets
-
-  def indexMul [Fintype G] [Fintype H] : ℕ :=
-    Fintype.card G / Fintype.card H
+  -/
 
 
-  theorem LagrangeMul [Fintype G] [Fintype H] (g : G) :
+  --(Rose) This is the big end goal of our section. Unfortunatly this ended up being too ambitious for us, as building up
+  --all of cosets from the start was a very large task for the amount of lean experience we had. I have left it sorry'd out
+  --as it is still been useful to have the statement of for proving the corollorys for the Number theory side. I feel we were pretty
+  --close to getting there however the main road block was proving paritioning.
+  theorem LagrangeMul [Fintype G] [Fintype H] :
   Fintype.card H ∣ Fintype.card G := by
     rw [dvd_iff_exists_eq_mul_left]
     let p : Set (Set G) := SetOfLeftCosets H
 
-
-
-
-    --rw [← @iSup_Prop_eq]
-    --rw [← @iSup_range']
+    sorry
 
     done
 
+  --(Rose) Knowing that |H| divides |G| allows us to define the index
+  def indexMul [Fintype G] [Fintype H] : ℕ :=
+    Fintype.card G / Fintype.card H
+
+
+
   --(Rose) This is the most important corollory of Lagrange to prove as it is the one used by the number theory
-  --side of the project.
+  --side of the project in their proofs. This proof ended up using a lot of new MathLib things I had not yet encountered
+  --such as orders and generating a cyclic group. This was quite a nice proof to write as a corollory of Lagrange, the only
+  --"issue" was some of the power lemma realted to groups are taken from some group theory mathlib files. Ideally we would've
+  --proved them our selves, however I only realised this too late. If there is time at the end of the project, I will go back to
+  --prove these myself, however for now I will just use the Mathlib version of the powers related to groups.
   theorem PowOfCardEqOne [Fintype G] (g : G) :
   g ^ (Fintype.card G) = 1 := by
     let o : ℕ := orderOf g
@@ -1062,79 +1140,30 @@ section cosetsMul
       exact one_pow w
     done
 
+  --(Rose) This is another very important result that is a corollory of Lagrange's Theorem. This one was
+  --mostly using the same logic as the previous but even simpler.
+  theorem OrderOfElemDividesGroupCard [Fintype G] (g : G) :
+  orderOf g ∣ Fintype.card G := by
+    let K : Subgroup G := Subgroup.zpowers g
+    have h1 : Fintype.card K = orderOf g := by
+      exact orderOf_eq_card_zpowers.symm
+    rw[← h1]
+    exact LagrangeMul K
+    done
 
 end CosetsMul
 
 end cosetsMul
-/-
-section cosetsAdd
 
-  def LeftCosetAdd [AddGroup G] (g : G) (H : Set G) : Set G :=
-    Set.image (fun h => g + h) H
+--(Rose) Initially we planned on also doing this for additive cosets however due to time constraints this was not possible.
 
-  def RightCosetAdd [AddGroup G] (H : Set G) (g : G) : Set G :=
-    Set.image (fun h => h + g) H
+--(Rose) This here ends the group theory side of things. Ultimatly we were not able to prove our initial goal of proving
+--Lagrange's theorem from our own definition of Cosets. Over the course of the project I have learnt many things about lean
+--and in hindsight, proving such a thing with my skills was a large undertaking but although I disappointed at the fact I was
+--not able to complete my goal, I am still proud of how far we came. This has been a very rewarding and informative experience of formalising
+-- mathematics. I feel this especially as I tried to avoid looking at the path mathlib took to proving it and instead doing based on what I thought
+--made sense for proving such a theorem.
 
-  notation:65 i:65 "LCoset+" H:65 => LeftCosetAdd i H
-  notation:65 H:65 "RCoset+" i:65 => RightCosetAdd H i
-
-  /-
-  def LeftCosetEqAdd [AddGroup G] (g h : Set G) (i j : G):=
-    i LCoset+ g = j LCoset+ h
-
-  def RightCosetEqAdd [AddGroup G] (i j : G) (g h : Set G) :=
-    g RCoset+ i = h RCoset+ j
-
-  -/
-  namespace CosetsAdd
-
-  variable (G : Type) [AddGroup G] (H : AddSubgroup G)
-
-  lemma AssocLeftCosetAdd (a b : G) (H : AddSubgroup G) :
-  a LCoset+ b LCoset+ H = (a+b) LCoset+ H := by
-    sorry
-    done
-
-  lemma AssocRightCosetAdd (a b : G) (H : AddSubgroup G) :
-  (H RCoset+ a) RCoset+ b = H RCoset+ (a+b) := by
-    sorry
-    done
-
-  lemma LeftCosetElemImpEqAdd (a b : G) (H : AddSubgroup G) :
-  a = b ↔ a LCoset+ H = b LCoset+ H := by
-    sorry
-    done
-
-  lemma RightCosetElemImpEqAdd (a b : G) (H : AddSubgroup G) :
-  a = b ↔ H RCoset+ a = H RCoset+ b := by
-    sorry
-    done
-
-    --May be more lemmas needed
-
-  -- if h ∈ iH and jH then iH = jH
-  lemma LeftCosetEqOrDisjointAdd (g i j : G) (H : AddSubgroup G)
-  (h : g ∈ (i LCoset+ H) ∧ g ∈ (j LCoset+ H)) :
-  i LCoset+ H = j LCoset+ H := by
-    sorry
-    done
-
-  lemma RightCosetEqOrDisjointAdd (g i j : G) (H : AddSubgroup G)
-  (h : g ∈ (H RCoset+ i) ∧ g ∈ (H RCoset+ j)) :
-  H RCoset+ i = H RCoset+ j := by
-    sorry
-    done
-
-  def indexAdd : ℕ :=
-    sorry
-    -- number of cosets iH, jH ... that makes up G
-
-  --Langrange's Theorem
-
-end CosetsAdd
-
-end cosetsAdd
--/
 
 
 --Beginning of Number Theory Side :-)
