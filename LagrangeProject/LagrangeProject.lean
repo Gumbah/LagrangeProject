@@ -294,6 +294,7 @@ section rings
 
   variable {R : Type} [Ring R]
 
+  --Edward (Rings)
   --we're first going to prove all the results from additive rings on groups
 
   @[simp]lemma LeftCancelAdd (a b c : R) : a + b = a + c → b = c := by
@@ -503,6 +504,9 @@ section cosetsMul
   notation:50 i:50 "RC=" j:50 => RightCosetEqMul (H RCoset* i) (H LCoset* j)
   set_option quotPrecheck true
   -/
+
+  --Edward
+  --Some definitions for NormEquiv and tne meaning of quotient group
 
   def NormEquiv[Group G] (H: Set G) (a b : G):= a * b⁻¹ ∈ H
 
@@ -718,6 +722,12 @@ section cosetsMul
       exact ElemInOwnRightCosetMul H j
     done
 
+  --Edward
+  /-These next 2 theorems were needed for showing that normality
+  is the same as having equivalent cosets. This is a result that is neede
+  in order to establish a link between the world of cosets and quotient
+  groups, which will help later on-/
+
   theorem MemLeftCoset (g : G): x ∈ H ↔ g * x ∈ g LCoset* H := by
   constructor
   · intro h1
@@ -849,7 +859,7 @@ section cosetsMul
     done
 
 
-
+  --Edward
   --we've done most of the immediately relevant stuff for cosets
   --but to define quotient groups we need to show a fact about them and normal subgroups
 
@@ -887,11 +897,11 @@ section cosetsMul
     unfold LeftQuotientGroup
     rw[NormalIffEqMulCosets] at h
     conv =>
-    · lhs
+      lhs
       congr
-      intro g
-      rw [h]
-      rfl
+      intro G
+      rw[h]
+      congr
     done
 
 
@@ -904,7 +914,7 @@ section cosetsMul
       rw[CosetsOfNormEq]
 
     done
-
+  -/
   --(Rose)(Oh god)
 
   --variable [H.Normal] [Fintype G] [Fintype H]
@@ -943,6 +953,7 @@ section cosetsMul
           self_eq_mul_left]
 
     done
+
 
   --(Rose)
   lemma LeftCosetCardEqSubgroupCard [Fintype G] [Fintype H] (g : G) [DecidablePred fun a => a ∈ g LCoset* H]
@@ -1564,7 +1575,7 @@ lemma int_to_nat_mod_nat (x : ℤ) (y : ℕ) (h : 0 ≤ x): (Int.toNat x) % y = 
 --I found it difficult working around the restrictions of naturals and integers in lean, as the differences
 --between the two are far clearer then they are on pen-and-paper proofs. Despite `bez_a m n % n` being a natural
 --number, I was required to use the `Int.toNat` function to cast them back into the naturals, which made what should
---have been simple statements become more than trivial to prove, which is why I had to write the two lemmas above.
+--have been simple statements become non-trivial to prove, which is why I had to write the two lemmas above.
 
 --Jakub
 @[simp] lemma my_mod_mod_of_lcm (x m n : ℕ) : (x % (Nat.lcm m n)) % m = x % m := by
@@ -1749,7 +1760,6 @@ def classical_crt (m n a b : ℕ) (h : Nat.Coprime m n) : {x // x ≡ a [mod m] 
   rw[h_1]
   done
 
-
 @[simp] lemma gen_bezout {p n : ℕ} : (Nat.gcd  (n : ℕ) (p : ℕ)) = (bez_a (n : ℕ) (p : ℕ))*(n : ℕ)+(bez_b (n : ℕ) (p : ℕ)) *(p : ℕ) := by
   rw[bezout]
   done
@@ -1845,6 +1855,7 @@ def classical_crt (m n a b : ℕ) (h : Nat.Coprime m n) : {x // x ≡ a [mod m] 
 #check Int.toNat_add_nat
 #check Nat.dvd_add
 
+/-
 theorem euclid_l1_coprime {p m n : ℕ}(h: Nat.Prime p)(h_n : p < n)(h_m : p < m)(h_1 : p ∣ m*n)(h_2 : ¬(p ∣ m)) : (p ∣ n):= by
  -- a*p + b*m = 1
  -- a*p*n + b*m*n = n
@@ -1869,6 +1880,7 @@ theorem euclid_l1_coprime {p m n : ℕ}(h: Nat.Prime p)(h_n : p < n)(h_m : p < m
   -- rewrite gcd p m as its bezout identity: ∃ x,y s.t. mx + py =1
   -- n = n(1) = n(mx + py)
   sorry
+-/
 
 --21/01/21 - Jakub
 
@@ -1876,6 +1888,7 @@ theorem euclid_l1_coprime {p m n : ℕ}(h: Nat.Prime p)(h_n : p < n)(h_m : p < m
 --Unfortunately my idea for a proof of this did not line up with Katie's so I did not end up using the helpful lemmas
 --that she proved before. It also turned out that some of the assumptions she was working with were not required for
 --my proof, so they have been removed from the statement of Euclid's theorem, in order for it to apply more generally.
+--Katie wanted me to leave in her unfinished proof (above) to complete later once we have finished our initial goal.
 
 --Jakub
 theorem euclid_left_coprime {p m n : ℕ}(h: Nat.Prime p)(h1 : p ∣ m*n)(h2 : ¬(p ∣ m)) : (p ∣ n):= by
@@ -1911,6 +1924,7 @@ theorem euclid_left_coprime {p m n : ℕ}(h: Nat.Prime p)(h1 : p ∣ m*n)(h2 : �
 --learning how to apply it, which was a task in of itself - simplified the theorem so that I could simply apply the above lemma
 --for the result.
 
+-- Katie
 theorem euclid {p m n : ℕ}(h: Nat.Prime p): ((p : ℕ) ∣ m*n) → ((p : ℕ) ∣ n) ∨ ((p : ℕ) ∣ m) := by
   intro h1
   refine or_iff_not_imp_right.mpr ?_
@@ -1926,16 +1940,42 @@ theorem euclid {p m n : ℕ}(h: Nat.Prime p): ((p : ℕ) ∣ m*n) → ((p : ℕ)
 -- (i.e. either gcd p n = 1 or gcd p m = 1, but can't have both occur simultaneously and wanting to structure
 -- the proof like suppose p ∣ m, and then supose p ∣ n) was very new to me.
 
+/-
 theorem gen_euclid {d m n : ℕ} (h1 : d ∣ m * n) (h2 : Nat.gcd m d = 1) : d ∣ n := by
   -- a*m + b*d = 1
   -- a*m*n + b*d*n = n
   -- d∣ m*n, d ∣ d => d ∣ n
   rw[← mul_one n]
   rw[← bezout_one_nat]
-  sorry
-  sorry
-  sorry
-  sorry
+-/
+
+--04/02/24 - Jakub
+--Filled out Katie's sorry'd out `gen_euclid`, her unfinished proof is commented out above.
+theorem gen_euclid {d m n : ℕ} (h1 : d ∣ m * n) (h2 : Nat.gcd m d = 1) : d ∣ n := by
+  cases d with
+  | zero =>
+    rw [Nat.zero_eq, zero_dvd_iff]
+    rw [Nat.gcd_zero_right] at h2
+    rw [h2] at h1
+    rw [Nat.zero_eq, zero_dvd_iff, Nat.one_mul] at h1
+    exact h1
+  | succ d =>
+    rw [Nat.dvd_mul] at h1
+    let ⟨y,⟨z,h'⟩⟩ := h1
+    let ⟨hy,⟨ hz,hyz⟩⟩ := h'
+    have : y ∣ d.succ := by
+      apply dvd_of_mul_right_eq z; exact hyz
+    have hy' : y = 1 := by
+      rw [← Nat.eq_one_of_dvd_coprimes]
+      · rw [Nat.coprime_iff_gcd_eq_one]
+        exact h2
+      · exact hy
+      · exact this
+    rw [hy', one_mul] at hyz
+    rw [hyz] at hz
+    exact hz
+  done
+
 -- Katie: laying out the land
 
 -- 11/01/24 - Jakub filled out the sorry here
@@ -1973,9 +2013,14 @@ def my_totient (n : ℕ) : ℕ :=
 
 --#eval φ (7)
 
+/-
+--We were not able to prove the algebraic version of the chinese remainder theorem (see `ZMod.chineseRemainder`)
+--of which the following is a corollary. Fortunately, it is not required below.
+
 theorem my_tot_mul (m n : ℕ) : (my_totient (m))*(my_totient (n)) = (my_totient (m*n)) := by
   --need : algebraic CRT for 2 variables
   sorry
+-/
 
 -- To prove my_totient(p)=p-1, we will need specfific results about the Finset.range intersected with coprimes of p;
 -- specifically that 0 is the only element to be removed from the filter when p is prime.
@@ -2016,8 +2061,8 @@ lemma dvd_less_than_nat (m n : ℕ) (h : m ∣ n) (h_n : n < m) : n = 0 := by
   --I would imagine that this proof was not particularly efficient but I wanted practice using the `calc` tactic
   --as it seems useful in mathlib for some proofs later on.
   done
--- Katie
 
+-- Katie
 theorem nat_gcd_prime_prime (p a : ℕ)(h_a : a < p) (h : Nat.gcd p a = p) : a = 0 := by
   rw[gcd_eq_p] at h
   apply dvd_less_than_nat at h
@@ -2025,6 +2070,7 @@ theorem nat_gcd_prime_prime (p a : ℕ)(h_a : a < p) (h : Nat.gcd p a = p) : a =
   exact h_a
   done
 
+--Katie
 theorem prime_coprime (p : ℕ) (h_p : Nat.Prime p) : ((Finset.range p).filter p.Coprime) = (Finset.range p) \ {0} := by
   refine Finset.ext ?_
   intro a
@@ -2057,9 +2103,11 @@ theorem prime_coprime (p : ℕ) (h_p : Nat.Prime p) : ((Finset.range p).filter p
         exact c
   done
 
+--Katie
 @[simp] lemma finset_one : Finset.range 1 = {0} := by
   rfl; done
 
+--Katie
 theorem my_tot_prime (p : ℕ) (h : Nat.Prime p): (my_totient (p)) = (p-1) := by
   unfold my_totient
   rw[prime_coprime]
@@ -2644,19 +2692,29 @@ theorem order_lemma_2 {n : ℕ} (a : Units (ZMod n)) : ((orderOf (a : Units (ZMo
 
 def prim_roots_mod_n {n : ℕ} := {a // (orderOf (a : Units (ZMod n))) = my_totient (n)}
 
--- With help from my BEST friend Rose, I'm able to create a connection between my primitive roots and the generated cyclic group ZmodnZ.
+-- Whilst I do know the proof for showing (Units(ZModp)) is cyclic, and we have a lot of the tools for it (i.e. we have sum of divisors
+-- and totient function but not FTA), it would take up too much time for something that is not the main focus here. If we did have more
+-- time, this would have been a fun and satisfying side-goal, since it involves a lot of manipulation that would feel quite unnatural
+-- to LEAN. I have imported all of RingTheory.IntegralDomain for the one instance used below:
 
-theorem {p : Nat.Primes} : (Zmod p)
+theorem zmodp_units_cyclic {p : Nat.Primes} [CommRing (ZMod p)] [IsDomain (ZMod p)] [Finite (Units (ZMod p))]: IsCyclic (Units (ZMod p)) := by
+ exact instIsCyclicUnitsToMonoidToMonoidWithZeroToSemiringToCommSemiringInstGroupUnits
 
-theorem prim_roots_gen_units {n : ℕ} [inst: Group prim_roots_mod_n] (a : prim_roots_mod_n) : Subgroup.zpowers a = Units (ZMod n) := by
+-- Now, utilising a method of writing each member of (Units(ZMod p)) as a power of the generator of the cyclic group, we can prove Wilson's Theorem.
+
+lemma prod_finset_range_eq : ∏ x in Finset.range (p - 1), (x + 1) = ∏ x in (Finset.range p) \ {0}, x := by
+  sorry
+
+@[simp] lemma finset_range_eq_fintype : ∏ x in (Finset.range p \ {0}), x = ∏ x in {x // x ∈ Finset.range p \ {0}}, x := by
+  rfl
+
+@[simp] lemma zmodp_units_elts {p : Nat.Primes} : Units (ZMod p) = Finset.Ico 1 (p : ℕ) := by
+  sorry
+
+lemma zmodp_units_generated {p : Nat.Primes} : ∃ (g : (Units (ZMod p))), ∀ (x : Units (ZMod p)), x ∈ Subgroup.zpowers g := by
   sorry
 
 
---have: every elt of ZmodpZ has order (my_totient p)=p-1. This is the same as the order of the group.
--- units(zmod p) = ZmodpZ, since p-1 elements of {1,...,p} are coprime to p
-
-theorem {p : Nat.Primes} (a : Units(ZMod p)) : orderOf (a : Units(ZMod p)) =
-
-theorem wilson (p : Nat.Primes) : (Nat.factorial ((p-1) : ℕ)) ≡ -1 [mod p] := by
--- need : FLT, order lemmas
-  sorry
+theorem wilson {hp : Nat.Prime p} (h : Odd p) : ((p-1) : ℕ).factorial = (-1 : ZMod n) := by
+  rw[← Finset.prod_Ico_id_eq_factorial]
+  rw[← zmodp_units_elts]
