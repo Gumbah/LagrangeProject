@@ -902,7 +902,7 @@ section cosetsMul
       rw[CosetsOfNormEq]
 
     done
-
+  -/
   --(Rose)(Oh god)
 
   --variable [H.Normal] [Fintype G] [Fintype H]
