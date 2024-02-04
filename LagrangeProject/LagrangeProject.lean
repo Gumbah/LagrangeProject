@@ -292,6 +292,7 @@ section rings
 
   variable {R : Type} [Ring R]
 
+  --Edward (Rings)
   --we're first going to prove all the results from additive rings on groups
 
   @[simp]lemma LeftCancelAdd (a b c : R) : a + b = a + c → b = c := by
@@ -501,6 +502,9 @@ section cosetsMul
   notation:50 i:50 "RC=" j:50 => RightCosetEqMul (H RCoset* i) (H LCoset* j)
   set_option quotPrecheck true
   -/
+
+  --Edward
+  --Some definitions for NormEquiv and tne meaning of quotient group
 
   def NormEquiv[Group G] (H: Set G) (a b : G):= a * b⁻¹ ∈ H
 
@@ -716,6 +720,12 @@ section cosetsMul
       exact ElemInOwnRightCosetMul H j
     done
 
+  --Edward
+  /-These next 2 theorems were needed for showing that normality
+  is the same as having equivalent cosets. This is a result that is neede
+  in order to establish a link between the world of cosets and quotient
+  groups, which will help later on-/
+
   theorem MemLeftCoset (g : G): x ∈ H ↔ g * x ∈ g LCoset* H := by
   constructor
   · intro h1
@@ -847,7 +857,7 @@ section cosetsMul
     done
 
 
-
+  --Edward
   --we've done most of the immediately relevant stuff for cosets
   --but to define quotient groups we need to show a fact about them and normal subgroups
 
@@ -885,11 +895,11 @@ section cosetsMul
     unfold LeftQuotientGroup
     rw[NormalIffEqMulCosets] at h
     conv =>
-    · lhs
+      lhs
       congr
-      intro g
-      rw [h]
-      rfl
+      intro G
+      rw[h]
+      congr
     done
 
 
@@ -909,7 +919,7 @@ section cosetsMul
 
   --#check QuotientGroup G H
   --#check Fintype.card (QuotientGroup G H)
-
+  -/
 
   --(Rose)
   lemma LeftCosetCardEqSubgroupCard [Fintype G] [Fintype H] (g : G) [DecidablePred fun a => a ∈ g LCoset* H]
