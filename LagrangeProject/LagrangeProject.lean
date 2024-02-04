@@ -848,13 +848,17 @@ section cosetsMul
       exact NormalofEqCosets H h2
       done
 
-  theorem LeftEqRightQuotientGroup [H.Normal]: RightQuotientGroup G H = LeftQuotientGroup G H := by
+  theorem LeftEqRightQuotientGroup [h: H.Normal]: LeftQuotientGroup G H = RightQuotientGroup G H := by
     unfold RightQuotientGroup
     unfold LeftQuotientGroup
-    have e1: H.Normal → ∀ g : G, g LCoset* H = H RCoset* g := by
-      rw[NormalIffEqMulCosets]
-
-
+    rw[NormalIffEqMulCosets] at h
+    conv =>
+    · lhs
+      congr
+      intro g
+      rw [h]
+      rfl
+    done
 
 
   /-
