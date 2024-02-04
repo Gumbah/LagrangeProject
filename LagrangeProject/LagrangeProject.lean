@@ -2650,19 +2650,29 @@ theorem order_lemma_2 {n : ℕ} (a : Units (ZMod n)) : ((orderOf (a : Units (ZMo
 
 def prim_roots_mod_n {n : ℕ} := {a // (orderOf (a : Units (ZMod n))) = my_totient (n)}
 
--- With help from my BEST friend Rose, I'm able to create a connection between my primitive roots and the generated cyclic group ZmodnZ.
+-- Whilst I do know the proof for showing (Units(ZModp)) is cyclic, and we have a lot of the tools for it (i.e. we have sum of divisors
+-- and totient function but not FTA), it would take up too much time for something that is not the main focus here. If we did have more
+-- time, this would have been a fun and satisfying side-goal, since it involves a lot of manipulation that would feel quite unnatural
+-- to LEAN. I have imported all of RingTheory.IntegralDomain for the one instance used below:
 
-theorem {p : Nat.Primes} : (Zmod p)
+theorem zmodp_units_cyclic {p : Nat.Primes} [CommRing (ZMod p)] [IsDomain (ZMod p)] [Finite (Units (ZMod p))]: IsCyclic (Units (ZMod p)) := by
+ exact instIsCyclicUnitsToMonoidToMonoidWithZeroToSemiringToCommSemiringInstGroupUnits
 
-theorem prim_roots_gen_units {n : ℕ} [inst: Group prim_roots_mod_n] (a : prim_roots_mod_n) : Subgroup.zpowers a = Units (ZMod n) := by
+-- Now, utilising a method of writing each member of (Units(ZMod p)) as a power of the generator of the cyclic group, we can prove Wilson's Theorem.
+
+lemma prod_finset_range_eq : ∏ x in Finset.range (p - 1), (x + 1) = ∏ x in (Finset.range p) \ {0}, x := by
+  sorry
+
+@[simp] lemma finset_range_eq_fintype : ∏ x in (Finset.range p \ {0}), x = ∏ x in {x // x ∈ Finset.range p \ {0}}, x := by
+  rfl
+
+@[simp] lemma zmodp_units_elts {p : Nat.Primes} : Units (ZMod p) = Finset.Ico 1 (p : ℕ) := by
+  sorry
+
+lemma zmodp_units_generated {p : Nat.Primes} : ∃ (g : (Units (ZMod p))), ∀ (x : Units (ZMod p)), x ∈ Subgroup.zpowers g := by
   sorry
 
 
---have: every elt of ZmodpZ has order (my_totient p)=p-1. This is the same as the order of the group.
--- units(zmod p) = ZmodpZ, since p-1 elements of {1,...,p} are coprime to p
-
-theorem {p : Nat.Primes} (a : Units(ZMod p)) : orderOf (a : Units(ZMod p)) =
-
-theorem wilson (p : Nat.Primes) : (Nat.factorial ((p-1) : ℕ)) ≡ -1 [mod p] := by
--- need : FLT, order lemmas
-  sorry
+theorem wilson {hp : Nat.Prime p} (h : Odd p) : ((p-1) : ℕ).factorial = (-1 : ZMod n) := by
+  rw[← Finset.prod_Ico_id_eq_factorial]
+  rw[← zmodp_units_elts]
