@@ -2414,14 +2414,6 @@ def nat_to_zmod_unit_of_coprime {n : ℕ} (x : ℕ) (h : Nat.Coprime x n) : (Uni
 theorem coe_zmod_unit_of_coprime {n : ℕ} (x : ZMod n) (h : Nat.Coprime x.val n) : (zmod_unit_of_coprime x h : ZMod n) = x := by
   rfl; done
 
--- Probably wont need : theorem coe_zmod_inv_unit {n : ℕ} (y : Units (ZMod n)) : (y : ZMod n)⁻¹ = (y⁻¹ : (Units (ZMod n))) := by
-
--- Probably wont need : theorem zmod_mul_inv_unit {n : ℕ} (x : ZMod n) (h : IsUnit x) : x * x⁻¹ = 1 := by
--- theorem zmod_inv_mul_unit {n : ℕ} (x : ZMod n) (h : IsUnit x) : x⁻¹ * x = 1 := by
-
--- Since proving it ourselves would be more of a fuss than is worth (messing with the definition of val and its sources in Fin.val), we decided to
--- use ZMod.val_lt straight from mathlib in the isomorphism below.
-
 --02/02/2024 - Jakub & Katie
 
 --Katie and I worked together to complete the following theorem. Katie was responsible for `toFun` and most of `invFun`,
@@ -2483,7 +2475,7 @@ def my_zmod_unitsEquivCoprime {n : ℕ} [NeZero n] : (Units (ZMod n)) ≃ {x // 
       rw [this]
     done
 
--- Getting the following lemmas to synthesise was a pain in of itself; type errors everywhere, in spite of my level of understanding. The main issue was
+-- Getting the following lemmas to synthesize was a pain in of itself; type errors everywhere, in spite of my level of understanding. The main issue was
 -- zmod_units_equiv_card, which did not allow me to apply/rw Fintype.card_congr no matter what I tried, or what extra lemmas I created. Eventually, I found that
 -- using refine somehow made it successful. Now the main issue is finishing constructing the isomorphism above.
 
@@ -2594,6 +2586,42 @@ theorem little_fermat_2 (a p : ℕ) (h : Nat.Prime p) (h1 : p ∣ a ∨ ¬(p ∣
 
 --wilsons theorem
 
-theorem wilson (p : Nat.Primes) : (Nat.factorial p-1) ≡ -1 [mod p] := by
+theorem order_lemma_1 {m k : ℕ} (a : Units (ZMod m)) : (a^k = (1 : Units (ZMod m))) ↔ ((orderOf (a : Units (ZMod m))) ∣ k) := by
+  constructor
+  · intro h1
+    apply orderOf_dvd_of_pow_eq_one
+    exact h1
+  · intro h2
+    rw[dvd_def] at h2
+    cases h2 with
+    | intro c h3 =>
+      rw[h3]
+      rw[pow_mul]
+      rw[pow_orderOf_eq_one]
+      rw[one_pow]
+  done
+
+theorem order_lemma_2 {n : ℕ} (a : Units (ZMod n)) : ((orderOf (a : Units (ZMod n))) ∣ my_totient (n)) := by
+  rw[← order_lemma_1]
+  rw[Units.ext_iff]
+  apply ZMod.eq_iff_modEq_nat
+  sorry
+
+def prim_roots_mod_n {n : ℕ} := {a // (orderOf (a : Units (ZMod n))) = my_totient (n)}
+
+-- With help from my BEST friend Rose, I'm able to create a connection between my primitive roots and the generated cyclic group ZmodnZ.
+
+theorem {p : Nat.Primes} : (Zmod p)
+
+theorem prim_roots_gen_units {n : ℕ} [inst: Group prim_roots_mod_n] (a : prim_roots_mod_n) : Subgroup.zpowers a = Units (ZMod n) := by
+  sorry
+
+
+--have: every elt of ZmodpZ has order (my_totient p)=p-1. This is the same as the order of the group.
+-- units(zmod p) = ZmodpZ, since p-1 elements of {1,...,p} are coprime to p
+
+theorem {p : Nat.Primes} (a : Units(ZMod p)) : orderOf (a : Units(ZMod p)) =
+
+theorem wilson (p : Nat.Primes) : (Nat.factorial ((p-1) : ℕ)) ≡ -1 [mod p] := by
 -- need : FLT, order lemmas
   sorry
