@@ -13,6 +13,7 @@ import Mathlib.SetTheory.Cardinal.Finite
 import Mathlib.Data.Set.Image
 import Mathlib.Init.Data.List.Basic
 import Mathlib.Data.Nat.Factorial.Basic
+import Mathlib.GroupTheory.SpecificGroups.Cyclic
 --Group Theory Imports
 import Mathlib.Algebra.Group.MinimalAxioms
 import Mathlib.GroupTheory.Subgroup.Basic
@@ -1789,6 +1790,11 @@ def classical_crt (m n a b : ℕ) (h : Nat.Coprime m n) : {x // x ≡ a [mod m] 
 -- but, by hypothesis it was a Nat.Prime. This simple solution hadn't occured to me, despite having attempted many
 -- different ways to phrase that {p : Nat.Primes}{p : Nat}.
 
+-- Looking back at these whilst adding comments just before submission, it is quite humorous the extent to which LEAN
+-- can stump you despite the simplest of work-arounds. I apologise for there being so many lemmas that are equivalent:
+-- I simply didn't know any better at the time, and felt more comfortable applying lemmas directly, than fiddling with them
+-- within a proof.
+
 @[simp] lemma gcd_one_true {p m : ℕ}(h: Nat.Prime p) : (Nat.gcd p m = 1) → ¬(Nat.gcd p m = p):= by
   intro h1
   rw[h1]
@@ -1827,7 +1833,7 @@ def classical_crt (m n a b : ℕ) (h : Nat.Coprime m n) : {x // x ≡ a [mod m] 
     exact Nat.gcd_eq_left h2
   done
 
-@[simp] lemma gcd_eq_1 {p x : ℕ}(h: Nat.Prime p): (Nat.gcd p x = 1) ↔ ¬((p : ℕ) ∣ x) := by
+@[simp] lemma gcd_eq_1 {p x : ℕ}(h: Nat.Prime p) : (Nat.gcd p x = 1) ↔ ¬((p : ℕ) ∣ x) := by
   constructor
   · intro h1
     refine imp_false.mp ?mp.a
@@ -1855,6 +1861,19 @@ def classical_crt (m n a b : ℕ) (h : Nat.Coprime m n) : {x // x ≡ a [mod m] 
 #check Int.toNat_add_nat
 #check Nat.dvd_add
 
+theorem euclid_l1_coprime {p m n : ℕ}(h: Nat.Prime p)(h1 : p ∣ m*n)(h2 : ¬(p ∣ m)) : (p ∣ n) := by
+  rw[← gcd_eq_1] at h2
+  rw[← mul_one n]
+
+  rw[Nat.gcd_eq_gcd_ab]
+
+  rw[← Int.coe_nat_gcd] at h2
+
+  rw[Int.gcd_eq_gcd_ab] at h2
+
+Int.gcd_eq_gcd_ab
+Int.coe_nat_gcd
+Int.gcd_eq_natAbs
 /-
 theorem euclid_l1_coprime {p m n : ℕ}(h: Nat.Prime p)(h_n : p < n)(h_m : p < m)(h_1 : p ∣ m*n)(h_2 : ¬(p ∣ m)) : (p ∣ n):= by
  -- a*p + b*m = 1
@@ -2656,13 +2675,8 @@ theorem little_fermat_2 (a p : ℕ) (h : Nat.Prime p) (h1 : p ∣ a ∨ ¬(p ∣
   done
 
 --Katie
---def my_mod_order (a m : ℕ) (h : Nat.Coprime a m) :
-
---theorem my_mod_order_dvd (m k : ℕ) (a : m.Coprime) : (a)^(k) ≡ 1 [mod m] ↔ (my_mod_order (m) (a)) ∣ k := by
--- ord m (a) ∣φ(m)
--- ord m (a^u)  = ord m (a) / gcd (u ord_m(a))
-
---wilsons theorem
+-- I planned for this to be a fun little extra project to have a crack at after FLT was completed, since it involved a great deal of
+-- overlap with theorems we have already proven. The order lemmas weren't necessary in the end.
 
 theorem order_lemma_1 {m k : ℕ} (a : Units (ZMod m)) : (a^k = (1 : Units (ZMod m))) ↔ ((orderOf (a : Units (ZMod m))) ∣ k) := by
   constructor
@@ -2687,6 +2701,9 @@ theorem order_lemma_2 {n : ℕ} (a : Units (ZMod n)) : ((orderOf (a : Units (ZMo
 
 def prim_roots_mod_n {n : ℕ} := {a // (orderOf (a : Units (ZMod n))) = my_totient (n)}
 
+-- Initially, I set out to utilise primitive roots to approach Wilson's theorem, but I think combining many previous lemmas
+-- is preferable.
+
 -- Whilst I do know the proof for showing (Units(ZModp)) is cyclic, and we have a lot of the tools for it (i.e. we have sum of divisors
 -- and totient function but not FTA), it would take up too much time for something that is not the main focus here. If we did have more
 -- time, this would have been a fun and satisfying side-goal, since it involves a lot of manipulation that would feel quite unnatural
@@ -2706,10 +2723,30 @@ lemma prod_finset_range_eq : ∏ x in Finset.range (p - 1), (x + 1) = ∏ x in (
 @[simp] lemma zmodp_units_elts {p : Nat.Primes} : Units (ZMod p) = Finset.Ico 1 (p : ℕ) := by
   sorry
 
-lemma zmodp_units_generated {p : Nat.Primes} : ∃ (g : (Units (ZMod p))), ∀ (x : Units (ZMod p)), x ∈ Subgroup.zpowers g := by
+theorem zmodp_unitsEquivCoprime [NeZero p] : (Units (ZMod p)) ≃ {x // x ∈ (Finset.range p).filter p.Coprime}:= by
+  apply my_zmod_unitsEquivCoprime
+
+--theorem prime_coprime (p : ℕ) (h_p : Nat.Prime p) : ((Finset.range p).filter p.Coprime) = (Finset.range p) \ {0}
+
+-- Yet again, the bane of my existence - type classes - crops up. Hoping this work around could secure the win (i.e. instead of claiming the finset range is the same
+-- as Units(ZMod p), and therefore claim the set is cyclic with applications to rewriting each component of (p-1)! as a generated element, we can use the isomorphism
+-- constructed previously to claim the set is cyclic by its isomorphism with (Units(ZMod p)).
+
+theorem isom_cyclic_finset_range_p {p : Nat.Primes} [inst: Group ({x // x ∈ (Finset.range (p : ℕ)).filter (p : ℕ).Coprime})] [inst : Fintype ({x // x ∈ (Finset.range (p : ℕ)).filter (p : ℕ).Coprime}) ] : IsCyclic ({x // x ∈ (Finset.range (p : ℕ)).filter (p : ℕ).Coprime}) := by
+  apply isCyclic_of_surjective
   sorry
 
+lemma finset_range_generated {p : Nat.Primes} [inst: Group ({y // y ∈ (Finset.range (p : ℕ)).filter (p : ℕ).Coprime})] (h : IsCyclic ({x // x ∈ (Finset.range (p : ℕ)).filter (p : ℕ).Coprime})): ∃ (g : ({y // y ∈ (Finset.range (p : ℕ)).filter (p : ℕ).Coprime})), ∀ (x : {y // y ∈ (Finset.range (p : ℕ)).filter (p : ℕ).Coprime}), x ∈ Subgroup.zpowers g := by
+  refine IsCyclic.exists_generator
 
-theorem wilson {hp : Nat.Prime p} (h : Odd p) : ((p-1) : ℕ).factorial = (-1 : ZMod n) := by
+lemma aaaaaa {p : Nat.Primes} : (x ∈ Finset.filter (Nat.Coprime p) (Finset.range p)) ↔ ∃ (g : x = g^k
+
+theorem wilson (hp : Nat.Prime p) (h : Odd p) : ((p-1) : ℕ).factorial = (-1 : ZMod n) := by
+  rw[← Finset.prod_range_add_one_eq_factorial]
+  rw[prod_finset_range_eq]
+  rw[← prime_coprime]
+
+
+
   rw[← Finset.prod_Ico_id_eq_factorial]
   rw[← zmodp_units_elts]
